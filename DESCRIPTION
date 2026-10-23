@@ -1,6 +1,6 @@
 Package: amadeusdb
 Title: Extension of amadeus R package with sedonadb backend for process and calculation tiers.
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: c(
     person(given = "Mitchell", family = "Manware", role = c("aut", "ctb"), comment = c(ORCID = "0009-0003-6440-6106")),
     person(given = "Getachew", family = "Tedla", role = c("aut", "ctb"), comment = c(ORCID = "0000-0001-9205-7925")),

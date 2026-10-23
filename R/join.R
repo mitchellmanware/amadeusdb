@@ -623,7 +623,7 @@ join_covariates <- function(
     # column name. Static source columns pass through without temporal casts.
     chr_projection <- quote_sql(chr_columns)
     if (chr_resolution %in% c("aqs", "hourly")) {
-      sql_time <- paste0("CAST(", time_id_sql, " AS TIMESTAMP)")
+      sql_time <- paste0("CAST(", time_id_sql, " AS TIMESTAMP(6))")
       if (chr_resolution == "hourly") {
         sql_time <- paste0("DATE_TRUNC('hour', ", sql_time, ")")
       }
@@ -806,6 +806,14 @@ join_covariates <- function(
     paste(chr_join, collapse = "\n")
   )
   # ----------------------------------------------------------------------------
+  # Require every output column to be non-NULL.
+  sql_complete <- paste0(
+    "m.",
+    quote_sql(chr_output_columns),
+    " IS NOT NULL",
+    collapse = " AND "
+  )
+  # ----------------------------------------------------------------------------
   # Create output directory if does not exist.
   dir.create(dirname(output), recursive = TRUE, showWarnings = FALSE)
   # ----------------------------------------------------------------------------
@@ -819,7 +827,14 @@ join_covariates <- function(
   # ----------------------------------------------------------------------------
   # Peform SQL-defined join.
   message("Performing join...")
-  db_extraction <- sedonadb::sd_sql(sql_merge)
+  db_extraction <- sedonadb::sd_sql(
+    paste0(
+      "SELECT * FROM (\n",
+      sql_merge,
+      "\n) AS m WHERE ",
+      sql_complete
+    )
+  )
   # ----------------------------------------------------------------------------
   # Replace "." with "_" in all column names.
   db_extraction <- sedonadb::sd_select(
