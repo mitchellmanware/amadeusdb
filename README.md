@@ -1,6 +1,6 @@
-# amadeusdb
-
+# amadeusdb <a><img src="man/figures/amadeusdb.svg" align="right" width="185" alt="amadeus website" /></a>
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![lint](https://github.com/mitchellmanware/amadeusdb/actions/workflows/lint.yaml/badge.svg)](https://github.com/mitchellmanware/amadeusdb/actions/workflows/lint.yaml)
 
 `amadeusdb` extends [amadeus](https://niehs.github.io/amadeus/) with a
 `sedonadb` backend for processing environmental data, extracting covariates,
