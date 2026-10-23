@@ -13,18 +13,16 @@ Description: Extension of amadeus R package with sedonadb backend for process an
 Depends: R (>= 4.2.0)
 Imports:
     amadeus,
-    dplyr,
+    checkmate,
     glue,
     sedonadb,
     sf,
     stats,
     tidyselect
-RdMacros: Rdpack
 Encoding: UTF-8
-VignetteBuilder: knitr, rmarkdown
 Roxygen: list(markdown = TRUE)
 Config/Needs/website: tidyverse/tidytemplate
-Config/testhat/edition: 3
+Config/testthat/edition: 3
 License: MIT + file LICENSE
 Language: en-US
 Config/roxygen2/version: 8.1.1

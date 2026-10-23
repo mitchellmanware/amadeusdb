@@ -39,8 +39,6 @@ jobs:
             any::tictoc
             any::units
             any::rcmdcheck
-            any::knitr
-            any::rmarkdown
             any::sedonadb
           needs: check
     
