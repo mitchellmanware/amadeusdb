@@ -38,6 +38,7 @@
 #'
 #' @importFrom sedonadb sd_collect sd_drop_view sd_read_parquet sd_sql
 #'   sd_to_view sd_write_parquet
+#' @import checkmate
 #'
 #' @seealso [sedona_geos()], [join_covariates()],
 #'   [sedonadb::sd_read_parquet()]
@@ -62,30 +63,20 @@ join_variables <- function(
 ) {
   # ----------------------------------------------------------------------------
   # Validate the file groups.
-  if (!is.list(input) || !length(input)) {
-    stop("input must be a non-empty list of Parquet file vectors.")
-  }
+  # NEW CHECKMATE PROPOSAL: replace the input, by, and output checks below.
+  checkmate::assert_list(input, min.len = 1L)
   # ----------------------------------------------------------------------------
   # Validate the join columns.
-  if (
-    !is.character(by) ||
-      !length(by) ||
-      anyNA(by) ||
-      any(!nzchar(by)) ||
-      anyDuplicated(by)
-  ) {
-    stop("by must contain distinct, non-empty column names.")
-  }
+  checkmate::assert_character(
+    by,
+    min.len = 1L,
+    min.chars = 1L,
+    any.missing = FALSE,
+    unique = TRUE
+  )
   # ----------------------------------------------------------------------------
   # Validate the output directory path.
-  if (
-    !is.character(output) ||
-      length(output) != 1L ||
-      is.na(output) ||
-      !nzchar(output)
-  ) {
-    stop("output must be one directory path.")
-  }
+  checkmate::assert_string(output, min.chars = 1L)
   # ----------------------------------------------------------------------------
   # Extract variables from list names.
   chr_variables <- names(input)
@@ -94,16 +85,18 @@ join_variables <- function(
   }
   for (i in seq_along(input)) {
     chr_paths <- input[[i]]
-    if (
-      !is.character(chr_paths) ||
-        !length(chr_paths) ||
-        anyNA(chr_paths) ||
-        any(!file.exists(chr_paths)) ||
-        any(dir.exists(chr_paths)) ||
-        anyDuplicated(chr_paths)
-    ) {
-      stop("Input group ", i, " must contain existing, distinct files.")
-    }
+    # NEW CHECKMATE PROPOSAL: separate vector shape from file existence.
+    checkmate::assert_character(
+      chr_paths,
+      min.len = 1L,
+      any.missing = FALSE,
+      unique = TRUE,
+      .var.name = sprintf("input[[%d]]", i)
+    )
+    checkmate::assert_file_exists(
+      chr_paths,
+      .var.name = sprintf("input[[%d]]", i)
+    )
   }
   # ----------------------------------------------------------------------------
   # Quote identifiers, including names containing capitals or punctuation.
@@ -161,9 +154,12 @@ join_variables <- function(
     )
     # --------------------------------------------------------------------------
     # Ensure merge columns are in data.
-    if (!all(by %in% chr_columns)) {
-      stop("Missing join columns in input group: ", chr_variables[i])
-    }
+    # NEW CHECKMATE PROPOSAL: optional replacement for schema membership only.
+    checkmate::assert_subset(
+      by,
+      chr_columns,
+      .var.name = paste0("join columns in ", chr_variables[i])
+    )
     # --------------------------------------------------------------------------
     # Identify data columns.
     chr_variable_columns <- setdiff(chr_columns, by)
@@ -310,8 +306,9 @@ join_variables <- function(
 #' @param hourly NULL, character, or named list. Hourly covariate inputs
 #'   containing the columns named by `locs_id` and `time_id`. A character
 #'   vector of files or directories represents one logical table. A named list
-#'   represents separate tables, for example `list(geos = geos_files)`. Directory
-#'   contents are searched recursively for `.parquet` files. Defaults to `NULL`.
+#'   represents separate tables, for example `list(geos = geos_files)`.
+#'   Directory contents are searched recursively for `.parquet` files.
+#'   Defaults to `NULL`.
 #' @param daily NULL, character, or named list. Daily covariate inputs
 #'   containing the columns named by `locs_id` and `date_id`. Accepts the same
 #'   file, directory, and named-list forms as `hourly`. Defaults to `NULL`.
@@ -409,43 +406,23 @@ join_covariates <- function(
 ) {
   # ----------------------------------------------------------------------------
   # Validate the left (assumed for devel as AQS) file.
-  if (
-    !is.character(input) ||
-      length(input) != 1L ||
-      is.na(input) ||
-      !file.exists(input) ||
-      dir.exists(input)
-  ) {
-    stop("input must identify one existing `input` Parquet file to serve.")
-  }
+  # NEW CHECKMATE PROPOSAL: replace the initial argument checks through prefix.
+  checkmate::assert_string(input, min.chars = 1L)
+  checkmate::assert_file_exists(input)
   # ----------------------------------------------------------------------------
   # Validate the output directory path.
-  if (
-    !is.character(output) ||
-      length(output) != 1L ||
-      is.na(output) ||
-      !nzchar(output)
-  ) {
-    stop("output must be one directory path.")
-  }
+  checkmate::assert_string(output, min.chars = 1L)
   # ----------------------------------------------------------------------------
   # Validate the site, time, and date identitiy columns.
-  list_ids <- list(locs_id, time_id, date_id)
-  if (
-    !all(vapply(
-      list_ids,
-      function(x) {
-        is.character(x) && length(x) == 1L && !is.na(x) && nzchar(x)
-      },
-      logical(1)
-    )) ||
-      anyDuplicated(c(locs_id, time_id, date_id))
-  ) {
-    stop("locs_id, time_id, and date_id must be distinct column names.")
-  }
-  if (!is.logical(prefix) || length(prefix) != 1L || is.na(prefix)) {
-    stop("prefix must be TRUE or FALSE.")
-  }
+  checkmate::assert_string(locs_id, min.chars = 1L)
+  checkmate::assert_string(time_id, min.chars = 1L)
+  checkmate::assert_string(date_id, min.chars = 1L)
+  checkmate::assert_character(
+    c(locs_id, time_id, date_id),
+    any.missing = FALSE,
+    unique = TRUE
+  )
+  checkmate::assert_flag(prefix)
   # ----------------------------------------------------------------------------
   # Quote SQL identifiers, preserving capitals and punctuation in data columns.
   locs_id_sql <- quote_sql(locs_id)
@@ -473,10 +450,7 @@ join_covariates <- function(
     if (is.character(list_sources)) {
       list_sources <- setNames(list(list_sources), chr_resolution)
     } else if (!is.list(list_sources)) {
-      stop(
-        chr_resolution,
-        " must be a file vector or a named list of datasets."
-      )
+      checkmate::assert_list(list_sources, .var.name = chr_resolution)
     }
     # --------------------------------------------------------------------------
     # An empty source list contributes no tables to the join.
@@ -486,14 +460,12 @@ join_covariates <- function(
     # --------------------------------------------------------------------------
     # Require distinct dataset labels within the active resolution.
     chr_names <- names(list_sources)
-    if (
-      is.null(chr_names) ||
-        anyNA(chr_names) ||
-        any(!nzchar(chr_names)) ||
-        anyDuplicated(chr_names)
-    ) {
-      stop("Supply distinct, non-empty dataset names in ", chr_resolution, ".")
-    }
+    # NEW CHECKMATE PROPOSAL: replace the compound name validation below.
+    checkmate::assert_names(
+      chr_names,
+      type = "unique",
+      .var.name = paste0("names(", chr_resolution, ")")
+    )
     # --------------------------------------------------------------------------
     # Store each table's paths, resolution, and display label under one
     # generated source identifier for use in the later SQL-building loop.
@@ -563,19 +535,18 @@ join_covariates <- function(
     # --------------------------------------------------------------------------
     # Resolve a source directory or file vector into its batch files.
     chr_paths <- list_inputs[[chr_source]]
-    if (
-      !is.character(chr_paths) ||
-        !length(chr_paths) ||
-        anyNA(chr_paths) ||
-        any(!nzchar(chr_paths)) ||
-        any(!file.exists(chr_paths))
-    ) {
-      stop(
-        "Source ",
-        chr_source_label,
-        " must contain existing files or directories."
-      )
-    }
+    # NEW CHECKMATE PROPOSAL: separate path-vector and existence requirements.
+    checkmate::assert_character(
+      chr_paths,
+      min.len = 1L,
+      min.chars = 1L,
+      any.missing = FALSE,
+      .var.name = chr_source_label
+    )
+    checkmate::assert_true(
+      all(file.exists(chr_paths)),
+      .var.name = paste0(chr_source_label, " paths")
+    )
     # --------------------------------------------------------------------------
     # Expand directories recursively into Parquet files and retain explicit
     # file paths, combining both forms into one vector for this source.
@@ -639,14 +610,12 @@ join_covariates <- function(
     )
     # --------------------------------------------------------------------------
     # Validate join keys.
-    if (!all(chr_keys %in% chr_columns)) {
-      stop(
-        "Missing join columns in ",
-        chr_source_label,
-        ": ",
-        paste(setdiff(chr_keys, chr_columns), collapse = ", ")
-      )
-    }
+    # NEW CHECKMATE PROPOSAL: optional replacement for schema membership only.
+    checkmate::assert_subset(
+      chr_keys,
+      chr_columns,
+      .var.name = paste0("join columns in ", chr_source_label)
+    )
     # --------------------------------------------------------------------------
     # Normalize the temporal key inside SQL and retain every other column.
     # Preserve the AQS timestamp; normalize the hourly right-hand key to HH:00.

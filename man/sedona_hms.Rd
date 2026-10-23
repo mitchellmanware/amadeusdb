@@ -24,12 +24,13 @@ column named \code{geometry} and an identifier column named by \code{locs_id}.
 Locations must already use a CRS compatible with the HMS shapefiles;
 this function does not transform or buffer locations.}
 
-\item{locs_id}{character(1). Name of the location identifier column in \code{locs}.
-Rows sharing an identifier are grouped when computing the indicators.
-Supply unique, non-missing identifiers for separate location results.}
+\item{locs_id}{character(1). Name of the location identifier column in
+\code{locs}. Rows sharing an identifier are grouped when computing the
+indicators. Supply unique, non-missing identifiers for separate location
+results.}
 
-\item{radius}{numeric(1). Reserved for location preparation. Currently unused;
-apply any required buffer to \code{locs} before calling this function.}
+\item{radius}{numeric(1). Reserved for location preparation. Currently
+unused; apply any required buffer to \code{locs} before calling this function.}
 
 \item{geom}{logical(1) or character(1). Reserved geometry option. Currently
 unused; output files contain identifiers, dates, and smoke indicators

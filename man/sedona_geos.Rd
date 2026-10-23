@@ -42,12 +42,12 @@ geometry type throughout: \code{POINT}, \code{POLYGON}, or \code{MULTIPOLYGON}. 
 must already have a CRS compatible with the raster's \code{OGC:CRS84} CRS, such
 as \code{EPSG:4326}; this function does not transform or buffer locations.}
 
-\item{locs_id}{character(1). Name of the location identifier column in \code{locs}.
-Supply unique, non-missing identifiers to obtain one row per location and
-timestamp.}
+\item{locs_id}{character(1). Name of the location identifier column in
+\code{locs}. Supply unique, non-missing identifiers to obtain one row per
+location and timestamp.}
 
-\item{radius}{numeric(1). Reserved for location preparation. Currently unused;
-apply any required buffer to \code{locs} before calling this function.}
+\item{radius}{numeric(1). Reserved for location preparation. Currently
+unused; apply any required buffer to \code{locs} before calling this function.}
 
 \item{geom}{logical(1) or character(1). Reserved geometry option. Currently
 unused; output files contain identifier, time, and value columns without

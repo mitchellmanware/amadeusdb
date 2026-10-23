@@ -19,11 +19,12 @@
 #'   column named `geometry` and an identifier column named by `locs_id`.
 #'   Locations must already use a CRS compatible with the HMS shapefiles;
 #'   this function does not transform or buffer locations.
-#' @param locs_id character(1). Name of the location identifier column in `locs`.
-#'   Rows sharing an identifier are grouped when computing the indicators.
-#'   Supply unique, non-missing identifiers for separate location results.
-#' @param radius numeric(1). Reserved for location preparation. Currently unused;
-#'   apply any required buffer to `locs` before calling this function.
+#' @param locs_id character(1). Name of the location identifier column in
+#'   `locs`. Rows sharing an identifier are grouped when computing the
+#'   indicators. Supply unique, non-missing identifiers for separate location
+#'   results.
+#' @param radius numeric(1). Reserved for location preparation. Currently
+#'   unused; apply any required buffer to `locs` before calling this function.
 #' @param geom logical(1) or character(1). Reserved geometry option. Currently
 #'   unused; output files contain identifiers, dates, and smoke indicators
 #'   without location geometry.
@@ -63,6 +64,7 @@
 #' @importFrom glue glue
 #' @importFrom sedonadb as_sedonadb_dataframe sd_compute sd_drop_view sd_read_sf
 #'   sd_sql sd_to_view sd_write_parquet
+#' @import checkmate
 #'
 #' @seealso [amadeus::download_hms()], [join_covariates()], [hmsdates()]
 #' @examples
@@ -95,16 +97,20 @@ sedona_hms <- function(
 ) {
   # ----------------------------------------------------------------------------
   # Validate batch size.
-  stopifnot(
-    length(batch) == 1L,
-    is.numeric(batch),
-    !is.na(batch),
-    is.finite(batch),
-    batch >= 1,
-    batch == floor(batch)
-  )
+  # NEW CHECKMATE PROPOSAL: replace this stopifnot() with the two assertions.
+  # These preserve exact whole numbers without imposing an integer-size limit.
+  checkmate::assert_number(batch, lower = 1, finite = TRUE)
+  checkmate::assert_true(batch == floor(batch))
   # ----------------------------------------------------------------------------
   # Identify HMS shapefile paths from all files in the path.
+  # NEW CHECKMATE PROPOSAL: optional additional argument checks.
+  checkmate::assert_string(input, min.chars = 1L)
+  checkmate::assert_directory_exists(input)
+  checkmate::assert_string(locs_id, min.chars = 1L)
+  checkmate::assert_class(locs, "sf")
+  checkmate::assert_subset(c(locs_id, "geometry"), names(locs))
+  # Date parsing/order, CRS compatibility, and buffer preparation need separate
+  # domain checks. radius and geom remain reserved for location preparation.
   chr_paths <- list.files(
     input,
     pattern = "hms_smoke*.*.shp$",
@@ -141,13 +147,21 @@ sedona_hms <- function(
   )
   # ----------------------------------------------------------------------------
   # Validate dates, paths, and database view names.
-  stopifnot(
-    all(c("date", "path", "view") %in% names(df_hmspaths)),
-    !anyNA(df_hmspaths$date),
-    !anyDuplicated(df_hmspaths$date),
-    all(file.exists(df_hmspaths$path)),
-    !anyNA(df_hmspaths$view),
-    !anyDuplicated(df_hmspaths$view)
+  # NEW CHECKMATE PROPOSAL: express each metadata requirement explicitly.
+  checkmate::assert_names(
+    names(df_hmspaths),
+    must.include = c("date", "path", "view")
+  )
+  checkmate::assert_character(
+    df_hmspaths$date,
+    any.missing = FALSE,
+    unique = TRUE
+  )
+  checkmate::assert_file_exists(df_hmspaths$path)
+  checkmate::assert_character(
+    df_hmspaths$view,
+    any.missing = FALSE,
+    unique = TRUE
   )
   # ----------------------------------------------------------------------------
   # Define location identifiers in SQL-friendly format.
@@ -235,12 +249,8 @@ sedona_hms <- function(
   )
   # ----------------------------------------------------------------------------
   # Prepare one Parquet output path per batch.
-  stopifnot(
-    is.character(output),
-    length(output) == 1L,
-    !is.na(output),
-    nzchar(output)
-  )
+  # NEW CHECKMATE PROPOSAL: replace the scalar path check below.
+  checkmate::assert_string(output, min.chars = 1L)
   # ----------------------------------------------------------------------------
   # Create output path if does not exist.
   if (!dir.exists(output)) {
@@ -349,7 +359,8 @@ sedona_hms <- function(
 #' @param l character(1). SQL identifier for the location column, already quoted
 #'   if necessary.
 #' @param v character. Non-empty vector of SQL view names to stack, in query
-#'   order. Names are inserted verbatim and must already be valid SQL identifiers.
+#'   order. Names are inserted verbatim and must already be valid SQL
+#'   identifiers.
 #'
 #' @details
 #' Every view must contain the location column identified by `l`, together with

@@ -27,8 +27,9 @@ Supply a new directory; existing output files are not removed.}
 \item{hourly}{NULL, character, or named list. Hourly covariate inputs
 containing the columns named by \code{locs_id} and \code{time_id}. A character
 vector of files or directories represents one logical table. A named list
-represents separate tables, for example \code{list(geos = geos_files)}. Directory
-contents are searched recursively for \code{.parquet} files. Defaults to \code{NULL}.}
+represents separate tables, for example \code{list(geos = geos_files)}.
+Directory contents are searched recursively for \code{.parquet} files.
+Defaults to \code{NULL}.}
 
 \item{daily}{NULL, character, or named list. Daily covariate inputs
 containing the columns named by \code{locs_id} and \code{date_id}. Accepts the same

@@ -11,7 +11,8 @@ hmsunion(l, v)
 if necessary.}
 
 \item{v}{character. Non-empty vector of SQL view names to stack, in query
-order. Names are inserted verbatim and must already be valid SQL identifiers.}
+order. Names are inserted verbatim and must already be valid SQL
+identifiers.}
 }
 \value{
 A character(1) SQL query.

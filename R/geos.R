@@ -23,11 +23,11 @@
 #'   geometry type throughout: `POINT`, `POLYGON`, or `MULTIPOLYGON`. Locations
 #'   must already have a CRS compatible with the raster's `OGC:CRS84` CRS, such
 #'   as `EPSG:4326`; this function does not transform or buffer locations.
-#' @param locs_id character(1). Name of the location identifier column in `locs`.
-#'   Supply unique, non-missing identifiers to obtain one row per location and
-#'   timestamp.
-#' @param radius numeric(1). Reserved for location preparation. Currently unused;
-#'   apply any required buffer to `locs` before calling this function.
+#' @param locs_id character(1). Name of the location identifier column in
+#'   `locs`. Supply unique, non-missing identifiers to obtain one row per
+#'   location and timestamp.
+#' @param radius numeric(1). Reserved for location preparation. Currently
+#'   unused; apply any required buffer to `locs` before calling this function.
 #' @param geom logical(1) or character(1). Reserved geometry option. Currently
 #'   unused; output files contain identifier, time, and value columns without
 #'   location geometry.
@@ -70,6 +70,7 @@
 #' @importFrom sedonadb as_sedonadb_dataframe sd_compute sd_drop_view sd_sql
 #'   sd_to_view sd_write_parquet
 #' @importFrom sf st_geometry_type
+#' @import checkmate
 #'
 #' @seealso [amadeus::download_geos()], [join_variables()],
 #'   [join_covariates()]
@@ -108,16 +109,14 @@ sedona_geos <- function(
 ) {
   # ----------------------------------------------------------------------------
   # Validate batch size.
-  stopifnot(
-    length(batch) == 1L,
-    is.numeric(batch),
-    !is.na(batch),
-    is.finite(batch),
-    batch >= 1,
-    batch == floor(batch)
-  )
+  # NEW CHECKMATE PROPOSAL: replace this stopifnot() with the two assertions.
+  # These preserve exact whole numbers without imposing an integer-size limit.
+  checkmate::assert_number(batch, lower = 1, finite = TRUE)
+  checkmate::assert_true(batch == floor(batch))
   # ----------------------------------------------------------------------------
   # Check zonal statistic function against SedonaDB supported (as of 10/21/26)
+  # NEW CHECKMATE NOTE: retain match.arg() and tolower(); assert_choice() alone
+  # would change the current handling of abbreviations and uppercase values.
   fun <- match.arg(
     tolower(fun),
     c(
@@ -134,7 +133,20 @@ sedona_geos <- function(
   )
   # ----------------------------------------------------------------------------
   # Derive extraction location geometries.
+  # NEW CHECKMATE PROPOSAL: optional additional checks before using arguments.
+  checkmate::assert_string(input, min.chars = 1L)
+  checkmate::assert_directory_exists(input)
+  checkmate::assert_string(variable, min.chars = 1L)
+  checkmate::assert_string(locs_id, min.chars = 1L)
+  checkmate::assert_class(locs, "sf")
+  checkmate::assert_subset(c(locs_id, "geometry"), names(locs))
+  checkmate::assert_flag(touches)
+  checkmate::assert_flag(exclude_nodata)
+  # Date parsing/order, CRS compatibility, and buffer preparation need separate
+  # domain checks. radius and geom remain reserved for location preparation.
   chr_locsgeom <- as.character(unique(sf::st_geometry_type(locs)))
+  # NEW CHECKMATE PROPOSAL: reject mixed or unsupported geometry types early.
+  checkmate::assert_choice(chr_locsgeom, c("POINT", "POLYGON", "MULTIPOLYGON"))
   # ----------------------------------------------------------------------------
   # Identify GEOS file paths from all files in the path.
   chr_paths <- list.files(
@@ -185,14 +197,22 @@ sedona_geos <- function(
   df_geospaths$view <- sprintf("db_geos_%012s", df_geospaths$time)
   # ----------------------------------------------------------------------------
   # Check dates, paths, and db names are set, and all exist with no NAs/NULLs.
-  stopifnot(
-    nrow(df_geospaths) > 0L,
-    all(c("time", "path", "view") %in% names(df_geospaths)),
-    !anyNA(df_geospaths$time),
-    !anyDuplicated(df_geospaths$time),
-    all(file.exists(df_geospaths$path)),
-    !anyNA(df_geospaths$view),
-    !anyDuplicated(df_geospaths$view)
+  # NEW CHECKMATE PROPOSAL: express the metadata requirements separately.
+  checkmate::assert_data_frame(df_geospaths, min.rows = 1L)
+  checkmate::assert_names(
+    names(df_geospaths),
+    must.include = c("time", "path", "view")
+  )
+  checkmate::assert_vector(
+    df_geospaths$time,
+    any.missing = FALSE,
+    unique = TRUE
+  )
+  checkmate::assert_file_exists(df_geospaths$path)
+  checkmate::assert_character(
+    df_geospaths$view,
+    any.missing = FALSE,
+    unique = TRUE
   )
   # ----------------------------------------------------------------------------
   # Define location identifiers in SQL-friendly format.
@@ -295,12 +315,8 @@ sedona_geos <- function(
   )
   # ----------------------------------------------------------------------------
   # Prepare one Parquet output path per batch.
-  stopifnot(
-    is.character(output),
-    length(output) == 1L,
-    !is.na(output),
-    nzchar(output)
-  )
+  # NEW CHECKMATE PROPOSAL: replace the scalar path check below.
+  checkmate::assert_string(output, min.chars = 1L)
   # ----------------------------------------------------------------------------
   # Create output path if does not exist.
   if (!dir.exists(output)) {
@@ -418,7 +434,8 @@ sedona_geos <- function(
 #' @param var character(1). SQL identifier for the variable column, already
 #'   quoted if necessary.
 #' @param views character. Non-empty vector of SQL view names to stack, in query
-#'   order. Names are inserted verbatim and must already be valid SQL identifiers.
+#'   order. Names are inserted verbatim and must already be valid SQL
+#'   identifiers.
 #'
 #' @details
 #' Every view must contain the columns identified by `l` and `var`, and a column
