@@ -1,0 +1,29 @@
+Package: amadeusdb
+Title: Extension of amadeus R package with sedonadb backend for process and calculation tiers.
+Version: 0.1.0
+Authors@R: c(
+    person(given = "Mitchell", family = "Manware", role = c("aut", "ctb"), comment = c(ORCID = "0009-0003-6440-6106")),
+    person(given = "Getachew", family = "Tedla", role = c("aut", "ctb"), comment = c(ORCID = "0000-0001-9205-7925")),
+    person(given = "Nigussie", family = "Gemechu", role = c("aut", "ctb"), comment = c(ORCID = "0000-0001-5285-484X")),
+    person(given = "Kyle", family = "Messier", role = c("aut", "cre"), email = "kyle.messier@nih.gov", comment = c(ORCID = "0000-0001-9508-9623")),
+    person("Spatiotemporal Exposures and Toxicology Group", role = c("cph"))
+    )
+Maintainer: Mitchell Manware <mitchell.manware@nih.gov>
+Depends: R (>= 4.2.0)
+Imports:
+    amadeus,
+    dplyr,
+    glue,
+    sedonadb,
+    sf,
+    stats,
+    tidyselect
+RdMacros: Rdpack
+Encoding: UTF-8
+VignetteBuilder: knitr, rmarkdown
+Roxygen: list(markdown = TRUE)
+Config/Needs/website: tidyverse/tidytemplate
+Config/testhat/edition: 3
+License: MIT + file LICENSE
+Language: en-US
+Config/roxygen2/version: 8.1.1
