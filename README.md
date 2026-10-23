@@ -1,5 +1,7 @@
 # amadeusdb <a><img src="man/figures/amadeusdb.svg" align="right" width="250" alt="amadeus website" /></a>
-[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+
+[![R-CMD-check](https://github.com/NIEHS/amadeus/actions/workflows/check-standard.yaml/badge.svg)](https://github.com/NIEHS/amadeus/actions/workflows/check-standard.yaml)
+[![WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/WIP.svg)](https://www.repostatus.org/#WIP)
 [![lint](https://github.com/mitchellmanware/amadeusdb/actions/workflows/lint.yaml/badge.svg)](https://github.com/mitchellmanware/amadeusdb/actions/workflows/lint.yaml)
 
 `amadeusdb` extends [amadeus](https://niehs.github.io/amadeus/) with a
