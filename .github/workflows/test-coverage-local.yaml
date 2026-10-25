@@ -30,22 +30,13 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
+            cache: "always"
             extra-packages: |
               any::pak
               any::covr
               any::testthat
               any::sedonadb
             needs: coverage
-
-      - name: Cache C++ and R dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/R
-            ~/.local/share/R
-          key: dependencies-${{ runner.os }}-${{ hashFiles('**/DESCRIPTION') }}
-          restore-keys: |
-            dependencies-${{ runner.os }}-
 
       - name: Session info
         run: |
