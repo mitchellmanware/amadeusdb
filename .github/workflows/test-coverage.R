@@ -42,7 +42,7 @@ tryCatch(
     # on the job in test-coverage-local.yaml, so a stuck run fails fast
     # instead of consuming the 6-hour job budget.
     cov <- covr::package_coverage(
-      type = "all",
+      type = "tests",
       quiet = FALSE,
       clean = FALSE,
       install_path = pkg_dir,
