@@ -25,9 +25,6 @@
 #'   results.
 #' @param radius numeric(1). Reserved for location preparation. Currently
 #'   unused; apply any required buffer to `locs` before calling this function.
-#' @param geom logical(1) or character(1). Reserved geometry option. Currently
-#'   unused; output files contain identifiers, dates, and smoke indicators
-#'   without location geometry.
 #' @param batch numeric(1). Positive whole number of source files to process per
 #'   output file. Defaults to `50L`.
 #'
@@ -81,36 +78,45 @@
 #'   locs = locs,
 #'   locs_id = "site_id",
 #'   radius = 0,
-#'   geom = FALSE,
 #'   batch = 31L
 #' )
 #' }
+#' @export
 sedona_hms <- function(
   date,
   input,
   output,
   locs,
   locs_id,
-  radius,
-  geom,
+  radius = 0,
   batch = 50L
 ) {
   # ----------------------------------------------------------------------------
+  # Prepare extraction locations (internal checks for arguments).
+  sf_locs <- amadeusdb::prepare_locs(
+    locs = locs,
+    locs_id = locs_id,
+    crs = .amadeusdb$list_crs$hms$crs,
+    radius = radius
+  )
+  # ----------------------------------------------------------------------------
   # Validate batch size.
-  # NEW CHECKMATE PROPOSAL: replace this stopifnot() with the two assertions.
-  # These preserve exact whole numbers without imposing an integer-size limit.
   checkmate::assert_number(batch, lower = 1, finite = TRUE)
   checkmate::assert_true(batch == floor(batch))
   # ----------------------------------------------------------------------------
-  # Identify HMS shapefile paths from all files in the path.
-  # NEW CHECKMATE PROPOSAL: optional additional argument checks.
+  # Validate input path.
   checkmate::assert_string(input, min.chars = 1L)
   checkmate::assert_directory_exists(input)
+  # ----------------------------------------------------------------------------
+  # Validate output path.
+  checkmate::assert_string(output, min.chars = 1L)
+  # ----------------------------------------------------------------------------
+  # Validate locations and `locs_id` argument..
   checkmate::assert_string(locs_id, min.chars = 1L)
-  checkmate::assert_class(locs, "sf")
-  checkmate::assert_subset(c(locs_id, "geometry"), names(locs))
-  # Date parsing/order, CRS compatibility, and buffer preparation need separate
-  # domain checks. radius and geom remain reserved for location preparation.
+  checkmate::assert_class(sf_locs, "sf")
+  checkmate::assert_subset(c(locs_id, "geometry"), names(sf_locs))
+  # ----------------------------------------------------------------------------
+  # Identify HMS shapefile paths from all files in the path.
   chr_paths <- list.files(
     input,
     pattern = "hms_smoke*.*.shp$",
@@ -139,7 +145,7 @@ sedona_hms <- function(
   # Store file path, date from file, and generated database view names.
   df_hmspaths <- data.frame(
     path = chr_datapaths,
-    date = hmsdates(chr_datapaths)
+    date = amadeusdb::hmsdates(chr_datapaths)
   )
   df_hmspaths$view <- sprintf(
     "db_hms_%08s",
@@ -147,7 +153,6 @@ sedona_hms <- function(
   )
   # ----------------------------------------------------------------------------
   # Validate dates, paths, and database view names.
-  # NEW CHECKMATE PROPOSAL: express each metadata requirement explicitly.
   checkmate::assert_names(
     names(df_hmspaths),
     must.include = c("date", "path", "view")
@@ -202,22 +207,10 @@ sedona_hms <- function(
   # ----------------------------------------------------------------------------
   # Initiate database cleanup upon exit.
   chr_hms_views <- character(0)
-  on.exit(
-    {
-      for (h in rev(chr_hms_views)) {
-        tryCatch(
-          sedonadb::sd_drop_view(h),
-          error = function(e) {
-            message("Could not remove view ", h, ": ", conditionMessage(e))
-          }
-        )
-      }
-    },
-    add = TRUE
-  )
+  on.exit(amadeusdb:::cleanup_views(chr_hms_views), add = TRUE)
   # ----------------------------------------------------------------------------
   # Convert extraction locations to a SedonaDB data frame.
-  db_locs <- sedonadb::as_sedonadb_dataframe(locs)
+  db_locs <- sedonadb::as_sedonadb_dataframe(sf_locs)
   # ----------------------------------------------------------------------------
   # Register the extraction point data object in the SedonaDB session ! once !.
   sedonadb::sd_to_view(
@@ -248,19 +241,11 @@ sedona_hms <- function(
     USE.NAMES = FALSE
   )
   # ----------------------------------------------------------------------------
-  # Prepare one Parquet output path per batch.
-  # NEW CHECKMATE PROPOSAL: replace the scalar path check below.
-  checkmate::assert_string(output, min.chars = 1L)
-  # ----------------------------------------------------------------------------
   # Create output path if does not exist.
   if (!dir.exists(output)) {
     dir.create(output, recursive = TRUE, showWarnings = FALSE)
   }
-  # ----------------------------------------------------------------------------
-  # Create output path if does not exist.
-  if (!dir.exists(output)) {
-    stop("Could not create output directory: ", output)
-  }
+  stopifnot(dir.exists(output))
   # ----------------------------------------------------------------------------
   # Generate .parquet paths for each batch view.
   chr_output <- normalizePath(
@@ -330,7 +315,7 @@ sedona_hms <- function(
     # --------------------------------------------------------------------------
     # Materialize and union the batch before removing its daily views.
     db_batch <- sedonadb::sd_sql(
-      hmsunion(locs_id_sql, chr_hms_daily)
+      amadeusdb::hmsunion(locs_id_sql, chr_hms_daily)
     )
     sedonadb::sd_write_parquet(
       db_batch,
@@ -372,10 +357,11 @@ sedona_hms <- function(
 #' @seealso [sedona_hms()], [quote_sql()]
 #' @keywords internal
 #' @examples
-#' amadeusdb:::hmsunion(
+#' amadeusdb::hmsunion(
 #'   l = '"site_id"',
 #'   v = c("db_day_001", "db_day_002")
 #' )
+#' @export
 hmsunion <- function(l, v) {
   paste(
     sprintf(
@@ -406,10 +392,11 @@ hmsunion <- function(l, v) {
 #' @seealso [sedona_hms()]
 #' @keywords internal
 #' @examples
-#' amadeusdb:::hmsdates(c(
+#' amadeusdb::hmsdates(c(
 #'   "data/hms_smoke20240101.shp",
 #'   "data/hms_smoke20240102.shp"
 #' ))
+#' @export
 hmsdates <- function(x) {
   chr_hmssplit <- gsub("\\.shp", "", x)
   chr_hmssub <- substr(

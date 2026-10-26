@@ -56,6 +56,7 @@
 #'   by = c("site_id", "time")
 #' )
 #' }
+#' @export
 join_variables <- function(
   input,
   output,
@@ -393,6 +394,7 @@ join_variables <- function(
 #'   prefix = TRUE
 #' )
 #' }
+#' @export
 join_covariates <- function(
   input,
   output,
@@ -425,9 +427,9 @@ join_covariates <- function(
   checkmate::assert_flag(prefix)
   # ----------------------------------------------------------------------------
   # Quote SQL identifiers, preserving capitals and punctuation in data columns.
-  locs_id_sql <- quote_sql(locs_id)
-  time_id_sql <- quote_sql(time_id)
-  date_id_sql <- quote_sql(date_id)
+  locs_id_sql <- amadeusdb::quote_sql(locs_id)
+  time_id_sql <- amadeusdb::quote_sql(time_id)
+  date_id_sql <- amadeusdb::quote_sql(date_id)
   # ----------------------------------------------------------------------------
   # Expand each optional resolution into its separate source tables.
   # A character vector is ONE table's batch files; a named list is MANY tables.
@@ -621,7 +623,7 @@ join_covariates <- function(
     # Preserve the AQS timestamp; normalize the hourly right-hand key to HH:00.
     # Replace only the temporal field's projection, keeping its original
     # column name. Static source columns pass through without temporal casts.
-    chr_projection <- quote_sql(chr_columns)
+    chr_projection <- amadeusdb::quote_sql(chr_columns)
     if (chr_resolution %in% c("aqs", "hourly")) {
       sql_time <- paste0("CAST(", time_id_sql, " AS TIMESTAMP(6))")
       if (chr_resolution == "hourly") {
@@ -700,7 +702,7 @@ join_covariates <- function(
     # components. Multiple readings in one normalized hour are rejected,
     # rather than averaged or otherwise aggregated into one covariate row.
     message("Checking ", chr_source_label, " join keys...")
-    chr_keys_sql <- quote_sql(chr_keys)
+    chr_keys_sql <- amadeusdb::quote_sql(chr_keys)
     sql_keys <- paste(chr_keys_sql, collapse = ", ")
     sql_missing <- paste(paste(chr_keys_sql, "IS NULL"), collapse = " OR ")
     sql_check <- paste0(
@@ -787,9 +789,9 @@ join_covariates <- function(
         paste0(
           chr_alias,
           ".",
-          quote_sql(chr_data_columns),
+          amadeusdb::quote_sql(chr_data_columns),
           " AS ",
-          quote_sql(chr_data_names)
+          amadeusdb::quote_sql(chr_data_names)
         )
       )
     }
@@ -809,7 +811,7 @@ join_covariates <- function(
   # Require every output column to be non-NULL.
   sql_complete <- paste0(
     "m.",
-    quote_sql(chr_output_columns),
+    amadeusdb::quote_sql(chr_output_columns),
     " IS NOT NULL",
     collapse = " AND "
   )
@@ -884,7 +886,7 @@ join_covariates <- function(
 #' @seealso [join_covariates()], [geosunion()], [hmsunion()]
 #' @keywords internal
 #' @examples
-#' amadeusdb:::quote_sql(c("site_id", "CO", "site name", 'a"b'))
+#' amadeusdb::quote_sql(c("site_id", "CO", "site name", 'a"b'))
 quote_sql <- function(x) {
   paste0('"', gsub('"', '""', x, fixed = TRUE), '"')
 }

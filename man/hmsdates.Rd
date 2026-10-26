@@ -23,7 +23,7 @@ This helper extracts text only. It does not check that files exist or that
 the extracted values are valid calendar dates.
 }
 \examples{
-amadeusdb:::hmsdates(c(
+amadeusdb::hmsdates(c(
   "data/hms_smoke20240101.shp",
   "data/hms_smoke20240102.shp"
 ))
