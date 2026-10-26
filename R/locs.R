@@ -118,6 +118,7 @@ prepare_sf <- function(
     # --------------------------------------------------------------------------
     # If `terra` SpatVector object, convert to `sf`.
     sf_locs <- if (nrow(locs) == 0L) {
+      message("Supplied `locs` has no rows; returning empty `sf`.")
       suppressWarnings(sf::st_as_sf(locs))
     } else {
       sf::st_as_sf(locs)

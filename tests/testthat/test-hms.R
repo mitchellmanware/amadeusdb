@@ -7,7 +7,7 @@ library(testthat)
 ################################################################################
 # Success cases.
 ################################################################################
-testthat::test_that("sedona_hms; locs = polygons", {
+testthat::test_that("sedona_hms; locs = sf::polygons", {
   # ----------------------------------------------------------------------------
   # Initiate temporary directory.
   chr_tempdir <- file.path(tempdir(), "hms")
@@ -76,7 +76,7 @@ testthat::test_that("sedona_hms; locs = polygons", {
 })
 
 ################################################################################
-testthat::test_that("sedona_hms; locs = points", {
+testthat::test_that("sedona_hms; locs = sf::points", {
   # ----------------------------------------------------------------------------
   # Initiate temporary directory.
   chr_tempdir <- file.path(tempdir(), "hms")
@@ -96,6 +96,206 @@ testthat::test_that("sedona_hms; locs = points", {
       input = testthat::test_path("..", "testdata", "hms"),
       output = chr_tempdir,
       locs = points,
+      locs_id = "NAME"
+    )
+  )
+  # ----------------------------------------------------------------------------
+  # !!! OUTPUT CHECKS !!!
+  # ----------------------------------------------------------------------------
+  # Only .parquet files in the output directory.
+  chr_output <- list.files(chr_tempdir, full.names = TRUE)
+  testthat::expect_true(all(grepl("\\.parquet", chr_output)))
+  # ----------------------------------------------------------------------------
+  # No errors on read as .parquet.
+  testthat::expect_no_error(db_hms1 <- sedonadb::sd_read_parquet(chr_output))
+  # ----------------------------------------------------------------------------
+  # Expect SedonaDB S3 class.
+  testthat::expect_s3_class(db_hms1, "sedonadb_dataframe")
+  # ----------------------------------------------------------------------------
+  # No errors on collection to data frame.
+  testthat::expect_no_error(dt_hms1 <- sedonadb::sd_collect(db_hms1))
+  # ----------------------------------------------------------------------------
+  # Expect 12 rows (4 fixture sites x 3 days).
+  testthat::expect_equal(nrow(dt_hms1), 12)
+  # ----------------------------------------------------------------------------
+  # Expect 5 columns (locs_id, time, light, mediuum, heavy)
+  testthat::expect_equal(ncol(dt_hms1), 5)
+  # ----------------------------------------------------------------------------
+  # Expect character location identifer column.
+  testthat::expect_type(dt_hms1$NAME, "character")
+  # ----------------------------------------------------------------------------
+  testthat::expect_s3_class(dt_hms1$date, "Date")
+  # Expect Date "date" column.
+  # ----------------------------------------------------------------------------
+  # Expect numeric (binary) for light, medium, and heavy columns.
+  testthat::expect_equal(class(dt_hms1$light), "numeric")
+  testthat::expect_equal(class(dt_hms1$medium), "numeric")
+  testthat::expect_equal(class(dt_hms1$heavy), "numeric")
+  # ----------------------------------------------------------------------------
+  # Expect light, medium, and heavy columns contain only 0 or 1.
+  testthat::expect_true(all(
+    unique(c(dt_hms1$light, dt_hms1$medium, dt_hms1$heavy)) %in%
+      c(0, 1)
+  ))
+  # ----------------------------------------------------------------------------
+  # Clean up temporary directory.
+  file.remove(list.files(chr_tempdir, full.names = TRUE, recursive = TRUE))
+  unlink(chr_tempdir)
+})
+
+################################################################################
+testthat::test_that("sedona_hms; locs = terra::polygons", {
+  # ----------------------------------------------------------------------------
+  # Initiate temporary directory.
+  chr_tempdir <- file.path(tempdir(), "hms")
+  # ----------------------------------------------------------------------------
+  # Import fixture polygons.
+  polygons <- terra::vect(testthat::test_path(
+    "..",
+    "testdata",
+    "locs",
+    "polygons.shp"
+  ))
+  # ----------------------------------------------------------------------------
+  # No errors at runtime
+  testthat::expect_no_error(
+    db_hms <- amadeusdb::sedona_hms(
+      date = c("2018-12-30", "2019-01-01"),
+      input = testthat::test_path("..", "testdata", "hms"),
+      output = chr_tempdir,
+      locs = polygons,
+      locs_id = "NAME",
+      radius = 0
+    )
+  )
+  # ----------------------------------------------------------------------------
+  # !!! OUTPUT CHECKS !!!
+  # ----------------------------------------------------------------------------
+  # Only .parquet files in the output directory.
+  chr_output <- list.files(chr_tempdir, full.names = TRUE)
+  testthat::expect_true(all(grepl("\\.parquet", chr_output)))
+  # ----------------------------------------------------------------------------
+  # No errors on read as .parquet.
+  testthat::expect_no_error(db_hms1 <- sedonadb::sd_read_parquet(chr_output))
+  # ----------------------------------------------------------------------------
+  # Expect SedonaDB S3 class.
+  testthat::expect_s3_class(db_hms1, "sedonadb_dataframe")
+  # ----------------------------------------------------------------------------
+  # No errors on collection to data frame.
+  testthat::expect_no_error(dt_hms1 <- sedonadb::sd_collect(db_hms1))
+  # ----------------------------------------------------------------------------
+  # Expect 12 rows (4 fixture sites x 3 days).
+  testthat::expect_equal(nrow(dt_hms1), 12)
+  # ----------------------------------------------------------------------------
+  # Expect 5 columns (locs_id, time, light, mediuum, heavy)
+  testthat::expect_equal(ncol(dt_hms1), 5)
+  # ----------------------------------------------------------------------------
+  # Expect character location identifer column.
+  testthat::expect_type(dt_hms1$NAME, "character")
+  # ----------------------------------------------------------------------------
+  # Expect Date "date" column.
+  testthat::expect_s3_class(dt_hms1$date, "Date")
+  # ----------------------------------------------------------------------------
+  # Expect numeric (binary) for light, medium, and heavy columns.
+  testthat::expect_equal(class(dt_hms1$light), "numeric")
+  testthat::expect_equal(class(dt_hms1$medium), "numeric")
+  testthat::expect_equal(class(dt_hms1$heavy), "numeric")
+  # ----------------------------------------------------------------------------
+  # Expect light, medium, and heavy columns contain only 0 or 1.
+  testthat::expect_true(all(
+    unique(c(dt_hms1$light, dt_hms1$medium, dt_hms1$heavy)) %in%
+      c(0, 1)
+  ))
+  # ----------------------------------------------------------------------------
+  # Clean up temporary directory.
+  file.remove(list.files(chr_tempdir, full.names = TRUE, recursive = TRUE))
+  unlink(chr_tempdir)
+})
+
+################################################################################
+testthat::test_that("sedona_hms; locs = terra::points", {
+  # ----------------------------------------------------------------------------
+  # Initiate temporary directory.
+  chr_tempdir <- file.path(tempdir(), "hms")
+  # ----------------------------------------------------------------------------
+  # Import fixture points.
+  points <- terra::vect(testthat::test_path(
+    "..",
+    "testdata",
+    "locs",
+    "points.shp"
+  ))
+  # ----------------------------------------------------------------------------
+  # No errors at runtime
+  testthat::expect_no_error(
+    db_hms <- amadeusdb::sedona_hms(
+      date = c("2018-12-30", "2019-01-01"),
+      input = testthat::test_path("..", "testdata", "hms"),
+      output = chr_tempdir,
+      locs = points,
+      locs_id = "NAME"
+    )
+  )
+  # ----------------------------------------------------------------------------
+  # !!! OUTPUT CHECKS !!!
+  # ----------------------------------------------------------------------------
+  # Only .parquet files in the output directory.
+  chr_output <- list.files(chr_tempdir, full.names = TRUE)
+  testthat::expect_true(all(grepl("\\.parquet", chr_output)))
+  # ----------------------------------------------------------------------------
+  # No errors on read as .parquet.
+  testthat::expect_no_error(db_hms1 <- sedonadb::sd_read_parquet(chr_output))
+  # ----------------------------------------------------------------------------
+  # Expect SedonaDB S3 class.
+  testthat::expect_s3_class(db_hms1, "sedonadb_dataframe")
+  # ----------------------------------------------------------------------------
+  # No errors on collection to data frame.
+  testthat::expect_no_error(dt_hms1 <- sedonadb::sd_collect(db_hms1))
+  # ----------------------------------------------------------------------------
+  # Expect 12 rows (4 fixture sites x 3 days).
+  testthat::expect_equal(nrow(dt_hms1), 12)
+  # ----------------------------------------------------------------------------
+  # Expect 5 columns (locs_id, time, light, mediuum, heavy)
+  testthat::expect_equal(ncol(dt_hms1), 5)
+  # ----------------------------------------------------------------------------
+  # Expect character location identifer column.
+  testthat::expect_type(dt_hms1$NAME, "character")
+  # ----------------------------------------------------------------------------
+  testthat::expect_s3_class(dt_hms1$date, "Date")
+  # Expect Date "date" column.
+  # ----------------------------------------------------------------------------
+  # Expect numeric (binary) for light, medium, and heavy columns.
+  testthat::expect_equal(class(dt_hms1$light), "numeric")
+  testthat::expect_equal(class(dt_hms1$medium), "numeric")
+  testthat::expect_equal(class(dt_hms1$heavy), "numeric")
+  # ----------------------------------------------------------------------------
+  # Expect light, medium, and heavy columns contain only 0 or 1.
+  testthat::expect_true(all(
+    unique(c(dt_hms1$light, dt_hms1$medium, dt_hms1$heavy)) %in%
+      c(0, 1)
+  ))
+  # ----------------------------------------------------------------------------
+  # Clean up temporary directory.
+  file.remove(list.files(chr_tempdir, full.names = TRUE, recursive = TRUE))
+  unlink(chr_tempdir)
+})
+
+################################################################################
+testthat::test_that("sedona_hms; locs = data.frame", {
+  # ----------------------------------------------------------------------------
+  # Initiate temporary directory.
+  chr_tempdir <- file.path(tempdir(), "hms")
+  # ----------------------------------------------------------------------------
+  # Import data.frame points.
+  df <- read.csv(testthat::test_path("..", "testdata", "locs", "df.csv"))
+  # ----------------------------------------------------------------------------
+  # No errors at runtime
+  testthat::expect_no_error(
+    db_hms <- amadeusdb::sedona_hms(
+      date = c("2018-12-30", "2019-01-01"),
+      input = testthat::test_path("..", "testdata", "hms"),
+      output = chr_tempdir,
+      locs = df,
       locs_id = "NAME"
     )
   )
