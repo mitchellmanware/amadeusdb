@@ -4,7 +4,7 @@
 \alias{sedona_hms}
 \title{Calculate daily HMS smoke indicators with SedonaDB}
 \usage{
-sedona_hms(date, input, output, locs, locs_id, radius, geom, batch = 50L)
+sedona_hms(date, input, output, locs, locs_id, radius = 0, batch = 50L)
 }
 \arguments{
 \item{date}{character(2) or Date(2). Inclusive start and end dates in
@@ -31,10 +31,6 @@ results.}
 
 \item{radius}{numeric(1). Reserved for location preparation. Currently
 unused; apply any required buffer to \code{locs} before calling this function.}
-
-\item{geom}{logical(1) or character(1). Reserved geometry option. Currently
-unused; output files contain identifiers, dates, and smoke indicators
-without location geometry.}
 
 \item{batch}{numeric(1). Positive whole number of source files to process per
 output file. Defaults to \code{50L}.}
@@ -87,7 +83,6 @@ hms_files <- sedona_hms(
   locs = locs,
   locs_id = "site_id",
   radius = 0,
-  geom = FALSE,
   batch = 31L
 )
 }

@@ -28,9 +28,6 @@
 #'   location and timestamp.
 #' @param radius numeric(1). Reserved for location preparation. Currently
 #'   unused; apply any required buffer to `locs` before calling this function.
-#' @param geom logical(1) or character(1). Reserved geometry option. Currently
-#'   unused; output files contain identifier, time, and value columns without
-#'   location geometry.
 #' @param fun character(1). Polygon summary statistic: `"mean"`, `"sum"`,
 #'   `"min"`, `"max"`, `"median"`, `"count"`, `"stddev"`, `"variance"`, or
 #'   `"mode"`. Defaults to `"mean"`. Ignored for point extraction.
@@ -89,10 +86,10 @@
 #'   locs = locs,
 #'   locs_id = "site_id",
 #'   radius = 0,
-#'   geom = FALSE,
 #'   batch = 24L
 #' )
 #' }
+#' @export
 sedona_geos <- function(
   date,
   input,
@@ -100,13 +97,20 @@ sedona_geos <- function(
   variable,
   locs,
   locs_id,
-  radius,
-  geom,
+  radius = 0,
   fun = "mean",
   touches = TRUE,
   exclude_nodata = TRUE,
   batch = 50L
 ) {
+  # ----------------------------------------------------------------------------
+  # Prepare extraction locations (internal checks for arguments).
+  sf_locs <- amadeusdb::prepare_locs(
+    locs = locs,
+    locs_id = locs_id,
+    crs = .amadeusdb$list_crs$geos$crs,
+    radius = radius
+  )
   # ----------------------------------------------------------------------------
   # Validate batch size.
   # NEW CHECKMATE PROPOSAL: replace this stopifnot() with the two assertions.
@@ -138,13 +142,13 @@ sedona_geos <- function(
   checkmate::assert_directory_exists(input)
   checkmate::assert_string(variable, min.chars = 1L)
   checkmate::assert_string(locs_id, min.chars = 1L)
-  checkmate::assert_class(locs, "sf")
-  checkmate::assert_subset(c(locs_id, "geometry"), names(locs))
+  checkmate::assert_class(sf_locs, "sf")
+  checkmate::assert_subset(c(locs_id, "geometry"), names(sf_locs))
   checkmate::assert_flag(touches)
   checkmate::assert_flag(exclude_nodata)
   # Date parsing/order, CRS compatibility, and buffer preparation need separate
   # domain checks. radius and geom remain reserved for location preparation.
-  chr_locsgeom <- as.character(unique(sf::st_geometry_type(locs)))
+  chr_locsgeom <- as.character(unique(sf::st_geometry_type(sf_locs)))
   # NEW CHECKMATE PROPOSAL: reject mixed or unsupported geometry types early.
   checkmate::assert_choice(chr_locsgeom, c("POINT", "POLYGON", "MULTIPOLYGON"))
   # ----------------------------------------------------------------------------
@@ -266,22 +270,10 @@ sedona_geos <- function(
   # ----------------------------------------------------------------------------
   # Initiate database cleanup upon exit.
   chr_geos_views <- character(0)
-  on.exit(
-    {
-      for (h in rev(chr_geos_views)) {
-        tryCatch(
-          sedonadb::sd_drop_view(h),
-          error = function(e) {
-            message("Could not remove view ", h, ": ", conditionMessage(e))
-          }
-        )
-      }
-    },
-    add = TRUE
-  )
+  on.exit(amadeusdb::cleanup_views(chr_geos_views), add = TRUE)
   # ----------------------------------------------------------------------------
   # Convert extraction points to SedonaDB data frame.
-  db_locs <- sedonadb::as_sedonadb_dataframe(locs)
+  db_locs <- sedonadb::as_sedonadb_dataframe(sf_locs)
   # ----------------------------------------------------------------------------
   # Register the extraction point data object in the SedonaDB session ! once !.
   sedonadb::sd_to_view(
@@ -402,7 +394,7 @@ sedona_geos <- function(
     # --------------------------------------------------------------------------
     # Write batch directly to Parquet without materializing another copy.
     db_batch <- sedonadb::sd_sql(
-      geosunion(locs_id_sql, variable_sql, chr_geos_hourly)
+      amadeusdb::geosunion(locs_id_sql, variable_sql, chr_geos_hourly)
     )
     sedonadb::sd_write_parquet(
       db_batch,
@@ -446,11 +438,12 @@ sedona_geos <- function(
 #' @seealso [sedona_geos()], [quote_sql()]
 #' @keywords internal
 #' @examples
-#' amadeusdb:::geosunion(
+#' amadeusdb::geosunion(
 #'   l = '"site_id"',
 #'   var = '"CO"',
 #'   views = c("db_time_001", "db_time_002")
 #' )
+#' @export
 geosunion <- function(l, var, views) {
   paste(
     sprintf(

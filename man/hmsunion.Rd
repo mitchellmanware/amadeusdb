@@ -27,7 +27,7 @@ This helper builds SQL text only; it does not execute the query or validate
 the views.
 }
 \examples{
-amadeusdb:::hmsunion(
+amadeusdb::hmsunion(
   l = '"site_id"',
   v = c("db_day_001", "db_day_002")
 )

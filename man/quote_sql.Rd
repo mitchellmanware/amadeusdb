@@ -22,7 +22,7 @@ values or complete expressions. Quoting preserves capitalization, spaces,
 and punctuation in the names.
 }
 \examples{
-amadeusdb:::quote_sql(c("site_id", "CO", "site name", 'a"b'))
+amadeusdb::quote_sql(c("site_id", "CO", "site name", 'a"b'))
 }
 \seealso{
 \code{\link[=join_covariates]{join_covariates()}}, \code{\link[=geosunion]{geosunion()}}, \code{\link[=hmsunion]{hmsunion()}}

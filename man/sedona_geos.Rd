@@ -11,8 +11,7 @@ sedona_geos(
   variable,
   locs,
   locs_id,
-  radius,
-  geom,
+  radius = 0,
   fun = "mean",
   touches = TRUE,
   exclude_nodata = TRUE,
@@ -48,10 +47,6 @@ location and timestamp.}
 
 \item{radius}{numeric(1). Reserved for location preparation. Currently
 unused; apply any required buffer to \code{locs} before calling this function.}
-
-\item{geom}{logical(1) or character(1). Reserved geometry option. Currently
-unused; output files contain identifier, time, and value columns without
-location geometry.}
 
 \item{fun}{character(1). Polygon summary statistic: \code{"mean"}, \code{"sum"},
 \code{"min"}, \code{"max"}, \code{"median"}, \code{"count"}, \code{"stddev"}, \code{"variance"}, or
@@ -110,7 +105,6 @@ geos_files <- sedona_geos(
   locs = locs,
   locs_id = "site_id",
   radius = 0,
-  geom = FALSE,
   batch = 24L
 )
 }
