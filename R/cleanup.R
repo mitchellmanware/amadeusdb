@@ -17,10 +17,13 @@
 #' @return \code{NULL}, invisibly.
 #'
 #' @keywords internal
+#' @export
 cleanup_views <- function(
   views,
   drop_view = sedonadb::sd_drop_view
 ) {
+  # ----------------------------------------------------------------------------
+  # Remove transient database views upon early or proper exit from function.
   for (h in rev(views)) {
     tryCatch(
       drop_view(h),
@@ -29,6 +32,7 @@ cleanup_views <- function(
       }
     )
   }
-
+  # ----------------------------------------------------------------------------
+  # Return NULL.
   invisible(NULL)
 }

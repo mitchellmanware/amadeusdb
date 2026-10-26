@@ -19,8 +19,9 @@ Imports:
     sedonadb,
     sf,
     stats,
-    tidyselect,
-    utils
+    tidyselect
+Suggests:
+    testthat (>= 3.0.0)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 Config/Needs/website: tidyverse/tidytemplate

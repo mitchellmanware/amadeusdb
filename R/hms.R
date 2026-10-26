@@ -207,7 +207,7 @@ sedona_hms <- function(
   # ----------------------------------------------------------------------------
   # Initiate database cleanup upon exit.
   chr_hms_views <- character(0)
-  on.exit(amadeusdb:::cleanup_views(chr_hms_views), add = TRUE)
+  on.exit(amadeusdb::cleanup_views(chr_hms_views), add = TRUE)
   # ----------------------------------------------------------------------------
   # Convert extraction locations to a SedonaDB data frame.
   db_locs <- sedonadb::as_sedonadb_dataframe(sf_locs)

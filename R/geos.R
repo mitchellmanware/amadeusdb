@@ -270,7 +270,7 @@ sedona_geos <- function(
   # ----------------------------------------------------------------------------
   # Initiate database cleanup upon exit.
   chr_geos_views <- character(0)
-  on.exit(amadeusdb:::cleanup_views(chr_geos_views), add = TRUE)
+  on.exit(amadeusdb::cleanup_views(chr_geos_views), add = TRUE)
   # ----------------------------------------------------------------------------
   # Convert extraction points to SedonaDB data frame.
   db_locs <- sedonadb::as_sedonadb_dataframe(sf_locs)
@@ -438,7 +438,7 @@ sedona_geos <- function(
 #' @seealso [sedona_geos()], [quote_sql()]
 #' @keywords internal
 #' @examples
-#' amadeusdbgeosunion(
+#' amadeusdb::geosunion(
 #'   l = '"site_id"',
 #'   var = '"CO"',
 #'   views = c("db_time_001", "db_time_002")

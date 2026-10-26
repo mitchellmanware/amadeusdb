@@ -2,9 +2,12 @@
 # Unit and integration tests for the sedona_hms function and auxiliaries.
 
 ################################################################################
+library(testthat)
+
+################################################################################
 # Success cases.
 ################################################################################
-testthat::test_that("sedona_hms, locs = polygons", {
+testthat::test_that("sedona_hms; locs = polygons", {
   # ----------------------------------------------------------------------------
   # Initiate temporary directory.
   chr_tempdir <- file.path(tempdir(), "hms")
@@ -73,7 +76,7 @@ testthat::test_that("sedona_hms, locs = polygons", {
 })
 
 ################################################################################
-testthat::test_that("sedona_hms, locs = points", {
+testthat::test_that("sedona_hms; locs = points", {
   # ----------------------------------------------------------------------------
   # Initiate temporary directory.
   chr_tempdir <- file.path(tempdir(), "hms")
@@ -141,7 +144,7 @@ testthat::test_that("sedona_hms, locs = points", {
 })
 
 ################################################################################
-testthat::test_that("sedona_hms, empty .shp", {
+testthat::test_that("sedona_hms; empty .shp", {
   # ----------------------------------------------------------------------------
   # Some .shp files from NOAA HMS repository are empty, containing true no data.
   # sedona_hms should handle these without errors, as empty joins return 0
@@ -202,7 +205,7 @@ testthat::test_that("sedona_hms, empty .shp", {
 })
 
 ################################################################################
-testthat::test_that("sedona_hms, skip existing .parquet", {
+testthat::test_that("sedona_hms; skip existing .parquet", {
   # ----------------------------------------------------------------------------
   # Initiate temporary directory.
   chr_tempdir <- file.path(tempdir(), "hms")
@@ -246,7 +249,7 @@ testthat::test_that("sedona_hms, skip existing .parquet", {
 ################################################################################
 # Failure cases.
 ################################################################################
-testthat::test_that("sedona_hms, expected failures", {
+testthat::test_that("sedona_hms; expected failures", {
   # ----------------------------------------------------------------------------
   # Initiate temporary directory.
   chr_tempdir <- file.path(tempdir(), "hms")

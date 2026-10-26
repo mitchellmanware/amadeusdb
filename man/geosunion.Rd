@@ -30,7 +30,7 @@ named \code{time}. The query retains duplicate rows. This helper builds SQL text
 only; it does not execute the query or validate the views.
 }
 \examples{
-amadeusdbgeosunion(
+amadeusdb::geosunion(
   l = '"site_id"',
   var = '"CO"',
   views = c("db_time_001", "db_time_002")

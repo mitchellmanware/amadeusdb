@@ -887,6 +887,7 @@ join_covariates <- function(
 #' @keywords internal
 #' @examples
 #' amadeusdb::quote_sql(c("site_id", "CO", "site name", 'a"b'))
+#' @export
 quote_sql <- function(x) {
   paste0('"', gsub('"', '""', x, fixed = TRUE), '"')
 }
