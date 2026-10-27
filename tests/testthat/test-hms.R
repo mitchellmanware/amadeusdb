@@ -12,6 +12,9 @@ testthat::test_that("sedona_hms; locs = sf::polygons", {
   # Initiate temporary directory.
   chr_tempdir <- file.path(tempdir(), "hms")
   # ----------------------------------------------------------------------------
+  # Remove temporary directory to force recreation.
+  file.remove(chr_tempdir)
+  # ----------------------------------------------------------------------------
   # Import fixture polygons.
   polygons <- sf::st_read(testthat::test_path(
     "..",
@@ -35,11 +38,10 @@ testthat::test_that("sedona_hms; locs = sf::polygons", {
   # !!! OUTPUT CHECKS !!!
   # ----------------------------------------------------------------------------
   # Only .parquet files in the output directory.
-  chr_output <- list.files(chr_tempdir, full.names = TRUE)
-  testthat::expect_true(all(grepl("\\.parquet", chr_output)))
+  testthat::expect_true(all(grepl("\\.parquet", db_hms)))
   # ----------------------------------------------------------------------------
   # No errors on read as .parquet.
-  testthat::expect_no_error(db_hms1 <- sedonadb::sd_read_parquet(chr_output))
+  testthat::expect_no_error(db_hms1 <- sedonadb::sd_read_parquet(db_hms))
   # ----------------------------------------------------------------------------
   # Expect SedonaDB S3 class.
   testthat::expect_s3_class(db_hms1, "sedonadb_dataframe")
@@ -81,6 +83,9 @@ testthat::test_that("sedona_hms; locs = sf::points", {
   # Initiate temporary directory.
   chr_tempdir <- file.path(tempdir(), "hms")
   # ----------------------------------------------------------------------------
+  # Remove temporary directory to force recreation.
+  file.remove(chr_tempdir)
+  # ----------------------------------------------------------------------------
   # Import fixture points.
   points <- sf::st_read(testthat::test_path(
     "..",
@@ -103,11 +108,10 @@ testthat::test_that("sedona_hms; locs = sf::points", {
   # !!! OUTPUT CHECKS !!!
   # ----------------------------------------------------------------------------
   # Only .parquet files in the output directory.
-  chr_output <- list.files(chr_tempdir, full.names = TRUE)
-  testthat::expect_true(all(grepl("\\.parquet", chr_output)))
+  testthat::expect_true(all(grepl("\\.parquet", db_hms)))
   # ----------------------------------------------------------------------------
   # No errors on read as .parquet.
-  testthat::expect_no_error(db_hms1 <- sedonadb::sd_read_parquet(chr_output))
+  testthat::expect_no_error(db_hms1 <- sedonadb::sd_read_parquet(db_hms))
   # ----------------------------------------------------------------------------
   # Expect SedonaDB S3 class.
   testthat::expect_s3_class(db_hms1, "sedonadb_dataframe")
@@ -149,6 +153,9 @@ testthat::test_that("sedona_hms; locs = terra::polygons", {
   # Initiate temporary directory.
   chr_tempdir <- file.path(tempdir(), "hms")
   # ----------------------------------------------------------------------------
+  # Remove temporary directory to force recreation.
+  file.remove(chr_tempdir)
+  # ----------------------------------------------------------------------------
   # Import fixture polygons.
   polygons <- terra::vect(testthat::test_path(
     "..",
@@ -172,11 +179,10 @@ testthat::test_that("sedona_hms; locs = terra::polygons", {
   # !!! OUTPUT CHECKS !!!
   # ----------------------------------------------------------------------------
   # Only .parquet files in the output directory.
-  chr_output <- list.files(chr_tempdir, full.names = TRUE)
-  testthat::expect_true(all(grepl("\\.parquet", chr_output)))
+  testthat::expect_true(all(grepl("\\.parquet", db_hms)))
   # ----------------------------------------------------------------------------
   # No errors on read as .parquet.
-  testthat::expect_no_error(db_hms1 <- sedonadb::sd_read_parquet(chr_output))
+  testthat::expect_no_error(db_hms1 <- sedonadb::sd_read_parquet(db_hms))
   # ----------------------------------------------------------------------------
   # Expect SedonaDB S3 class.
   testthat::expect_s3_class(db_hms1, "sedonadb_dataframe")
@@ -218,6 +224,9 @@ testthat::test_that("sedona_hms; locs = terra::points", {
   # Initiate temporary directory.
   chr_tempdir <- file.path(tempdir(), "hms")
   # ----------------------------------------------------------------------------
+  # Remove temporary directory to force recreation.
+  file.remove(chr_tempdir)
+  # ----------------------------------------------------------------------------
   # Import fixture points.
   points <- terra::vect(testthat::test_path(
     "..",
@@ -240,11 +249,10 @@ testthat::test_that("sedona_hms; locs = terra::points", {
   # !!! OUTPUT CHECKS !!!
   # ----------------------------------------------------------------------------
   # Only .parquet files in the output directory.
-  chr_output <- list.files(chr_tempdir, full.names = TRUE)
-  testthat::expect_true(all(grepl("\\.parquet", chr_output)))
+  testthat::expect_true(all(grepl("\\.parquet", db_hms)))
   # ----------------------------------------------------------------------------
   # No errors on read as .parquet.
-  testthat::expect_no_error(db_hms1 <- sedonadb::sd_read_parquet(chr_output))
+  testthat::expect_no_error(db_hms1 <- sedonadb::sd_read_parquet(db_hms))
   # ----------------------------------------------------------------------------
   # Expect SedonaDB S3 class.
   testthat::expect_s3_class(db_hms1, "sedonadb_dataframe")
@@ -286,6 +294,9 @@ testthat::test_that("sedona_hms; locs = data.frame", {
   # Initiate temporary directory.
   chr_tempdir <- file.path(tempdir(), "hms")
   # ----------------------------------------------------------------------------
+  # Remove temporary directory to force recreation.
+  file.remove(chr_tempdir)
+  # ----------------------------------------------------------------------------
   # Import data.frame points.
   df <- read.csv(testthat::test_path("..", "testdata", "locs", "df.csv"))
   # ----------------------------------------------------------------------------
@@ -303,11 +314,10 @@ testthat::test_that("sedona_hms; locs = data.frame", {
   # !!! OUTPUT CHECKS !!!
   # ----------------------------------------------------------------------------
   # Only .parquet files in the output directory.
-  chr_output <- list.files(chr_tempdir, full.names = TRUE)
-  testthat::expect_true(all(grepl("\\.parquet", chr_output)))
+  testthat::expect_true(all(grepl("\\.parquet", db_hms)))
   # ----------------------------------------------------------------------------
   # No errors on read as .parquet.
-  testthat::expect_no_error(db_hms1 <- sedonadb::sd_read_parquet(chr_output))
+  testthat::expect_no_error(db_hms1 <- sedonadb::sd_read_parquet(db_hms))
   # ----------------------------------------------------------------------------
   # Expect SedonaDB S3 class.
   testthat::expect_s3_class(db_hms1, "sedonadb_dataframe")
@@ -353,6 +363,9 @@ testthat::test_that("sedona_hms; empty .shp", {
   # Initiate temporary directory.
   chr_tempdir <- file.path(tempdir(), "hms")
   # ----------------------------------------------------------------------------
+  # Remove temporary directory to force recreation.
+  file.remove(chr_tempdir)
+  # ----------------------------------------------------------------------------
   # Import fixture points.
   points <- sf::st_read(testthat::test_path(
     "..",
@@ -375,11 +388,10 @@ testthat::test_that("sedona_hms; empty .shp", {
   # !!! OUTPUT CHECKS !!!
   # ----------------------------------------------------------------------------
   # Only .parquet files in the output directory.
-  chr_output <- list.files(chr_tempdir, full.names = TRUE)
-  testthat::expect_true(all(grepl("\\.parquet", chr_output)))
+  testthat::expect_true(all(grepl("\\.parquet", db_hms)))
   # ----------------------------------------------------------------------------
   # No errors on read as .parquet.
-  testthat::expect_no_error(db_hms1 <- sedonadb::sd_read_parquet(chr_output))
+  testthat::expect_no_error(db_hms1 <- sedonadb::sd_read_parquet(db_hms))
   # ----------------------------------------------------------------------------
   # Expect SedonaDB S3 class.
   testthat::expect_s3_class(db_hms1, "sedonadb_dataframe")
@@ -409,6 +421,9 @@ testthat::test_that("sedona_hms; skip existing .parquet", {
   # ----------------------------------------------------------------------------
   # Initiate temporary directory.
   chr_tempdir <- file.path(tempdir(), "hms")
+  # ----------------------------------------------------------------------------
+  # Remove temporary directory to force recreation.
+  file.remove(chr_tempdir)
   # ----------------------------------------------------------------------------
   # Import fixture points.
   points <- sf::st_read(testthat::test_path(
@@ -454,27 +469,97 @@ testthat::test_that("sedona_hms; expected failures", {
   # Initiate temporary directory.
   chr_tempdir <- file.path(tempdir(), "hms")
   # ----------------------------------------------------------------------------
-  # Improper batch arguments.
-  testthat::expect_error(amadeusdb::sedona_hms(batch = NULL))
-  testthat::expect_error(amadeusdb::sedona_hms(batch = 1.1))
+  # Remove temporary directory to force recreation.
+  file.remove(chr_tempdir)
   # ----------------------------------------------------------------------------
-  # Improper input arguments.
-  testthat::expect_error(amadeusdb::sedona_hms(input = NULL))
-  testthat::expect_error(amadeusdb::sedona_hms(input = 10))
-  testthat::expect_error(amadeusdb::sedona_hms(input = "path/to/empty"))
+  # Import fixture points.
+  points <- sf::st_read(testthat::test_path(
+    "..",
+    "testdata",
+    "locs",
+    "points.shp"
+  ))
   # ----------------------------------------------------------------------------
   # Improper locs arguments.
   testthat::expect_error(
-    amadeusdb::sedona_hms(input = chr_tempdir, locs = "locs")
+    amadeusdb::sedona_hms(input = chr_tempdir, locs = "locs"),
+    "locs"
   )
   testthat::expect_error(
-    amadeusdb::sedona_hms(input = chr_tempdir, locs = data.frame(site_id = 1))
+    amadeusdb::sedona_hms(input = chr_tempdir, locs = data.frame(site_id = 1)),
+    "locs"
+  )
+  # ----------------------------------------------------------------------------
+  # Improper batch arguments.
+  testthat::expect_error(
+    amadeusdb::sedona_hms(locs = points, locs_id = "NAME", batch = NULL),
+    regexp = "batch"
+  )
+  testthat::expect_error(
+    amadeusdb::sedona_hms(locs = points, locs_id = "NAME", batch = 1.1),
+    regexp = "batch"
+  )
+  # ----------------------------------------------------------------------------
+  # Improper input arguments.
+  testthat::expect_error(
+    amadeusdb::sedona_hms(
+      locs = points,
+      locs_id = "NAME",
+      batch = 1,
+      input = NULL
+    ),
+    regexp = "input"
+  )
+  testthat::expect_error(
+    amadeusdb::sedona_hms(
+      locs = points,
+      locs_id = "NAME",
+      batch = 1,
+      input = 10
+    ),
+    regexp = "input"
+  )
+  testthat::expect_error(
+    amadeusdb::sedona_hms(
+      locs = points,
+      locs_id = "NAME",
+      batch = 1,
+      input = "path/to/empty/"
+    ),
+    regexp = "input"
   )
   # ----------------------------------------------------------------------------
   # Improper radius arguments.
-  testthat::expect_error(amadeusdb::sedona_hms(radius = -1))
-  testthat::expect_error(amadeusdb::sedona_hms(radius = NULL))
-  testthat::expect_error(amadeusdb::sedona_hms(radius = "text"))
+  testthat::expect_error(
+    amadeusdb::sedona_hms(
+      locs = points,
+      locs_id = "NAME",
+      batch = 1,
+      input = tempdir(),
+      radius = -1
+    ),
+    regexp = "radius"
+  )
+  testthat::expect_error(
+    amadeusdb::sedona_hms(
+      locs = points,
+      locs_id = "NAME",
+      batch = 1,
+      input = tempdir(),
+      radius = NULL
+    ),
+    regexp = "radius"
+  )
+  testthat::expect_error(
+    amadeusdb::sedona_hms(
+      locs = points,
+      locs_id = "NAME",
+      batch = 1,
+      input = tempdir(),
+      radius = "text"
+    ),
+    regexp = "radius"
+  )
   # ----------------------------------------------------------------------------
   # Clean up temporary directory.
   file.remove(list.files(chr_tempdir, full.names = TRUE, recursive = TRUE))

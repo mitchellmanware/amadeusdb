@@ -9,6 +9,7 @@ sedona_geos(
   input,
   output,
   variable,
+  level = 1L,
   locs,
   locs_id,
   radius = 0,
@@ -34,6 +35,10 @@ recursively if it does not exist.}
 \item{variable}{character(1). Case-sensitive NetCDF variable name. The same
 variable is read from every selected file and used as the output value
 column name.}
+
+\item{level}{integer(1). Vertical pressure level index if selecting variable
+from a collection with multiple pressure levels. First inspect the contents
+of the netCDF file to determine which level(s) are desired.}
 
 \item{locs}{sf object. Prepared extraction locations with a geometry column
 named \code{geometry} and an identifier column named by \code{locs_id}. Use one
@@ -100,8 +105,9 @@ locs <- sf::st_as_sf(
 geos_files <- sedona_geos(
   date = c("2024-01-01", "2024-01-02"),
   input = "data/geos",
-  output = tempfile("geos_CO_"),
+  output = tempdir(),
   variable = "CO",
+  level = 1L,
   locs = locs,
   locs_id = "site_id",
   radius = 0,

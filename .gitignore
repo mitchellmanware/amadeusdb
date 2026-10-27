@@ -1,2 +1,9 @@
 # Large data files downloaded for CRS definition.
 inst/extdata/crs/
+
+# Purposely hidden files.
+.hidden/
+
+# Large GEOS test files until manual cropping.
+tests/testdata/geos/aqc/
+tests/testdata/geos/chm/
