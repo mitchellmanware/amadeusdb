@@ -3,3 +3,6 @@
 
 # License extension
 LICENSE.md
+
+# Hidden files.
+^\.hidden/

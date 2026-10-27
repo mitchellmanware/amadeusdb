@@ -33,6 +33,17 @@ jobs:
           use-public-rspm: true
           extra-repositories: https://community.r-multiverse.org
 
+      - name: Install and locate GDAL
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgdal-dev pkg-config
+
+          gdal_lib="$(pkg-config --variable=libdir gdal)/libgdal.so"
+          test -f "$gdal_lib"
+
+          echo "AMADEUSDB_GDAL_LIBRARY=$gdal_lib" >> "$GITHUB_ENV"
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: |
