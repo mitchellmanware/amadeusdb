@@ -13,7 +13,7 @@ testthat::test_that("sedona_geos; locs = sf::polygons; aqc", {
   chr_tempdir <- file.path(tempdir(), "geos")
   # ----------------------------------------------------------------------------
   # Remove temporary directory to force recreation.
-  file.remove(chr_tempdir)
+  suppressWarnings(file.remove(chr_tempdir))
   # ----------------------------------------------------------------------------
   # Import fixture points.
   polygons <- sf::st_read(testthat::test_path(
@@ -77,7 +77,7 @@ testthat::test_that("sedona_geos; locs = sf::points; aqc", {
   chr_tempdir <- file.path(tempdir(), "geos")
   # ----------------------------------------------------------------------------
   # Remove temporary directory to force recreation.
-  file.remove(chr_tempdir)
+  suppressWarnings(file.remove(chr_tempdir))
   # ----------------------------------------------------------------------------
   # Import fixture points.
   points <- sf::st_read(testthat::test_path(
@@ -141,7 +141,7 @@ testthat::test_that("sedona_geos; locs = terra::polygons; aqc", {
   chr_tempdir <- file.path(tempdir(), "geos")
   # ----------------------------------------------------------------------------
   # Remove temporary directory to force recreation.
-  file.remove(chr_tempdir)
+  suppressWarnings(file.remove(chr_tempdir))
   # ----------------------------------------------------------------------------
   # Import fixture points.
   polygons <- terra::vect(testthat::test_path(
@@ -205,7 +205,7 @@ testthat::test_that("sedona_geos; locs = terra::points; aqc", {
   chr_tempdir <- file.path(tempdir(), "geos")
   # ----------------------------------------------------------------------------
   # Remove temporary directory to force recreation.
-  file.remove(chr_tempdir)
+  suppressWarnings(file.remove(chr_tempdir))
   # ----------------------------------------------------------------------------
   # Import fixture points.
   points <- terra::vect(testthat::test_path(
@@ -269,7 +269,7 @@ testthat::test_that("sedona_geos; locs = data.frame; aqc", {
   chr_tempdir <- file.path(tempdir(), "geos")
   # ----------------------------------------------------------------------------
   # Remove temporary directory to force recreation.
-  file.remove(chr_tempdir)
+  suppressWarnings(file.remove(chr_tempdir))
   # ----------------------------------------------------------------------------
   # Import data.frame points.
   df <- read.csv(testthat::test_path("..", "testdata", "locs", "df.csv"))
@@ -328,7 +328,7 @@ testthat::test_that("sedona_geos; locs = sf::polygons; chm", {
   chr_tempdir <- file.path(tempdir(), "geos")
   # ----------------------------------------------------------------------------
   # Remove temporary directory to force recreation.
-  file.remove(chr_tempdir)
+  suppressWarnings(file.remove(chr_tempdir))
   # ----------------------------------------------------------------------------
   # Import fixture points.
   polygons <- sf::st_read(testthat::test_path(
@@ -392,7 +392,7 @@ testthat::test_that("sedona_geos; locs = sf::points; chm", {
   chr_tempdir <- file.path(tempdir(), "geos")
   # ----------------------------------------------------------------------------
   # Remove temporary directory to force recreation.
-  file.remove(chr_tempdir)
+  suppressWarnings(file.remove(chr_tempdir))
   # ----------------------------------------------------------------------------
   # Import fixture points.
   points <- sf::st_read(testthat::test_path(
@@ -456,7 +456,7 @@ testthat::test_that("sedona_geos; locs = terra::polygons; chm", {
   chr_tempdir <- file.path(tempdir(), "geos")
   # ----------------------------------------------------------------------------
   # Remove temporary directory to force recreation.
-  file.remove(chr_tempdir)
+  suppressWarnings(file.remove(chr_tempdir))
   # ----------------------------------------------------------------------------
   # Import fixture points.
   polygons <- terra::vect(testthat::test_path(
@@ -520,7 +520,7 @@ testthat::test_that("sedona_geos; locs = terra::points; chm", {
   chr_tempdir <- file.path(tempdir(), "geos")
   # ----------------------------------------------------------------------------
   # Remove temporary directory to force recreation.
-  file.remove(chr_tempdir)
+  suppressWarnings(file.remove(chr_tempdir))
   # ----------------------------------------------------------------------------
   # Import fixture points.
   points <- terra::vect(testthat::test_path(
@@ -584,7 +584,7 @@ testthat::test_that("sedona_geos; locs = data.frame; chm", {
   chr_tempdir <- file.path(tempdir(), "geos")
   # ----------------------------------------------------------------------------
   # Remove temporary directory to force recreation.
-  file.remove(chr_tempdir)
+  suppressWarnings(file.remove(chr_tempdir))
   # ----------------------------------------------------------------------------
   # Import data.frame points.
   df <- read.csv(testthat::test_path("..", "testdata", "locs", "df.csv"))
@@ -643,7 +643,7 @@ testthat::test_that("sedona_geos; skip existing .parquet", {
   chr_tempdir <- file.path(tempdir(), "geos")
   # ----------------------------------------------------------------------------
   # Remove temporary directory to force recreation.
-  file.remove(chr_tempdir)
+  suppressWarnings(file.remove(chr_tempdir))
   # ----------------------------------------------------------------------------
   # Import fixture points.
   points <- sf::st_read(testthat::test_path(

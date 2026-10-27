@@ -5,5 +5,4 @@ inst/extdata/crs/
 .hidden/
 
 # Large GEOS test files until manual cropping.
-tests/testdata/geos/aqc/
-tests/testdata/geos/chm/
+tests/testdata/geos/full/
