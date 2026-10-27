@@ -1,6 +1,6 @@
 Package: amadeusdb
 Title: Database Supported Functions for amadeus Environmental Data
-Version: 0.1.2
+Version: 0.1.3
 Authors@R: c(
     person(given = "Mitchell", family = "Manware", role = c("aut", "ctb"), comment = c(ORCID = "0009-0003-6440-6106")),
     person(given = "Getachew", family = "Tedla", role = c("aut", "ctb"), comment = c(ORCID = "0000-0001-9205-7925")),
@@ -21,6 +21,7 @@ Imports:
     stats,
     tidyselect
 Suggests:
+    terra,
     testthat (>= 3.0.0)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

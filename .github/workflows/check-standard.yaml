@@ -33,6 +33,29 @@ jobs:
           use-public-rspm: true
           extra-repositories: https://community.r-multiverse.org
 
+      - name: Install and locate GDAL on Linux
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgdal-dev pkg-config
+
+          gdal_lib="$(pkg-config --variable=libdir gdal)/libgdal.so"
+          test -f "$gdal_lib"
+
+          echo "AMADEUSDB_GDAL_LIBRARY=$gdal_lib" >> "$GITHUB_ENV"
+
+      - name: Install and locate GDAL on macOS
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          brew install gdal
+
+          gdal_lib="$(brew --prefix gdal)/lib/libgdal.dylib"
+          test -f "$gdal_lib"
+
+          echo "AMADEUSDB_GDAL_LIBRARY=$gdal_lib" >> "$GITHUB_ENV"
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: |

@@ -18,6 +18,9 @@
 #' @param variable character(1). Case-sensitive NetCDF variable name. The same
 #'   variable is read from every selected file and used as the output value
 #'   column name.
+#' @param level integer(1). Vertical pressure level index if selecting variable
+#'   from a collection with multiple pressure levels. First inspect the contents
+#'   of the netCDF file to determine which level(s) are desired.
 #' @param locs sf object. Prepared extraction locations with a geometry column
 #'   named `geometry` and an identifier column named by `locs_id`. Use one
 #'   geometry type throughout: `POINT`, `POLYGON`, or `MULTIPOLYGON`. Locations
@@ -81,8 +84,9 @@
 #' geos_files <- sedona_geos(
 #'   date = c("2024-01-01", "2024-01-02"),
 #'   input = "data/geos",
-#'   output = tempfile("geos_CO_"),
+#'   output = tempdir(),
 #'   variable = "CO",
+#'   level = 1L,
 #'   locs = locs,
 #'   locs_id = "site_id",
 #'   radius = 0,
@@ -95,6 +99,7 @@ sedona_geos <- function(
   input,
   output,
   variable,
+  level = 1L,
   locs,
   locs_id,
   radius = 0,
@@ -141,6 +146,7 @@ sedona_geos <- function(
   checkmate::assert_string(input, min.chars = 1L)
   checkmate::assert_directory_exists(input)
   checkmate::assert_string(variable, min.chars = 1L)
+  checkmate::assert_number(level, lower = 1)
   checkmate::assert_string(locs_id, min.chars = 1L)
   checkmate::assert_class(sf_locs, "sf")
   checkmate::assert_subset(c(locs_id, "geometry"), names(sf_locs))
@@ -241,10 +247,10 @@ sedona_geos <- function(
       RS_ZonalStats(
         r.raster,
         db_locs.geometry,
-        1,
         $3,
-        ($4 = 1),
-        ($5 = 1)
+        $4,
+        ($5 = 1),
+        ($6 = 1)
       )
     "
   }
@@ -314,11 +320,7 @@ sedona_geos <- function(
   if (!dir.exists(output)) {
     dir.create(output, recursive = TRUE, showWarnings = FALSE)
   }
-  # ----------------------------------------------------------------------------
-  # Create output path if does not exist.
-  if (!dir.exists(output)) {
-    stop("Could not create output directory: ", output)
-  }
+  stopifnot(dir.exists(output))
   # ----------------------------------------------------------------------------
   # Generate .parquet paths for each batch view.
   chr_output <- normalizePath(
@@ -363,7 +365,8 @@ sedona_geos <- function(
       # Time extraction directly from NetCDF not supported (as of 10/21/26)
       list_params <- list(
         as.character(df_geos_batch$var[i]), # $1: raster source
-        df_geos_batch$date[i] # $2: timestamp
+        df_geos_batch$date[i], # $2: timestamp
+        as.integer(level) # #3: vertical level
       )
       # ------------------------------------------------------------------------
       # Include additional arguments for zonal statistics.
@@ -371,9 +374,9 @@ sedona_geos <- function(
         list_params <- c(
           list_params,
           list(
-            fun, # $3: statistic
-            as.integer(touches), # $4: 0/1
-            as.integer(exclude_nodata) # $5: 0/1
+            fun, # $4: statistic
+            as.integer(touches), # $5: 0/1
+            as.integer(exclude_nodata) # $6: 0/1
           )
         )
       }
