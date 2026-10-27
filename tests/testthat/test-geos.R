@@ -27,7 +27,7 @@ testthat::test_that("sedona_geos; locs = sf::polygons; aqc", {
   testthat::expect_no_error(
     db_geos <- amadeusdb::sedona_geos(
       date = c("2018-01-01", "2018-01-01"),
-      input = testthat::test_path("..", "testdata", "geos", "aqc"),
+      input = testthat::test_path("..", "testdata", "geos", "aqc_tavg"),
       output = chr_tempdir,
       locs = polygons,
       locs_id = "NAME",
@@ -91,7 +91,7 @@ testthat::test_that("sedona_geos; locs = sf::points; aqc", {
   testthat::expect_no_error(
     db_geos <- amadeusdb::sedona_geos(
       date = c("2018-01-01", "2018-01-01"),
-      input = testthat::test_path("..", "testdata", "geos", "aqc"),
+      input = testthat::test_path("..", "testdata", "geos", "aqc_tavg"),
       output = chr_tempdir,
       locs = points,
       locs_id = "NAME",
@@ -155,7 +155,7 @@ testthat::test_that("sedona_geos; locs = terra::polygons; aqc", {
   testthat::expect_no_error(
     db_geos <- amadeusdb::sedona_geos(
       date = c("2018-01-01", "2018-01-01"),
-      input = testthat::test_path("..", "testdata", "geos", "aqc"),
+      input = testthat::test_path("..", "testdata", "geos", "aqc_tavg"),
       output = chr_tempdir,
       locs = polygons,
       locs_id = "NAME",
@@ -219,7 +219,7 @@ testthat::test_that("sedona_geos; locs = terra::points; aqc", {
   testthat::expect_no_error(
     db_geos <- amadeusdb::sedona_geos(
       date = c("2018-01-01", "2018-01-01"),
-      input = testthat::test_path("..", "testdata", "geos", "aqc"),
+      input = testthat::test_path("..", "testdata", "geos", "aqc_tavg"),
       output = chr_tempdir,
       locs = points,
       locs_id = "NAME",
@@ -278,7 +278,7 @@ testthat::test_that("sedona_geos; locs = data.frame; aqc", {
   testthat::expect_no_error(
     db_geos <- amadeusdb::sedona_geos(
       date = c("2018-01-01", "2018-01-01"),
-      input = testthat::test_path("..", "testdata", "geos", "aqc"),
+      input = testthat::test_path("..", "testdata", "geos", "aqc_tavg"),
       output = chr_tempdir,
       locs = df,
       locs_id = "NAME",
@@ -342,7 +342,7 @@ testthat::test_that("sedona_geos; locs = sf::polygons; chm", {
   testthat::expect_no_error(
     db_geos <- amadeusdb::sedona_geos(
       date = c("2018-01-01", "2018-01-01"),
-      input = testthat::test_path("..", "testdata", "geos", "chm"),
+      input = testthat::test_path("..", "testdata", "geos", "chm_tavg"),
       output = chr_tempdir,
       locs = polygons,
       locs_id = "NAME",
@@ -406,7 +406,7 @@ testthat::test_that("sedona_geos; locs = sf::points; chm", {
   testthat::expect_no_error(
     db_geos <- amadeusdb::sedona_geos(
       date = c("2018-01-01", "2018-01-01"),
-      input = testthat::test_path("..", "testdata", "geos", "chm"),
+      input = testthat::test_path("..", "testdata", "geos", "chm_tavg"),
       output = chr_tempdir,
       locs = points,
       locs_id = "NAME",
@@ -470,7 +470,7 @@ testthat::test_that("sedona_geos; locs = terra::polygons; chm", {
   testthat::expect_no_error(
     db_geos <- amadeusdb::sedona_geos(
       date = c("2018-01-01", "2018-01-01"),
-      input = testthat::test_path("..", "testdata", "geos", "chm"),
+      input = testthat::test_path("..", "testdata", "geos", "chm_tavg"),
       output = chr_tempdir,
       locs = polygons,
       locs_id = "NAME",
@@ -534,7 +534,7 @@ testthat::test_that("sedona_geos; locs = terra::points; chm", {
   testthat::expect_no_error(
     db_geos <- amadeusdb::sedona_geos(
       date = c("2018-01-01", "2018-01-01"),
-      input = testthat::test_path("..", "testdata", "geos", "chm"),
+      input = testthat::test_path("..", "testdata", "geos", "chm_tavg"),
       output = chr_tempdir,
       locs = points,
       locs_id = "NAME",
@@ -593,7 +593,7 @@ testthat::test_that("sedona_geos; locs = data.frame; chm", {
   testthat::expect_no_error(
     db_geos <- amadeusdb::sedona_geos(
       date = c("2018-01-01", "2018-01-01"),
-      input = testthat::test_path("..", "testdata", "geos", "chm"),
+      input = testthat::test_path("..", "testdata", "geos", "chm_tavg"),
       output = chr_tempdir,
       locs = df,
       locs_id = "NAME",
@@ -657,7 +657,7 @@ testthat::test_that("sedona_geos; skip existing .parquet", {
   testthat::expect_no_error(
     db_geos <- amadeusdb::sedona_geos(
       date = c("2018-01-01", "2018-01-01"),
-      input = testthat::test_path("..", "testdata", "geos", "aqc"),
+      input = testthat::test_path("..", "testdata", "geos", "aqc_tavg"),
       output = chr_tempdir,
       locs = points,
       locs_id = "NAME",
@@ -669,7 +669,7 @@ testthat::test_that("sedona_geos; skip existing .parquet", {
   testthat::expect_message(
     amadeusdb::sedona_geos(
       date = c("2018-01-01", "2018-01-01"),
-      input = testthat::test_path("..", "testdata", "geos", "aqc"),
+      input = testthat::test_path("..", "testdata", "geos", "aqc_tavg"),
       output = chr_tempdir,
       locs = points,
       locs_id = "NAME",
@@ -808,7 +808,7 @@ testthat::test_that("sedona_geos; expected failures", {
   testthat::expect_error(
     amadeusdb::sedona_geos(
       date = c("2018-01-01", "2018-01-01"),
-      input = testthat::test_path("..", "testdata", "geos", "aqc"),
+      input = testthat::test_path("..", "testdata", "geos", "aqc_tavg"),
       output = chr_tempdir,
       locs = polygons,
       locs_id = "NAME",
@@ -820,7 +820,7 @@ testthat::test_that("sedona_geos; expected failures", {
   testthat::expect_error(
     amadeusdb::sedona_geos(
       date = c("2018-01-01", "2018-01-01"),
-      input = testthat::test_path("..", "testdata", "geos", "chm"),
+      input = testthat::test_path("..", "testdata", "geos", "chm_tavg"),
       output = chr_tempdir,
       locs = polygons,
       locs_id = "NAME",
@@ -832,7 +832,7 @@ testthat::test_that("sedona_geos; expected failures", {
   testthat::expect_error(
     amadeusdb::sedona_geos(
       date = c("2018-01-01", "2018-01-01"),
-      input = testthat::test_path("..", "testdata", "geos", "aqc"),
+      input = testthat::test_path("..", "testdata", "geos", "aqc_tavg"),
       output = chr_tempdir,
       locs = polygons,
       locs_id = "NAME",
@@ -844,7 +844,7 @@ testthat::test_that("sedona_geos; expected failures", {
   testthat::expect_error(
     amadeusdb::sedona_geos(
       date = c("2018-01-01", "2018-01-01"),
-      input = testthat::test_path("..", "testdata", "geos", "aqc"),
+      input = testthat::test_path("..", "testdata", "geos", "aqc_tavg"),
       output = chr_tempdir,
       locs = polygons,
       locs_id = "NAME",
