@@ -7,33 +7,40 @@
 sedona_hms(date, input, output, locs, locs_id, radius = 0, batch = 50L)
 }
 \arguments{
-\item{date}{character(2) or Date(2). Inclusive start and end dates in
-chronological order. Character dates must use \code{"YYYY-MM-DD"}. Repeat the
-date to process a single day.}
+\item{date}{integer(1) or integer(2). Inclusive start and end dates in
+chronological order, expressed as days since \code{1970-01-01}, for example
+\code{as.integer(as.Date("2024-01-01"))}. A single date is repeated to process
+one day. The current check requires integer storage; character and \code{Date}
+vectors are not accepted.}
 
-\item{input}{character(1). Directory containing HMS smoke shapefiles named
-with the \code{hms_smoke} prefix and a final \code{YYYYMMDD.shp} date suffix. The
-accompanying shapefile components must be available. Subdirectories are
+\item{input}{character(1). Non-empty path to an existing directory containing
+HMS smoke shapefiles named with the \code{hms_smoke} prefix and a final
+\code{YYYYMMDD.shp} date suffix. The accompanying shapefile components must be
+available. All listed immediate entries must be files; subdirectories are
 not searched.}
 
-\item{output}{character(1). Directory for the output Parquet files. Created
-recursively if it does not exist.}
+\item{output}{character(1). Non-empty directory path for the output Parquet
+files. Created recursively if it does not exist.}
 
-\item{locs}{sf object. Prepared point or polygon locations with a geometry
-column named \code{geometry} and an identifier column named by \code{locs_id}.
-Locations must already use a CRS compatible with the HMS shapefiles;
-this function does not transform or buffer locations.}
+\item{locs}{sf, SpatVector, or data.frame object. Extraction locations with
+an identifier column named by \code{locs_id}. Spatial objects must have a source
+CRS; data frames must contain numeric \code{lon} and \code{lat} columns in longitude
+and latitude degrees. \code{\link[=prepare_locs]{prepare_locs()}} transforms and optionally buffers
+locations. The prepared object must have a column named \code{geometry} and
+one geometry type throughout: \code{POINT}, \code{POLYGON}, or \code{MULTIPOLYGON}.}
 
-\item{locs_id}{character(1). Name of the location identifier column in
-\code{locs}. Rows sharing an identifier are grouped when computing the
-indicators. Supply unique, non-missing identifiers for separate location
-results.}
+\item{locs_id}{character(1). Non-empty name of an existing location
+identifier column in \code{locs}. Rows sharing an identifier are grouped when
+computing the indicators. Supply unique, non-missing identifiers for
+separate location results; identifier values are not validated.}
 
-\item{radius}{numeric(1). Reserved for location preparation. Currently
-unused; apply any required buffer to \code{locs} before calling this function.}
+\item{radius}{numeric(1). Non-missing, non-negative buffer distance passed to
+\code{\link[=prepare_locs]{prepare_locs()}}. Distance units follow \code{\link[sf:st_buffer]{sf::st_buffer()}} for the target
+CRS. Defaults to \code{0}, which skips buffering.}
 
-\item{batch}{numeric(1). Positive whole number of source files to process per
-output file. Defaults to \code{50L}.}
+\item{batch}{integer(1). Number of source files to process per output file,
+at least \code{1L}. Supply an integer such as \code{50L}, not a double such as \code{50}.
+Defaults to \code{50L}.}
 }
 \value{
 Invisibly, a character vector of absolute Parquet file paths, including
@@ -42,9 +49,9 @@ identifier column, a \code{date} column stored as a SQL date, and integer
 \code{light}, \code{medium}, and \code{heavy} indicator columns.
 }
 \description{
-Intersect prepared locations with local NOAA Hazard Mapping System (HMS)
-smoke polygons and write daily light, medium, and heavy smoke indicators to
-Parquet files in batches.
+Prepare locations with \code{\link[=prepare_locs]{prepare_locs()}}, intersect them with local NOAA
+Hazard Mapping System (HMS) smoke polygons, and write daily light, medium,
+and heavy smoke indicators to Parquet files in batches.
 }
 \details{
 Dates are derived from filenames, with at most one selected shapefile per
@@ -77,7 +84,7 @@ locs <- sf::st_as_sf(
   crs = 4326
 )
 hms_files <- sedona_hms(
-  date = c("2024-01-01", "2024-01-31"),
+  date = as.integer(as.Date(c("2024-01-01", "2024-01-31"))),
   input = "data/hms",
   output = tempfile("hms_covariates_"),
   locs = locs,
@@ -88,5 +95,6 @@ hms_files <- sedona_hms(
 }
 }
 \seealso{
-\code{\link[amadeus:download_hms]{amadeus::download_hms()}}, \code{\link[=join_covariates]{join_covariates()}}, \code{\link[=hmsdates]{hmsdates()}}
+\code{\link[amadeus:download_hms]{amadeus::download_hms()}}, \code{\link[=prepare_locs]{prepare_locs()}},
+\code{\link{check_arguments}()}, \code{\link[=join_covariates]{join_covariates()}}, \code{\link[=hmsdates]{hmsdates()}}
 }

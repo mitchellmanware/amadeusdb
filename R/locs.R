@@ -46,6 +46,9 @@ prepare_locs <- function(
   checkmate::assert_false(is.null(crs))
   checkmate::assert_false(is.null(radius))
   # ----------------------------------------------------------------------------
+  # Ensurce `locs_id` is a string.
+  checkmate::assert_string(locs_id, min.chars = 1L)
+  # ----------------------------------------------------------------------------
   # Ensure `locs_id` is a column in `locs`
   checkmate::assert_subset(locs_id, names(locs))
   # ----------------------------------------------------------------------------

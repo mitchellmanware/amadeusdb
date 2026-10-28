@@ -20,53 +20,65 @@ sedona_geos(
 )
 }
 \arguments{
-\item{date}{character(2) or Date(2). Inclusive start and end dates in
-chronological order. Character dates must use \code{"YYYY-MM-DD"}. Repeat the
-date to process a single day.}
+\item{date}{integer(1) or integer(2). Inclusive start and end dates in
+chronological order, expressed as days since \code{1970-01-01}, for example
+\code{as.integer(as.Date("2024-01-01"))}. A single date is repeated to process
+one day. The current check requires integer storage; character and \code{Date}
+vectors are not accepted.}
 
-\item{input}{character(1). Directory containing GEOS-CF files with their
-original \code{GEOS-CF.v01.rpl} filenames. Subdirectories are searched
-recursively. Supply files from a compatible collection with no repeated
-filename timestamps.}
+\item{input}{character(1). Non-empty path to an existing directory containing
+GEOS-CF files with their original \code{GEOS-CF.v01.rpl} filenames. File discovery
+is recursive, but the current input check requires all listed immediate
+entries to be files. Supply files from a compatible collection with no
+repeated filename timestamps.}
 
-\item{output}{character(1). Directory for the output Parquet files. Created
-recursively if it does not exist.}
+\item{output}{character(1). Non-empty directory path for the output Parquet
+files. Created recursively if it does not exist.}
 
-\item{variable}{character(1). Case-sensitive NetCDF variable name. The same
-variable is read from every selected file and used as the output value
-column name.}
+\item{variable}{character(1). Non-empty, case-sensitive NetCDF variable name.
+The same variable is read from every selected file and used as the output
+value column name.}
 
-\item{level}{integer(1). Vertical pressure level index if selecting variable
-from a collection with multiple pressure levels. First inspect the contents
-of the netCDF file to determine which level(s) are desired.}
+\item{level}{integer(1). One-based raster band or vertical pressure level
+index for polygon statistics, at least \code{1L}. Defaults to \code{1L}. Inspect the
+NetCDF file to identify the desired level. Point extraction uses band 1
+regardless of this value.}
 
-\item{locs}{sf object. Prepared extraction locations with a geometry column
-named \code{geometry} and an identifier column named by \code{locs_id}. Use one
-geometry type throughout: \code{POINT}, \code{POLYGON}, or \code{MULTIPOLYGON}. Locations
-must already have a CRS compatible with the raster's \code{OGC:CRS84} CRS, such
-as \code{EPSG:4326}; this function does not transform or buffer locations.}
+\item{locs}{sf, SpatVector, or data.frame object. Extraction locations with
+an identifier column named by \code{locs_id}. Spatial objects must have a source
+CRS; data frames must contain numeric \code{lon} and \code{lat} columns in longitude
+and latitude degrees. \code{\link[=prepare_locs]{prepare_locs()}} transforms and optionally buffers
+locations using the package's GEOS CRS. The prepared object must have a
+column named \code{geometry} and one geometry type throughout: \code{POINT},
+\code{POLYGON}, or \code{MULTIPOLYGON}.}
 
-\item{locs_id}{character(1). Name of the location identifier column in
-\code{locs}. Supply unique, non-missing identifiers to obtain one row per
-location and timestamp.}
+\item{locs_id}{character(1). Non-empty name of an existing location
+identifier column in \code{locs}. Supply unique, non-missing identifiers to
+obtain one row per location and timestamp; identifier values are not
+validated.}
 
-\item{radius}{numeric(1). Reserved for location preparation. Currently
-unused; apply any required buffer to \code{locs} before calling this function.}
+\item{radius}{numeric(1). Non-missing, non-negative buffer distance passed to
+\code{\link[=prepare_locs]{prepare_locs()}}. Distance units follow \code{\link[sf:st_buffer]{sf::st_buffer()}} for the target
+CRS. Defaults to \code{0}, which skips buffering.}
 
 \item{fun}{character(1). Polygon summary statistic: \code{"mean"}, \code{"sum"},
 \code{"min"}, \code{"max"}, \code{"median"}, \code{"count"}, \code{"stddev"}, \code{"variance"}, or
-\code{"mode"}. Defaults to \code{"mean"}. Ignored for point extraction.}
+\code{"mode"}. Matching ignores case and accepts unambiguous abbreviations.
+Defaults to \code{"mean"}. Validated but unused for point extraction.}
 
-\item{touches}{logical(1). Whether polygon extraction includes all raster
-cells touched by the geometry. Passed to \code{RS_ZonalStats()}; ignored for
-point extraction. Defaults to \code{TRUE}.}
+\item{touches}{logical(1). Non-missing flag indicating whether polygon
+extraction includes all raster cells touched by the geometry. Passed to
+\code{RS_ZonalStats()}; validated but unused for point extraction. Defaults to
+\code{TRUE}.}
 
-\item{exclude_nodata}{logical(1). Whether to exclude raster NoData cells from
-polygon statistics. Passed to \code{RS_ZonalStats()}; ignored for point
-extraction. Defaults to \code{TRUE}.}
+\item{exclude_nodata}{logical(1). Non-missing flag indicating whether to
+exclude raster NoData cells from polygon statistics. Passed to
+\code{RS_ZonalStats()}; validated but unused for point extraction. Defaults to
+\code{TRUE}.}
 
-\item{batch}{numeric(1). Positive whole number of source files to process per
-output file. Defaults to \code{50L}.}
+\item{batch}{integer(1). Number of source files to process per output file,
+at least \code{1L}. Supply an integer such as \code{50L}, not a double such as \code{50}.
+Defaults to \code{50L}.}
 }
 \value{
 Invisibly, a character vector of absolute Parquet file paths, including
@@ -76,14 +88,14 @@ filenames, and a value column named by \code{variable}.
 }
 \description{
 Read local NASA GEOS-CF NetCDF files, extract one variable at prepared
-locations, and write the results to Parquet files in batches. Point locations
-use raster cell values; polygon locations use zonal statistics.
+locations, and write the results to Parquet files in batches. Locations are
+transformed and optionally buffered with \code{\link[=prepare_locs]{prepare_locs()}}. Point extraction
+uses raster cell values; polygon extraction uses zonal statistics.
 }
 \details{
 Files are selected using the requested dates, and timestamps are derived
-from their filenames and parsed as UTC. Extraction uses band 1 of the
-requested NetCDF variable. Additional bands or vertical levels are not
-extracted.
+from their filenames and parsed as UTC. Point extraction uses band 1 of the
+requested NetCDF variable; polygon statistics use \code{level}.
 
 Each batch is written as
 \verb{geos_<variable>_<first_timestamp>_<last_timestamp>.parquet}. A batch whose
@@ -103,7 +115,7 @@ locs <- sf::st_as_sf(
   crs = 4326
 )
 geos_files <- sedona_geos(
-  date = c("2024-01-01", "2024-01-02"),
+  date = as.integer(as.Date(c("2024-01-01", "2024-01-02"))),
   input = "data/geos",
   output = tempdir(),
   variable = "CO",
@@ -116,6 +128,6 @@ geos_files <- sedona_geos(
 }
 }
 \seealso{
-\code{\link[amadeus:download_geos]{amadeus::download_geos()}}, \code{\link[=join_variables]{join_variables()}},
-\code{\link[=join_covariates]{join_covariates()}}
+\code{\link[amadeus:download_geos]{amadeus::download_geos()}}, \code{\link[=prepare_locs]{prepare_locs()}},
+\code{\link{check_arguments}()}, \code{\link[=join_variables]{join_variables()}}, \code{\link[=join_covariates]{join_covariates()}}
 }

@@ -3,51 +3,63 @@
 #'
 #' @description
 #' Read local NASA GEOS-CF NetCDF files, extract one variable at prepared
-#' locations, and write the results to Parquet files in batches. Point locations
-#' use raster cell values; polygon locations use zonal statistics.
+#' locations, and write the results to Parquet files in batches. Locations are
+#' transformed and optionally buffered with [prepare_locs()]. Point extraction
+#' uses raster cell values; polygon extraction uses zonal statistics.
 #'
-#' @param date character(2) or Date(2). Inclusive start and end dates in
-#'   chronological order. Character dates must use `"YYYY-MM-DD"`. Repeat the
-#'   date to process a single day.
-#' @param input character(1). Directory containing GEOS-CF files with their
-#'   original `GEOS-CF.v01.rpl` filenames. Subdirectories are searched
-#'   recursively. Supply files from a compatible collection with no repeated
-#'   filename timestamps.
-#' @param output character(1). Directory for the output Parquet files. Created
-#'   recursively if it does not exist.
-#' @param variable character(1). Case-sensitive NetCDF variable name. The same
-#'   variable is read from every selected file and used as the output value
-#'   column name.
-#' @param level integer(1). Vertical pressure level index if selecting variable
-#'   from a collection with multiple pressure levels. First inspect the contents
-#'   of the netCDF file to determine which level(s) are desired.
-#' @param locs sf object. Prepared extraction locations with a geometry column
-#'   named `geometry` and an identifier column named by `locs_id`. Use one
-#'   geometry type throughout: `POINT`, `POLYGON`, or `MULTIPOLYGON`. Locations
-#'   must already have a CRS compatible with the raster's `OGC:CRS84` CRS, such
-#'   as `EPSG:4326`; this function does not transform or buffer locations.
-#' @param locs_id character(1). Name of the location identifier column in
-#'   `locs`. Supply unique, non-missing identifiers to obtain one row per
-#'   location and timestamp.
-#' @param radius numeric(1). Reserved for location preparation. Currently
-#'   unused; apply any required buffer to `locs` before calling this function.
+#' @param date integer(1) or integer(2). Inclusive start and end dates in
+#'   chronological order, expressed as days since `1970-01-01`, for example
+#'   `as.integer(as.Date("2024-01-01"))`. A single date is repeated to process
+#'   one day. The current check requires integer storage; character and `Date`
+#'   vectors are not accepted.
+#' @param input character(1). Non-empty path to an existing directory containing
+#'   GEOS-CF files with their original `GEOS-CF.v01.rpl` filenames. File discovery
+#'   is recursive, but the current input check requires all listed immediate
+#'   entries to be files. Supply files from a compatible collection with no
+#'   repeated filename timestamps.
+#' @param output character(1). Non-empty directory path for the output Parquet
+#'   files. Created recursively if it does not exist.
+#' @param variable character(1). Non-empty, case-sensitive NetCDF variable name.
+#'   The same variable is read from every selected file and used as the output
+#'   value column name.
+#' @param level integer(1). One-based raster band or vertical pressure level
+#'   index for polygon statistics, at least `1L`. Defaults to `1L`. Inspect the
+#'   NetCDF file to identify the desired level. Point extraction uses band 1
+#'   regardless of this value.
+#' @param locs sf, SpatVector, or data.frame object. Extraction locations with
+#'   an identifier column named by `locs_id`. Spatial objects must have a source
+#'   CRS; data frames must contain numeric `lon` and `lat` columns in longitude
+#'   and latitude degrees. [prepare_locs()] transforms and optionally buffers
+#'   locations using the package's GEOS CRS. The prepared object must have a
+#'   column named `geometry` and one geometry type throughout: `POINT`,
+#'   `POLYGON`, or `MULTIPOLYGON`.
+#' @param locs_id character(1). Non-empty name of an existing location
+#'   identifier column in `locs`. Supply unique, non-missing identifiers to
+#'   obtain one row per location and timestamp; identifier values are not
+#'   validated.
+#' @param radius numeric(1). Non-missing, non-negative buffer distance passed to
+#'   [prepare_locs()]. Distance units follow [sf::st_buffer()] for the target
+#'   CRS. Defaults to `0`, which skips buffering.
 #' @param fun character(1). Polygon summary statistic: `"mean"`, `"sum"`,
 #'   `"min"`, `"max"`, `"median"`, `"count"`, `"stddev"`, `"variance"`, or
-#'   `"mode"`. Defaults to `"mean"`. Ignored for point extraction.
-#' @param touches logical(1). Whether polygon extraction includes all raster
-#'   cells touched by the geometry. Passed to `RS_ZonalStats()`; ignored for
-#'   point extraction. Defaults to `TRUE`.
-#' @param exclude_nodata logical(1). Whether to exclude raster NoData cells from
-#'   polygon statistics. Passed to `RS_ZonalStats()`; ignored for point
-#'   extraction. Defaults to `TRUE`.
-#' @param batch numeric(1). Positive whole number of source files to process per
-#'   output file. Defaults to `50L`.
+#'   `"mode"`. Matching ignores case and accepts unambiguous abbreviations.
+#'   Defaults to `"mean"`. Validated but unused for point extraction.
+#' @param touches logical(1). Non-missing flag indicating whether polygon
+#'   extraction includes all raster cells touched by the geometry. Passed to
+#'   `RS_ZonalStats()`; validated but unused for point extraction. Defaults to
+#'   `TRUE`.
+#' @param exclude_nodata logical(1). Non-missing flag indicating whether to
+#'   exclude raster NoData cells from polygon statistics. Passed to
+#'   `RS_ZonalStats()`; validated but unused for point extraction. Defaults to
+#'   `TRUE`.
+#' @param batch integer(1). Number of source files to process per output file,
+#'   at least `1L`. Supply an integer such as `50L`, not a double such as `50`.
+#'   Defaults to `50L`.
 #'
 #' @details
 #' Files are selected using the requested dates, and timestamps are derived
-#' from their filenames and parsed as UTC. Extraction uses band 1 of the
-#' requested NetCDF variable. Additional bands or vertical levels are not
-#' extracted.
+#' from their filenames and parsed as UTC. Point extraction uses band 1 of the
+#' requested NetCDF variable; polygon statistics use `level`.
 #'
 #' Each batch is written as
 #' `geos_<variable>_<first_timestamp>_<last_timestamp>.parquet`. A batch whose
@@ -70,10 +82,9 @@
 #' @importFrom sedonadb as_sedonadb_dataframe sd_compute sd_drop_view sd_sql
 #'   sd_to_view sd_write_parquet
 #' @importFrom sf st_geometry_type
-#' @import checkmate
 #'
-#' @seealso [amadeus::download_geos()], [join_variables()],
-#'   [join_covariates()]
+#' @seealso [amadeus::download_geos()], [prepare_locs()],
+#'   \code{\link{check_arguments}()}, [join_variables()], [join_covariates()]
 #' @examples
 #' \dontrun{
 #' locs <- sf::st_as_sf(
@@ -82,7 +93,7 @@
 #'   crs = 4326
 #' )
 #' geos_files <- sedona_geos(
-#'   date = c("2024-01-01", "2024-01-02"),
+#'   date = as.integer(as.Date(c("2024-01-01", "2024-01-02"))),
 #'   input = "data/geos",
 #'   output = tempdir(),
 #'   variable = "CO",
@@ -117,15 +128,13 @@ sedona_geos <- function(
     radius = radius
   )
   # ----------------------------------------------------------------------------
-  # Validate batch size.
-  # NEW CHECKMATE PROPOSAL: replace this stopifnot() with the two assertions.
-  # These preserve exact whole numbers without imposing an integer-size limit.
-  checkmate::assert_number(batch, lower = 1, finite = TRUE)
-  checkmate::assert_true(batch == floor(batch))
+  # Extract `sf` geometry type.
+  chr_locsgeom <- as.character(unique(sf::st_geometry_type(locs)))
+  # ----------------------------------------------------------------------------
+  # Coerce `date` to vector of 2 if not already.
+  date <- if (length(date) == 2) date else rep(date, 2)
   # ----------------------------------------------------------------------------
   # Check zonal statistic function against SedonaDB supported (as of 10/21/26)
-  # NEW CHECKMATE NOTE: retain match.arg() and tolower(); assert_choice() alone
-  # would change the current handling of abbreviations and uppercase values.
   fun <- match.arg(
     tolower(fun),
     c(
@@ -141,22 +150,20 @@ sedona_geos <- function(
     )
   )
   # ----------------------------------------------------------------------------
-  # Derive extraction location geometries.
-  # NEW CHECKMATE PROPOSAL: optional additional checks before using arguments.
-  checkmate::assert_string(input, min.chars = 1L)
-  checkmate::assert_directory_exists(input)
-  checkmate::assert_string(variable, min.chars = 1L)
-  checkmate::assert_number(level, lower = 1)
-  checkmate::assert_string(locs_id, min.chars = 1L)
-  checkmate::assert_class(sf_locs, "sf")
-  checkmate::assert_subset(c(locs_id, "geometry"), names(sf_locs))
-  checkmate::assert_flag(touches)
-  checkmate::assert_flag(exclude_nodata)
-  # Date parsing/order, CRS compatibility, and buffer preparation need separate
-  # domain checks. radius and geom remain reserved for location preparation.
-  chr_locsgeom <- as.character(unique(sf::st_geometry_type(sf_locs)))
-  # NEW CHECKMATE PROPOSAL: reject mixed or unsupported geometry types early.
-  checkmate::assert_choice(chr_locsgeom, c("POINT", "POLYGON", "MULTIPOLYGON"))
+  # Check arguments.
+  amadeusdb:::check_arguments(
+    locs = sf_locs,
+    date = date,
+    input = input,
+    output = output,
+    batch = batch,
+    raster = TRUE,
+    fun = fun,
+    variable = variable,
+    level = level,
+    touches = touches,
+    exclude_nodata = exclude_nodata
+  )
   # ----------------------------------------------------------------------------
   # Identify GEOS file paths from all files in the path.
   chr_paths <- list.files(
@@ -194,7 +201,7 @@ sedona_geos <- function(
       datetime = TRUE
     )
   )
-  df_geospaths$date <- as.character(as.POSIXct(
+  df_geospaths$time <- as.character(as.POSIXct(
     as.character(df_geospaths$time),
     format = "%Y%m%d%H%M",
     tz = "UTC"
@@ -206,24 +213,8 @@ sedona_geos <- function(
   )
   df_geospaths$view <- sprintf("db_geos_%012s", df_geospaths$time)
   # ----------------------------------------------------------------------------
-  # Check dates, paths, and db names are set, and all exist with no NAs/NULLs.
-  # NEW CHECKMATE PROPOSAL: express the metadata requirements separately.
-  checkmate::assert_data_frame(df_geospaths, min.rows = 1L)
-  checkmate::assert_names(
-    names(df_geospaths),
-    must.include = c("time", "path", "view")
-  )
-  checkmate::assert_vector(
-    df_geospaths$time,
-    any.missing = FALSE,
-    unique = TRUE
-  )
-  checkmate::assert_file_exists(df_geospaths$path)
-  checkmate::assert_character(
-    df_geospaths$view,
-    any.missing = FALSE,
-    unique = TRUE
-  )
+  # Check dates, paths, and database view names.
+  amadeusdb:::check_views(df_geospaths)
   # ----------------------------------------------------------------------------
   # Define location identifiers in SQL-friendly format.
   locs_id_sql <- paste0(
@@ -312,16 +303,6 @@ sedona_geos <- function(
     USE.NAMES = FALSE
   )
   # ----------------------------------------------------------------------------
-  # Prepare one Parquet output path per batch.
-  # NEW CHECKMATE PROPOSAL: replace the scalar path check below.
-  checkmate::assert_string(output, min.chars = 1L)
-  # ----------------------------------------------------------------------------
-  # Create output path if does not exist.
-  if (!dir.exists(output)) {
-    dir.create(output, recursive = TRUE, showWarnings = FALSE)
-  }
-  stopifnot(dir.exists(output))
-  # ----------------------------------------------------------------------------
   # Generate .parquet paths for each batch view.
   chr_output <- normalizePath(
     output,
@@ -365,7 +346,7 @@ sedona_geos <- function(
       # Time extraction directly from NetCDF not supported (as of 10/21/26)
       list_params <- list(
         as.character(df_geos_batch$var[i]), # $1: raster source
-        df_geos_batch$date[i], # $2: timestamp
+        df_geos_batch$time[i], # $2: timestamp
         as.integer(level) # #3: vertical level
       )
       # ------------------------------------------------------------------------

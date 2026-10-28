@@ -24,8 +24,8 @@ loaded, including through \code{library(amadeusdb)} or access with \verb{amadeus
 }
 \details{
 Locate \code{extdata/list_crs.rds} in the specified package installation and read
-it with \code{\link[=readRDS]{readRDS()}}. The resulting list is stored in the private \link{.amadeusdb}
-environment for use by package functions such as \code{\link[=prepare_sf]{prepare_sf()}}.
+it with \code{\link[base:readRDS]{base::readRDS()}}. The resulting list is stored in the private
+\link{.amadeusdb} environment for use by package functions such as \code{\link[=prepare_sf]{prepare_sf()}}.
 }
 \seealso{
 \link{.amadeusdb}, \code{\link[=prepare_sf]{prepare_sf()}}, \code{\link[base:.onLoad]{base::.onLoad()}}

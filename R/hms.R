@@ -2,31 +2,38 @@
 #' Calculate daily HMS smoke indicators with SedonaDB
 #'
 #' @description
-#' Intersect prepared locations with local NOAA Hazard Mapping System (HMS)
-#' smoke polygons and write daily light, medium, and heavy smoke indicators to
-#' Parquet files in batches.
+#' Prepare locations with [prepare_locs()], intersect them with local NOAA
+#' Hazard Mapping System (HMS) smoke polygons, and write daily light, medium,
+#' and heavy smoke indicators to Parquet files in batches.
 #'
-#' @param date character(2) or Date(2). Inclusive start and end dates in
-#'   chronological order. Character dates must use `"YYYY-MM-DD"`. Repeat the
-#'   date to process a single day.
-#' @param input character(1). Directory containing HMS smoke shapefiles named
-#'   with the `hms_smoke` prefix and a final `YYYYMMDD.shp` date suffix. The
-#'   accompanying shapefile components must be available. Subdirectories are
+#' @param date integer(1) or integer(2). Inclusive start and end dates in
+#'   chronological order, expressed as days since `1970-01-01`, for example
+#'   `as.integer(as.Date("2024-01-01"))`. A single date is repeated to process
+#'   one day. The current check requires integer storage; character and `Date`
+#'   vectors are not accepted.
+#' @param input character(1). Non-empty path to an existing directory containing
+#'   HMS smoke shapefiles named with the `hms_smoke` prefix and a final
+#'   `YYYYMMDD.shp` date suffix. The accompanying shapefile components must be
+#'   available. All listed immediate entries must be files; subdirectories are
 #'   not searched.
-#' @param output character(1). Directory for the output Parquet files. Created
-#'   recursively if it does not exist.
-#' @param locs sf object. Prepared point or polygon locations with a geometry
-#'   column named `geometry` and an identifier column named by `locs_id`.
-#'   Locations must already use a CRS compatible with the HMS shapefiles;
-#'   this function does not transform or buffer locations.
-#' @param locs_id character(1). Name of the location identifier column in
-#'   `locs`. Rows sharing an identifier are grouped when computing the
-#'   indicators. Supply unique, non-missing identifiers for separate location
-#'   results.
-#' @param radius numeric(1). Reserved for location preparation. Currently
-#'   unused; apply any required buffer to `locs` before calling this function.
-#' @param batch numeric(1). Positive whole number of source files to process per
-#'   output file. Defaults to `50L`.
+#' @param output character(1). Non-empty directory path for the output Parquet
+#'   files. Created recursively if it does not exist.
+#' @param locs sf, SpatVector, or data.frame object. Extraction locations with
+#'   an identifier column named by `locs_id`. Spatial objects must have a source
+#'   CRS; data frames must contain numeric `lon` and `lat` columns in longitude
+#'   and latitude degrees. [prepare_locs()] transforms and optionally buffers
+#'   locations. The prepared object must have a column named `geometry` and
+#'   one geometry type throughout: `POINT`, `POLYGON`, or `MULTIPOLYGON`.
+#' @param locs_id character(1). Non-empty name of an existing location
+#'   identifier column in `locs`. Rows sharing an identifier are grouped when
+#'   computing the indicators. Supply unique, non-missing identifiers for
+#'   separate location results; identifier values are not validated.
+#' @param radius numeric(1). Non-missing, non-negative buffer distance passed to
+#'   [prepare_locs()]. Distance units follow [sf::st_buffer()] for the target
+#'   CRS. Defaults to `0`, which skips buffering.
+#' @param batch integer(1). Number of source files to process per output file,
+#'   at least `1L`. Supply an integer such as `50L`, not a double such as `50`.
+#'   Defaults to `50L`.
 #'
 #' @details
 #' Dates are derived from filenames, with at most one selected shapefile per
@@ -61,9 +68,9 @@
 #' @importFrom glue glue
 #' @importFrom sedonadb as_sedonadb_dataframe sd_compute sd_drop_view sd_read_sf
 #'   sd_sql sd_to_view sd_write_parquet
-#' @import checkmate
 #'
-#' @seealso [amadeus::download_hms()], [join_covariates()], [hmsdates()]
+#' @seealso [amadeus::download_hms()], [prepare_locs()],
+#'   \code{\link{check_arguments}()}, [join_covariates()], [hmsdates()]
 #' @examples
 #' \dontrun{
 #' locs <- sf::st_as_sf(
@@ -72,7 +79,7 @@
 #'   crs = 4326
 #' )
 #' hms_files <- sedona_hms(
-#'   date = c("2024-01-01", "2024-01-31"),
+#'   date = as.integer(as.Date(c("2024-01-01", "2024-01-31"))),
 #'   input = "data/hms",
 #'   output = tempfile("hms_covariates_"),
 #'   locs = locs,
@@ -96,25 +103,22 @@ sedona_hms <- function(
   sf_locs <- amadeusdb::prepare_locs(
     locs = locs,
     locs_id = locs_id,
-    crs = .amadeusdb$list_crs$hms$crs,
+    crs = .amadeusdb$list_crs$geos$crs,
     radius = radius
   )
   # ----------------------------------------------------------------------------
-  # Validate batch size.
-  checkmate::assert_number(batch, lower = 1, finite = TRUE)
-  checkmate::assert_true(batch == floor(batch))
+  # Coerce `date` to vector of 2 if not already.
+  date <- if (length(date) == 2) date else rep(date, 2)
   # ----------------------------------------------------------------------------
-  # Validate input path.
-  checkmate::assert_string(input, min.chars = 1L)
-  checkmate::assert_directory_exists(input)
-  # ----------------------------------------------------------------------------
-  # Validate output path.
-  checkmate::assert_string(output, min.chars = 1L)
-  # ----------------------------------------------------------------------------
-  # Validate locations and `locs_id` argument..
-  checkmate::assert_string(locs_id, min.chars = 1L)
-  checkmate::assert_class(sf_locs, "sf")
-  checkmate::assert_subset(c(locs_id, "geometry"), names(sf_locs))
+  # Check arguments.
+  amadeusdb:::check_arguments(
+    locs = sf_locs,
+    date = date,
+    input = input,
+    output = output,
+    batch = batch,
+    raster = FALSE
+  )
   # ----------------------------------------------------------------------------
   # Identify HMS shapefile paths from all files in the path.
   chr_paths <- list.files(
@@ -145,29 +149,15 @@ sedona_hms <- function(
   # Store file path, date from file, and generated database view names.
   df_hmspaths <- data.frame(
     path = chr_datapaths,
-    date = amadeusdb::hmsdates(chr_datapaths)
+    time = amadeusdb::hmsdates(chr_datapaths)
   )
   df_hmspaths$view <- sprintf(
     "db_hms_%08s",
-    gsub("-", "", df_hmspaths$date)
+    gsub("-", "", df_hmspaths$time)
   )
   # ----------------------------------------------------------------------------
-  # Validate dates, paths, and database view names.
-  checkmate::assert_names(
-    names(df_hmspaths),
-    must.include = c("date", "path", "view")
-  )
-  checkmate::assert_character(
-    df_hmspaths$date,
-    any.missing = FALSE,
-    unique = TRUE
-  )
-  checkmate::assert_file_exists(df_hmspaths$path)
-  checkmate::assert_character(
-    df_hmspaths$view,
-    any.missing = FALSE,
-    unique = TRUE
-  )
+  # Check dates, paths, and database view names.
+  amadeusdb:::check_views(df_hmspaths)
   # ----------------------------------------------------------------------------
   # Define location identifiers in SQL-friendly format.
   locs_id_sql <- paste0(
@@ -229,7 +219,7 @@ sedona_hms <- function(
   chr_hms_batch <- vapply(
     list_hms_batch,
     function(i) {
-      chr_range <- range(as.character(df_hmspaths$date[i]))
+      chr_range <- range(as.character(df_hmspaths$time[i]))
       sprintf(
         "%s_%s_%s",
         "hms",

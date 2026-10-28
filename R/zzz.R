@@ -30,8 +30,8 @@
 #'
 #' @details
 #' Locate `extdata/list_crs.rds` in the specified package installation and read
-#' it with [readRDS()]. The resulting list is stored in the private [.amadeusdb]
-#' environment for use by package functions such as [prepare_sf()].
+#' it with [base::readRDS()]. The resulting list is stored in the private
+#' [.amadeusdb] environment for use by package functions such as [prepare_sf()].
 #'
 #' @return
 #' Invisibly, the list assigned to `.amadeusdb$list_crs`. The hook is called
@@ -40,7 +40,7 @@
 #' @seealso [.amadeusdb], [prepare_sf()], [base::.onLoad()]
 #' @keywords internal
 .onLoad <- function(libname, pkgname) {
-  .amadeusdb$list_crs <- readRDS(
+  .amadeusdb$list_crs <- base::readRDS(
     system.file(
       "extdata",
       "list_crs.rds",
