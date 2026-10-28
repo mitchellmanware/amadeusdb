@@ -709,52 +709,11 @@ testthat::test_that("sedona_geos; expected failures", {
     "locs"
   )
   # ----------------------------------------------------------------------------
-  # Improper batch arguments.
-  testthat::expect_error(
-    amadeusdb::sedona_geos(locs = points, locs_id = "NAME", batch = NULL),
-    regexp = "batch"
-  )
-  testthat::expect_error(
-    amadeusdb::sedona_geos(locs = points, locs_id = "NAME", batch = 1.1),
-    regexp = "batch"
-  )
-  # ----------------------------------------------------------------------------
-  # Improper input arguments.
-  testthat::expect_error(
-    amadeusdb::sedona_geos(
-      locs = points,
-      locs_id = "NAME",
-      batch = 1,
-      input = NULL
-    ),
-    regexp = "input"
-  )
-  testthat::expect_error(
-    amadeusdb::sedona_geos(
-      locs = points,
-      locs_id = "NAME",
-      batch = 1,
-      input = 10
-    ),
-    regexp = "input"
-  )
-  testthat::expect_error(
-    amadeusdb::sedona_geos(
-      locs = points,
-      locs_id = "NAME",
-      batch = 1,
-      input = "path/to/empty/"
-    ),
-    regexp = "input"
-  )
-  # ----------------------------------------------------------------------------
   # Improper radius arguments.
   testthat::expect_error(
     amadeusdb::sedona_geos(
       locs = points,
       locs_id = "NAME",
-      batch = 1,
-      input = tempdir(),
       radius = -1
     ),
     regexp = "radius"
@@ -763,8 +722,6 @@ testthat::test_that("sedona_geos; expected failures", {
     amadeusdb::sedona_geos(
       locs = points,
       locs_id = "NAME",
-      batch = 1,
-      input = tempdir(),
       radius = NULL
     ),
     regexp = "radius"
@@ -773,11 +730,121 @@ testthat::test_that("sedona_geos; expected failures", {
     amadeusdb::sedona_geos(
       locs = points,
       locs_id = "NAME",
-      batch = 1,
-      input = tempdir(),
       radius = "text"
     ),
     regexp = "radius"
+  )
+  # ----------------------------------------------------------------------------
+  # Improper date arguments.
+  testthat::expect_error(
+    amadeusdb::sedona_geos(locs = points, locs_id = "NAME", date = NULL),
+    regexp = "date"
+  )
+  testthat::expect_error(
+    amadeusdb::sedona_geos(locs = points, locs_id = "NAME", date = 1L),
+    regexp = "date"
+  )
+  # ----------------------------------------------------------------------------
+  # Improper input arguments.
+  testthat::expect_error(
+    amadeusdb::sedona_geos(
+      locs = points,
+      locs_id = "NAME",
+      date = "2018-01-01",
+      input = NULL
+    ),
+    regexp = "input"
+  )
+  testthat::expect_error(
+    amadeusdb::sedona_geos(
+      locs = points,
+      locs_id = "NAME",
+      date = "2018-01-01",
+      input = 10
+    ),
+    regexp = "input"
+  )
+  testthat::expect_error(
+    amadeusdb::sedona_geos(
+      locs = points,
+      locs_id = "NAME",
+      date = "2018-01-01",
+      input = "path/to/empty/"
+    ),
+    regexp = "input"
+  )
+  # ----------------------------------------------------------------------------
+  # Create fixture files in chr_tempdir.
+  file.create(file.path(chr_tempdir, "/fixturepath.txt"))
+  # ----------------------------------------------------------------------------
+  # Improper output arguments.
+  testthat::expect_error(
+    amadeusdb::sedona_geos(
+      locs = points,
+      locs_id = "NAME",
+      date = "2018-01-01",
+      input = chr_tempdir,
+      output = NULL
+    ),
+    regexp = "output"
+  )
+  testthat::expect_error(
+    amadeusdb::sedona_geos(
+      locs = points,
+      locs_id = "NAME",
+      date = "2018-01-01",
+      input = chr_tempdir,
+      output = 1L
+    ),
+    regexp = "output"
+  )
+  # ----------------------------------------------------------------------------
+  # Improper batch arguments.
+  testthat::expect_error(
+    amadeusdb::sedona_geos(
+      locs = points,
+      locs_id = "NAME",
+      date = "2018-01-01",
+      input = chr_tempdir,
+      output = tempdir(),
+      batch = NULL
+    ),
+    regexp = "batch"
+  )
+  testthat::expect_error(
+    amadeusdb::sedona_geos(
+      locs = points,
+      locs_id = "NAME",
+      date = "2018-01-01",
+      input = chr_tempdir,
+      output = tempdir(),
+      batch = 1.111111
+    ),
+    regexp = "batch"
+  )
+  # ----------------------------------------------------------------------------
+  # Improper fun arguments.
+  testthat::expect_error(
+    amadeusdb::sedona_geos(
+      locs = points,
+      locs_id = "NAME",
+      date = "2018-01-01",
+      input = chr_tempdir,
+      output = tempdir(),
+      batch = 1L,
+      fun = NULL
+    )
+  )
+  testthat::expect_error(
+    amadeusdb::sedona_geos(
+      locs = points,
+      locs_id = "NAME",
+      date = "2018-01-01",
+      input = chr_tempdir,
+      output = tempdir(),
+      batch = 1L,
+      fun = "function"
+    )
   )
   # ----------------------------------------------------------------------------
   # Improper variable arguments.
@@ -785,9 +852,10 @@ testthat::test_that("sedona_geos; expected failures", {
     amadeusdb::sedona_geos(
       locs = points,
       locs_id = "NAME",
-      batch = 1,
-      input = tempdir(),
-      radius = 0,
+      date = "2018-01-01",
+      input = chr_tempdir,
+      output = tempdir(),
+      batch = 1L,
       variable = NULL
     ),
     regexp = "variable"
@@ -796,9 +864,10 @@ testthat::test_that("sedona_geos; expected failures", {
     amadeusdb::sedona_geos(
       locs = points,
       locs_id = "NAME",
-      batch = 1,
-      input = tempdir(),
-      radius = 0,
+      date = "2018-01-01",
+      input = chr_tempdir,
+      output = tempdir(),
+      batch = 1L,
       variable = 1L
     ),
     regexp = "variable"
@@ -807,51 +876,113 @@ testthat::test_that("sedona_geos; expected failures", {
   # Improper level arguements.
   testthat::expect_error(
     amadeusdb::sedona_geos(
-      date = c("2018-01-01", "2018-01-01"),
-      input = testthat::test_path("..", "testdata", "geos", "aqc_tavg"),
-      output = chr_tempdir,
-      locs = polygons,
+      locs = points,
       locs_id = "NAME",
-      radius = 0,
+      date = "2018-01-01",
+      input = testthat::test_path("..", "testdata", "geos", "aqc_tavg"),
+      output = tempdir(),
+      batch = 1L,
       variable = "O3",
       level = 2 # single level for current data
     )
   )
   testthat::expect_error(
     amadeusdb::sedona_geos(
-      date = c("2018-01-01", "2018-01-01"),
-      input = testthat::test_path("..", "testdata", "geos", "chm_tavg"),
-      output = chr_tempdir,
-      locs = polygons,
+      locs = points,
       locs_id = "NAME",
-      radius = 0,
+      date = "2018-01-01",
+      input = testthat::test_path("..", "testdata", "geos", "aqc_tavg"),
+      output = tempdir(),
+      batch = 1L,
       variable = "O3",
       level = 2 # single level for current data
     )
   )
   testthat::expect_error(
     amadeusdb::sedona_geos(
-      date = c("2018-01-01", "2018-01-01"),
-      input = testthat::test_path("..", "testdata", "geos", "aqc_tavg"),
-      output = chr_tempdir,
-      locs = polygons,
+      locs = points,
       locs_id = "NAME",
-      radius = 0,
+      date = "2018-01-01",
+      input = testthat::test_path("..", "testdata", "geos", "aqc_tavg"),
+      output = tempdir(),
+      batch = 1L,
       variable = "O3",
       level = 2.1
     )
   )
   testthat::expect_error(
     amadeusdb::sedona_geos(
-      date = c("2018-01-01", "2018-01-01"),
-      input = testthat::test_path("..", "testdata", "geos", "aqc_tavg"),
-      output = chr_tempdir,
-      locs = polygons,
+      locs = points,
       locs_id = "NAME",
-      radius = 0,
+      date = "2018-01-01",
+      input = testthat::test_path("..", "testdata", "geos", "aqc_tavg"),
+      output = tempdir(),
+      batch = 1L,
       variable = "O3",
       level = "level"
     )
+  )
+  # ----------------------------------------------------------------------------
+  # Improper touches arguements.
+  testthat::expect_error(
+    amadeusdb::sedona_geos(
+      locs = points,
+      locs_id = "NAME",
+      date = "2018-01-01",
+      input = testthat::test_path("..", "testdata", "geos", "aqc_tavg"),
+      output = tempdir(),
+      batch = 1L,
+      variable = "O3",
+      level = 1L,
+      touches = 1
+    ),
+    regexp = "touches"
+  )
+  testthat::expect_error(
+    amadeusdb::sedona_geos(
+      locs = points,
+      locs_id = "NAME",
+      date = "2018-01-01",
+      input = testthat::test_path("..", "testdata", "geos", "aqc_tavg"),
+      output = tempdir(),
+      batch = 1L,
+      variable = "O3",
+      level = 1L,
+      touches = "no"
+    ),
+    regexp = "touches"
+  )
+  # ----------------------------------------------------------------------------
+  # Improper exclude_nodata arguements.
+  testthat::expect_error(
+    amadeusdb::sedona_geos(
+      locs = points,
+      locs_id = "NAME",
+      date = "2018-01-01",
+      input = testthat::test_path("..", "testdata", "geos", "aqc_tavg"),
+      output = tempdir(),
+      batch = 1L,
+      variable = "O3",
+      level = 1L,
+      touches = TRUE,
+      exclude_nodata = 1L
+    ),
+    regexp = "exclude_nodata"
+  )
+  testthat::expect_error(
+    amadeusdb::sedona_geos(
+      locs = points,
+      locs_id = "NAME",
+      date = "2018-01-01",
+      input = testthat::test_path("..", "testdata", "geos", "aqc_tavg"),
+      output = tempdir(),
+      batch = 1L,
+      variable = "O3",
+      level = 1L,
+      touches = TRUE,
+      exclude_nodata = "no"
+    ),
+    regexp = "exclude_nodata"
   )
   # ----------------------------------------------------------------------------
   # Clean up temporary directory.

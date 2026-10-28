@@ -87,7 +87,7 @@ check_arguments <- function(
 
   # ----------------------------------------------------------------------------
   # Ensure the `date` vector contains two dates after coersion (rep(...)).
-  checkmate::assert_integer(date, len = 2)
+  checkmate::assert_character(date, len = 2)
   # ----------------------------------------------------------------------------
 
   # ----------------------------------------------------------------------------

@@ -13,10 +13,10 @@
 #'   one day. The current check requires integer storage; character and `Date`
 #'   vectors are not accepted.
 #' @param input character(1). Non-empty path to an existing directory containing
-#'   GEOS-CF files with their original `GEOS-CF.v01.rpl` filenames. File discovery
-#'   is recursive, but the current input check requires all listed immediate
-#'   entries to be files. Supply files from a compatible collection with no
-#'   repeated filename timestamps.
+#'   GEOS-CF files with their original `GEOS-CF.v01.rpl` filenames. File
+#'   discovery is recursive, but the current input check requires all listed
+#'   immediate entries to be files. Supply files from a compatible collection
+#'   with no repeated filename timestamps.
 #' @param output character(1). Non-empty directory path for the output Parquet
 #'   files. Created recursively if it does not exist.
 #' @param variable character(1). Non-empty, case-sensitive NetCDF variable name.
@@ -129,7 +129,7 @@ sedona_geos <- function(
   )
   # ----------------------------------------------------------------------------
   # Extract `sf` geometry type.
-  chr_locsgeom <- as.character(unique(sf::st_geometry_type(locs)))
+  chr_locsgeom <- as.character(unique(sf::st_geometry_type(sf_locs)))
   # ----------------------------------------------------------------------------
   # Coerce `date` to vector of 2 if not already.
   date <- if (length(date) == 2) date else rep(date, 2)
