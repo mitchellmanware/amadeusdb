@@ -128,8 +128,8 @@ testthat::test_that("sedona_hms; locs = sf::points", {
   # Expect character location identifer column.
   testthat::expect_type(df_hms$NAME, "character")
   # ----------------------------------------------------------------------------
-  testthat::expect_s3_class(df_hms$date, "Date")
   # Expect Date "date" column.
+  testthat::expect_s3_class(df_hms$date, "Date")
   # ----------------------------------------------------------------------------
   # Expect numeric (binary) for light, medium, and heavy columns.
   testthat::expect_equal(class(df_hms$light), "numeric")
@@ -269,8 +269,8 @@ testthat::test_that("sedona_hms; locs = terra::points", {
   # Expect character location identifer column.
   testthat::expect_type(df_hms$NAME, "character")
   # ----------------------------------------------------------------------------
-  testthat::expect_s3_class(df_hms$date, "Date")
   # Expect Date "date" column.
+  testthat::expect_s3_class(df_hms$date, "Date")
   # ----------------------------------------------------------------------------
   # Expect numeric (binary) for light, medium, and heavy columns.
   testthat::expect_equal(class(df_hms$light), "numeric")
@@ -334,8 +334,8 @@ testthat::test_that("sedona_hms; locs = data.frame", {
   # Expect character location identifer column.
   testthat::expect_type(df_hms$NAME, "character")
   # ----------------------------------------------------------------------------
-  testthat::expect_s3_class(df_hms$date, "Date")
   # Expect Date "date" column.
+  testthat::expect_s3_class(df_hms$date, "Date")
   # ----------------------------------------------------------------------------
   # Expect numeric (binary) for light, medium, and heavy columns.
   testthat::expect_equal(class(df_hms$light), "numeric")

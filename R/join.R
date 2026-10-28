@@ -96,8 +96,7 @@ join_variables <- function(
     )
   }
   # ----------------------------------------------------------------------------
-  # ----------------------------------------------------------------------------
-  # `output`
+  # Check `output`.
   # ----------------------------------------------------------------------------
   # Ensure `output` is a character.
   checkmate::assert_string(output, min.chars = 1L)
@@ -108,7 +107,6 @@ join_variables <- function(
   }
   checkmate::assert_directory_exists(output)
   # ----------------------------------------------------------------------------
-  # ----------------------------------------------------------------------------
   # Ensure `by` is a character.
   checkmate::assert_character(
     by,
@@ -117,7 +115,6 @@ join_variables <- function(
     any.missing = FALSE,
     unique = TRUE
   )
-  # ----------------------------------------------------------------------------
   # ----------------------------------------------------------------------------
   # Quote identifiers, including names containing capitals or punctuation.
   chr_by_sql <- paste0('"', gsub('"', '""', by, fixed = TRUE), '"')
@@ -413,23 +410,37 @@ join_covariates <- function(
   prefix = FALSE
 ) {
   # ----------------------------------------------------------------------------
-  # Validate the left (assumed for devel as AQS) file.
-  # NEW CHECKMATE PROPOSAL: replace the initial argument checks through prefix.
+  # Check `input` and contents.
+  # ----------------------------------------------------------------------------
+  # Ensure input is a character (path to .parquet files)
+  # !!! Assumed to be AQS data for devel. !!!
   checkmate::assert_string(input, min.chars = 1L)
   checkmate::assert_file_exists(input)
   # ----------------------------------------------------------------------------
-  # Validate the output directory path.
+  # Check `output`.
+  # ----------------------------------------------------------------------------
+  # Ensure `output` is a character.
   checkmate::assert_string(output, min.chars = 1L)
   # ----------------------------------------------------------------------------
-  # Validate the site, time, and date identitiy columns.
+  # Create output path if does not exist.
+  if (!dir.exists(output)) {
+    dir.create(output, recursive = TRUE, showWarnings = FALSE)
+  }
+  checkmate::assert_directory_exists(output)
+  # ----------------------------------------------------------------------------
+  # Ensure `locs_id`, `time_id`, and `date_id` are characters.
   checkmate::assert_string(locs_id, min.chars = 1L)
   checkmate::assert_string(time_id, min.chars = 1L)
   checkmate::assert_string(date_id, min.chars = 1L)
+  # ----------------------------------------------------------------------------
+  # Ensure `locs_id`, `time_id`, and `date_id` are unique.
   checkmate::assert_character(
     c(locs_id, time_id, date_id),
     any.missing = FALSE,
     unique = TRUE
   )
+  # ----------------------------------------------------------------------------
+  # Ensure `prefix` is TRUE/FALSE.
   checkmate::assert_flag(prefix)
   # ----------------------------------------------------------------------------
   # Quote SQL identifiers, preserving capitals and punctuation in data columns.
