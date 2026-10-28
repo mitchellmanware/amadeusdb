@@ -149,7 +149,7 @@ sedona_geos <- function(
   )
   # ----------------------------------------------------------------------------
   # Check arguments.
-  amadeusdb:::check_arguments(
+  amadeusdb::check_arguments(
     locs = sf_locs,
     date = date,
     input = input,
@@ -212,7 +212,7 @@ sedona_geos <- function(
   df_geospaths$view <- sprintf("db_geos_%012s", df_geospaths$tchar)
   # ----------------------------------------------------------------------------
   # Check dates, paths, and database view names.
-  amadeusdb:::check_views(df_geospaths)
+  amadeusdb::check_views(df_geospaths)
   # ----------------------------------------------------------------------------
   # Define location identifiers in SQL-friendly format.
   locs_id_sql <- paste0(

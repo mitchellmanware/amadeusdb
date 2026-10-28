@@ -58,6 +58,7 @@
 #' @seealso \code{\link{check_views}()}, [prepare_locs()], [sedona_geos()],
 #'   [sedona_hms()]
 #' @keywords internal
+#' @export
 check_arguments <- function(
   locs,
   date,
@@ -181,6 +182,7 @@ check_arguments <- function(
 #'
 #' @seealso \code{\link{check_arguments}()}, [sedona_geos()], [sedona_hms()]
 #' @keywords internal
+#' @export
 check_views <- function(df) {
   # ----------------------------------------------------------------------------
   # Ensure `df` is a data.frame.

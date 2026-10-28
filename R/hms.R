@@ -109,7 +109,7 @@ sedona_hms <- function(
   date <- if (length(date) == 2) date else rep(date, 2)
   # ----------------------------------------------------------------------------
   # Check arguments.
-  amadeusdb:::check_arguments(
+  amadeusdb::check_arguments(
     locs = sf_locs,
     date = date,
     input = input,
@@ -155,7 +155,7 @@ sedona_hms <- function(
   )
   # ----------------------------------------------------------------------------
   # Check dates, paths, and database view names.
-  amadeusdb:::check_views(df_hmspaths)
+  amadeusdb::check_views(df_hmspaths)
   # ----------------------------------------------------------------------------
   # Define location identifiers in SQL-friendly format.
   locs_id_sql <- paste0(
