@@ -7,11 +7,9 @@
 #' transformed and optionally buffered with [prepare_locs()]. Point extraction
 #' uses raster cell values; polygon extraction uses zonal statistics.
 #'
-#' @param date integer(1) or integer(2). Inclusive start and end dates in
-#'   chronological order, expressed as days since `1970-01-01`, for example
-#'   `as.integer(as.Date("2024-01-01"))`. A single date is repeated to process
-#'   one day. The current check requires integer storage; character and `Date`
-#'   vectors are not accepted.
+#' @param date character(1) or character(2). Inclusive start and end dates in
+#'   chronological order, formatted as `"YYYY-MM-DD"`. A single date is
+#'   repeated to process one day.
 #' @param input character(1). Non-empty path to an existing directory containing
 #'   GEOS-CF files with their original `GEOS-CF.v01.rpl` filenames. File
 #'   discovery is recursive, but the current input check requires all listed
@@ -195,14 +193,14 @@ sedona_geos <- function(
   # Store file path, NetCDF variable path, date, and generated db names.
   df_geospaths <- data.frame(
     path = chr_datapaths,
-    time = amadeus::process_collection(
+    tchar = amadeus::process_collection(
       chr_datapaths,
       source = "geos",
       datetime = TRUE
     )
   )
   df_geospaths$time <- as.character(as.POSIXct(
-    as.character(df_geospaths$time),
+    as.character(df_geospaths$tchar),
     format = "%Y%m%d%H%M",
     tz = "UTC"
   ))
@@ -211,7 +209,7 @@ sedona_geos <- function(
     normalizePath(df_geospaths$path, winslash = "/", mustWork = TRUE),
     variable
   )
-  df_geospaths$view <- sprintf("db_geos_%012s", df_geospaths$time)
+  df_geospaths$view <- sprintf("db_geos_%012s", df_geospaths$tchar)
   # ----------------------------------------------------------------------------
   # Check dates, paths, and database view names.
   amadeusdb:::check_views(df_geospaths)
@@ -290,7 +288,7 @@ sedona_geos <- function(
   chr_geos_batch <- vapply(
     list_geos_batch,
     function(i) {
-      chr_range <- range(as.character(df_geospaths$time[i]))
+      chr_range <- range(as.character(df_geospaths$tchar[i]))
       sprintf(
         "%s_%s_%s_%s",
         "geos",

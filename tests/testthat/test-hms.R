@@ -23,7 +23,7 @@ testthat::test_that("sedona_hms; locs = sf::polygons", {
     "polygons.shp"
   ))
   # ----------------------------------------------------------------------------
-  # No errors at runtime
+  # No errors at runtime.
   testthat::expect_no_error(
     db_hms <- amadeusdb::sedona_hms(
       date = c("2018-12-30", "2019-01-01"),
@@ -37,7 +37,7 @@ testthat::test_that("sedona_hms; locs = sf::polygons", {
   # ----------------------------------------------------------------------------
   # !!! OUTPUT CHECKS !!!
   # ----------------------------------------------------------------------------
-  # Only .parquet files in the output directory.
+  # Only .parquet files in the output database.
   testthat::expect_true(all(grepl("\\.parquet", db_hms)))
   # ----------------------------------------------------------------------------
   # No errors on read as .parquet.
@@ -47,28 +47,28 @@ testthat::test_that("sedona_hms; locs = sf::polygons", {
   testthat::expect_s3_class(db_hms1, "sedonadb_dataframe")
   # ----------------------------------------------------------------------------
   # No errors on collection to data frame.
-  testthat::expect_no_error(dt_hms1 <- sedonadb::sd_collect(db_hms1))
+  testthat::expect_no_error(df_hms <- sedonadb::sd_collect(db_hms1))
   # ----------------------------------------------------------------------------
   # Expect 12 rows (4 fixture sites x 3 days).
-  testthat::expect_equal(nrow(dt_hms1), 12)
+  testthat::expect_equal(nrow(df_hms), 12)
   # ----------------------------------------------------------------------------
   # Expect 5 columns (locs_id, time, light, mediuum, heavy)
-  testthat::expect_equal(ncol(dt_hms1), 5)
+  testthat::expect_equal(ncol(df_hms), 5)
   # ----------------------------------------------------------------------------
   # Expect character location identifer column.
-  testthat::expect_type(dt_hms1$NAME, "character")
+  testthat::expect_type(df_hms$NAME, "character")
   # ----------------------------------------------------------------------------
   # Expect Date "date" column.
-  testthat::expect_s3_class(dt_hms1$date, "Date")
+  testthat::expect_s3_class(df_hms$date, "Date")
   # ----------------------------------------------------------------------------
   # Expect numeric (binary) for light, medium, and heavy columns.
-  testthat::expect_equal(class(dt_hms1$light), "numeric")
-  testthat::expect_equal(class(dt_hms1$medium), "numeric")
-  testthat::expect_equal(class(dt_hms1$heavy), "numeric")
+  testthat::expect_equal(class(df_hms$light), "numeric")
+  testthat::expect_equal(class(df_hms$medium), "numeric")
+  testthat::expect_equal(class(df_hms$heavy), "numeric")
   # ----------------------------------------------------------------------------
   # Expect light, medium, and heavy columns contain only 0 or 1.
   testthat::expect_true(all(
-    unique(c(dt_hms1$light, dt_hms1$medium, dt_hms1$heavy)) %in%
+    unique(c(df_hms$light, df_hms$medium, df_hms$heavy)) %in%
       c(0, 1)
   ))
   # ----------------------------------------------------------------------------
@@ -94,7 +94,7 @@ testthat::test_that("sedona_hms; locs = sf::points", {
     "points.shp"
   ))
   # ----------------------------------------------------------------------------
-  # No errors at runtime
+  # No errors at runtime.
   testthat::expect_no_error(
     db_hms <- amadeusdb::sedona_hms(
       date = c("2018-12-30", "2019-01-01"),
@@ -107,7 +107,7 @@ testthat::test_that("sedona_hms; locs = sf::points", {
   # ----------------------------------------------------------------------------
   # !!! OUTPUT CHECKS !!!
   # ----------------------------------------------------------------------------
-  # Only .parquet files in the output directory.
+  # Only .parquet files in the output database.
   testthat::expect_true(all(grepl("\\.parquet", db_hms)))
   # ----------------------------------------------------------------------------
   # No errors on read as .parquet.
@@ -117,28 +117,28 @@ testthat::test_that("sedona_hms; locs = sf::points", {
   testthat::expect_s3_class(db_hms1, "sedonadb_dataframe")
   # ----------------------------------------------------------------------------
   # No errors on collection to data frame.
-  testthat::expect_no_error(dt_hms1 <- sedonadb::sd_collect(db_hms1))
+  testthat::expect_no_error(df_hms <- sedonadb::sd_collect(db_hms1))
   # ----------------------------------------------------------------------------
   # Expect 12 rows (4 fixture sites x 3 days).
-  testthat::expect_equal(nrow(dt_hms1), 12)
+  testthat::expect_equal(nrow(df_hms), 12)
   # ----------------------------------------------------------------------------
   # Expect 5 columns (locs_id, time, light, mediuum, heavy)
-  testthat::expect_equal(ncol(dt_hms1), 5)
+  testthat::expect_equal(ncol(df_hms), 5)
   # ----------------------------------------------------------------------------
   # Expect character location identifer column.
-  testthat::expect_type(dt_hms1$NAME, "character")
+  testthat::expect_type(df_hms$NAME, "character")
   # ----------------------------------------------------------------------------
-  testthat::expect_s3_class(dt_hms1$date, "Date")
+  testthat::expect_s3_class(df_hms$date, "Date")
   # Expect Date "date" column.
   # ----------------------------------------------------------------------------
   # Expect numeric (binary) for light, medium, and heavy columns.
-  testthat::expect_equal(class(dt_hms1$light), "numeric")
-  testthat::expect_equal(class(dt_hms1$medium), "numeric")
-  testthat::expect_equal(class(dt_hms1$heavy), "numeric")
+  testthat::expect_equal(class(df_hms$light), "numeric")
+  testthat::expect_equal(class(df_hms$medium), "numeric")
+  testthat::expect_equal(class(df_hms$heavy), "numeric")
   # ----------------------------------------------------------------------------
   # Expect light, medium, and heavy columns contain only 0 or 1.
   testthat::expect_true(all(
-    unique(c(dt_hms1$light, dt_hms1$medium, dt_hms1$heavy)) %in%
+    unique(c(df_hms$light, df_hms$medium, df_hms$heavy)) %in%
       c(0, 1)
   ))
   # ----------------------------------------------------------------------------
@@ -164,7 +164,7 @@ testthat::test_that("sedona_hms; locs = terra::polygons", {
     "polygons.shp"
   ))
   # ----------------------------------------------------------------------------
-  # No errors at runtime
+  # No errors at runtime.
   testthat::expect_no_error(
     db_hms <- amadeusdb::sedona_hms(
       date = c("2018-12-30", "2019-01-01"),
@@ -178,7 +178,7 @@ testthat::test_that("sedona_hms; locs = terra::polygons", {
   # ----------------------------------------------------------------------------
   # !!! OUTPUT CHECKS !!!
   # ----------------------------------------------------------------------------
-  # Only .parquet files in the output directory.
+  # Only .parquet files in the output database.
   testthat::expect_true(all(grepl("\\.parquet", db_hms)))
   # ----------------------------------------------------------------------------
   # No errors on read as .parquet.
@@ -188,28 +188,28 @@ testthat::test_that("sedona_hms; locs = terra::polygons", {
   testthat::expect_s3_class(db_hms1, "sedonadb_dataframe")
   # ----------------------------------------------------------------------------
   # No errors on collection to data frame.
-  testthat::expect_no_error(dt_hms1 <- sedonadb::sd_collect(db_hms1))
+  testthat::expect_no_error(df_hms <- sedonadb::sd_collect(db_hms1))
   # ----------------------------------------------------------------------------
   # Expect 12 rows (4 fixture sites x 3 days).
-  testthat::expect_equal(nrow(dt_hms1), 12)
+  testthat::expect_equal(nrow(df_hms), 12)
   # ----------------------------------------------------------------------------
   # Expect 5 columns (locs_id, time, light, mediuum, heavy)
-  testthat::expect_equal(ncol(dt_hms1), 5)
+  testthat::expect_equal(ncol(df_hms), 5)
   # ----------------------------------------------------------------------------
   # Expect character location identifer column.
-  testthat::expect_type(dt_hms1$NAME, "character")
+  testthat::expect_type(df_hms$NAME, "character")
   # ----------------------------------------------------------------------------
   # Expect Date "date" column.
-  testthat::expect_s3_class(dt_hms1$date, "Date")
+  testthat::expect_s3_class(df_hms$date, "Date")
   # ----------------------------------------------------------------------------
   # Expect numeric (binary) for light, medium, and heavy columns.
-  testthat::expect_equal(class(dt_hms1$light), "numeric")
-  testthat::expect_equal(class(dt_hms1$medium), "numeric")
-  testthat::expect_equal(class(dt_hms1$heavy), "numeric")
+  testthat::expect_equal(class(df_hms$light), "numeric")
+  testthat::expect_equal(class(df_hms$medium), "numeric")
+  testthat::expect_equal(class(df_hms$heavy), "numeric")
   # ----------------------------------------------------------------------------
   # Expect light, medium, and heavy columns contain only 0 or 1.
   testthat::expect_true(all(
-    unique(c(dt_hms1$light, dt_hms1$medium, dt_hms1$heavy)) %in%
+    unique(c(df_hms$light, df_hms$medium, df_hms$heavy)) %in%
       c(0, 1)
   ))
   # ----------------------------------------------------------------------------
@@ -235,7 +235,7 @@ testthat::test_that("sedona_hms; locs = terra::points", {
     "points.shp"
   ))
   # ----------------------------------------------------------------------------
-  # No errors at runtime
+  # No errors at runtime.
   testthat::expect_no_error(
     db_hms <- amadeusdb::sedona_hms(
       date = c("2018-12-30", "2019-01-01"),
@@ -248,7 +248,7 @@ testthat::test_that("sedona_hms; locs = terra::points", {
   # ----------------------------------------------------------------------------
   # !!! OUTPUT CHECKS !!!
   # ----------------------------------------------------------------------------
-  # Only .parquet files in the output directory.
+  # Only .parquet files in the output database.
   testthat::expect_true(all(grepl("\\.parquet", db_hms)))
   # ----------------------------------------------------------------------------
   # No errors on read as .parquet.
@@ -258,28 +258,28 @@ testthat::test_that("sedona_hms; locs = terra::points", {
   testthat::expect_s3_class(db_hms1, "sedonadb_dataframe")
   # ----------------------------------------------------------------------------
   # No errors on collection to data frame.
-  testthat::expect_no_error(dt_hms1 <- sedonadb::sd_collect(db_hms1))
+  testthat::expect_no_error(df_hms <- sedonadb::sd_collect(db_hms1))
   # ----------------------------------------------------------------------------
   # Expect 12 rows (4 fixture sites x 3 days).
-  testthat::expect_equal(nrow(dt_hms1), 12)
+  testthat::expect_equal(nrow(df_hms), 12)
   # ----------------------------------------------------------------------------
   # Expect 5 columns (locs_id, time, light, mediuum, heavy)
-  testthat::expect_equal(ncol(dt_hms1), 5)
+  testthat::expect_equal(ncol(df_hms), 5)
   # ----------------------------------------------------------------------------
   # Expect character location identifer column.
-  testthat::expect_type(dt_hms1$NAME, "character")
+  testthat::expect_type(df_hms$NAME, "character")
   # ----------------------------------------------------------------------------
-  testthat::expect_s3_class(dt_hms1$date, "Date")
+  testthat::expect_s3_class(df_hms$date, "Date")
   # Expect Date "date" column.
   # ----------------------------------------------------------------------------
   # Expect numeric (binary) for light, medium, and heavy columns.
-  testthat::expect_equal(class(dt_hms1$light), "numeric")
-  testthat::expect_equal(class(dt_hms1$medium), "numeric")
-  testthat::expect_equal(class(dt_hms1$heavy), "numeric")
+  testthat::expect_equal(class(df_hms$light), "numeric")
+  testthat::expect_equal(class(df_hms$medium), "numeric")
+  testthat::expect_equal(class(df_hms$heavy), "numeric")
   # ----------------------------------------------------------------------------
   # Expect light, medium, and heavy columns contain only 0 or 1.
   testthat::expect_true(all(
-    unique(c(dt_hms1$light, dt_hms1$medium, dt_hms1$heavy)) %in%
+    unique(c(df_hms$light, df_hms$medium, df_hms$heavy)) %in%
       c(0, 1)
   ))
   # ----------------------------------------------------------------------------
@@ -300,7 +300,7 @@ testthat::test_that("sedona_hms; locs = data.frame", {
   # Import data.frame points.
   df <- read.csv(testthat::test_path("..", "testdata", "locs", "df.csv"))
   # ----------------------------------------------------------------------------
-  # No errors at runtime
+  # No errors at runtime.
   testthat::expect_no_error(
     db_hms <- amadeusdb::sedona_hms(
       date = c("2018-12-30", "2019-01-01"),
@@ -313,7 +313,7 @@ testthat::test_that("sedona_hms; locs = data.frame", {
   # ----------------------------------------------------------------------------
   # !!! OUTPUT CHECKS !!!
   # ----------------------------------------------------------------------------
-  # Only .parquet files in the output directory.
+  # Only .parquet files in the output database.
   testthat::expect_true(all(grepl("\\.parquet", db_hms)))
   # ----------------------------------------------------------------------------
   # No errors on read as .parquet.
@@ -323,28 +323,28 @@ testthat::test_that("sedona_hms; locs = data.frame", {
   testthat::expect_s3_class(db_hms1, "sedonadb_dataframe")
   # ----------------------------------------------------------------------------
   # No errors on collection to data frame.
-  testthat::expect_no_error(dt_hms1 <- sedonadb::sd_collect(db_hms1))
+  testthat::expect_no_error(df_hms <- sedonadb::sd_collect(db_hms1))
   # ----------------------------------------------------------------------------
   # Expect 12 rows (4 fixture sites x 3 days).
-  testthat::expect_equal(nrow(dt_hms1), 12)
+  testthat::expect_equal(nrow(df_hms), 12)
   # ----------------------------------------------------------------------------
   # Expect 5 columns (locs_id, time, light, mediuum, heavy)
-  testthat::expect_equal(ncol(dt_hms1), 5)
+  testthat::expect_equal(ncol(df_hms), 5)
   # ----------------------------------------------------------------------------
   # Expect character location identifer column.
-  testthat::expect_type(dt_hms1$NAME, "character")
+  testthat::expect_type(df_hms$NAME, "character")
   # ----------------------------------------------------------------------------
-  testthat::expect_s3_class(dt_hms1$date, "Date")
+  testthat::expect_s3_class(df_hms$date, "Date")
   # Expect Date "date" column.
   # ----------------------------------------------------------------------------
   # Expect numeric (binary) for light, medium, and heavy columns.
-  testthat::expect_equal(class(dt_hms1$light), "numeric")
-  testthat::expect_equal(class(dt_hms1$medium), "numeric")
-  testthat::expect_equal(class(dt_hms1$heavy), "numeric")
+  testthat::expect_equal(class(df_hms$light), "numeric")
+  testthat::expect_equal(class(df_hms$medium), "numeric")
+  testthat::expect_equal(class(df_hms$heavy), "numeric")
   # ----------------------------------------------------------------------------
   # Expect light, medium, and heavy columns contain only 0 or 1.
   testthat::expect_true(all(
-    unique(c(dt_hms1$light, dt_hms1$medium, dt_hms1$heavy)) %in%
+    unique(c(df_hms$light, df_hms$medium, df_hms$heavy)) %in%
       c(0, 1)
   ))
   # ----------------------------------------------------------------------------
@@ -374,7 +374,7 @@ testthat::test_that("sedona_hms; empty .shp", {
     "points.shp"
   ))
   # ----------------------------------------------------------------------------
-  # No errors at runtime
+  # No errors at runtime.
   testthat::expect_no_error(
     db_hms <- amadeusdb::sedona_hms(
       date = c("2018-12-31", "2018-12-31"),
@@ -387,7 +387,7 @@ testthat::test_that("sedona_hms; empty .shp", {
   # ----------------------------------------------------------------------------
   # !!! OUTPUT CHECKS !!!
   # ----------------------------------------------------------------------------
-  # Only .parquet files in the output directory.
+  # Only .parquet files in the output database.
   testthat::expect_true(all(grepl("\\.parquet", db_hms)))
   # ----------------------------------------------------------------------------
   # No errors on read as .parquet.
@@ -397,17 +397,17 @@ testthat::test_that("sedona_hms; empty .shp", {
   testthat::expect_s3_class(db_hms1, "sedonadb_dataframe")
   # ----------------------------------------------------------------------------
   # No errors on collection to data frame.
-  testthat::expect_no_error(dt_hms1 <- sedonadb::sd_collect(db_hms1))
+  testthat::expect_no_error(df_hms <- sedonadb::sd_collect(db_hms1))
   # ----------------------------------------------------------------------------
   # Expect 4 rows (4 fixture sites x 1 days).
-  testthat::expect_equal(nrow(dt_hms1), 4)
+  testthat::expect_equal(nrow(df_hms), 4)
   # ----------------------------------------------------------------------------
   # Expect 5 columns (locs_id, time, light, mediuum, heavy)
-  testthat::expect_equal(ncol(dt_hms1), 5)
+  testthat::expect_equal(ncol(df_hms), 5)
   # ----------------------------------------------------------------------------
   # Expect all 0 values for missing data.
   testthat::expect_equal(
-    unique(c(dt_hms1$light, dt_hms1$medium, dt_hms1$heavy)),
+    unique(c(df_hms$light, df_hms$medium, df_hms$heavy)),
     0
   )
   # ----------------------------------------------------------------------------
@@ -433,7 +433,7 @@ testthat::test_that("sedona_hms; skip existing .parquet", {
     "points.shp"
   ))
   # ----------------------------------------------------------------------------
-  # No errors at runtime
+  # No errors at runtime.
   testthat::expect_no_error(
     db_hms <- amadeusdb::sedona_hms(
       date = c("2018-12-30", "2019-01-01"),

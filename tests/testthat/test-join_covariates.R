@@ -1,5 +1,5 @@
 ################################################################################
-# Unit and integration tests for the join_* functions and auxiliaries.
+# Unit and integration tests for the join_covariates function.
 
 ################################################################################
 library(testthat)

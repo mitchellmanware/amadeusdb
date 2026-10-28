@@ -63,11 +63,53 @@ join_variables <- function(
   by = c("site_id", "time")
 ) {
   # ----------------------------------------------------------------------------
-  # Validate the file groups.
-  # NEW CHECKMATE PROPOSAL: replace the input, by, and output checks below.
+  # Check `input` and contents.
+  # ----------------------------------------------------------------------------
+  # Ensure input is a list.
   checkmate::assert_list(input, min.len = 1L)
   # ----------------------------------------------------------------------------
-  # Validate the join columns.
+  # Extract variables from list names.
+  chr_variables <- names(input)
+  if (is.null(chr_variables)) {
+    chr_variables <- sprintf("input_%03d", seq_along(input))
+  }
+  # ----------------------------------------------------------------------------
+  # Ensure paths within `input` are characters and exist.
+  for (i in seq_along(input)) {
+    # --------------------------------------------------------------------------
+    # Extract paths.
+    chr_paths <- input[[i]]
+    # --------------------------------------------------------------------------
+    # Ensure paths are characters.
+    checkmate::assert_character(
+      chr_paths,
+      min.len = 1L,
+      any.missing = FALSE,
+      unique = TRUE,
+      .var.name = sprintf("input[[%d]]", i)
+    )
+    # --------------------------------------------------------------------------
+    # Ensure paths exist.
+    checkmate::assert_file_exists(
+      chr_paths,
+      .var.name = sprintf("input[[%d]]", i)
+    )
+  }
+  # ----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
+  # `output`
+  # ----------------------------------------------------------------------------
+  # Ensure `output` is a character.
+  checkmate::assert_string(output, min.chars = 1L)
+  # ----------------------------------------------------------------------------
+  # Create output path if does not exist.
+  if (!dir.exists(output)) {
+    dir.create(output, recursive = TRUE, showWarnings = FALSE)
+  }
+  checkmate::assert_directory_exists(output)
+  # ----------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
+  # Ensure `by` is a character.
   checkmate::assert_character(
     by,
     min.len = 1L,
@@ -76,29 +118,6 @@ join_variables <- function(
     unique = TRUE
   )
   # ----------------------------------------------------------------------------
-  # Validate the output directory path.
-  checkmate::assert_string(output, min.chars = 1L)
-  # ----------------------------------------------------------------------------
-  # Extract variables from list names.
-  chr_variables <- names(input)
-  if (is.null(chr_variables)) {
-    chr_variables <- sprintf("input_%03d", seq_along(input))
-  }
-  for (i in seq_along(input)) {
-    chr_paths <- input[[i]]
-    # NEW CHECKMATE PROPOSAL: separate vector shape from file existence.
-    checkmate::assert_character(
-      chr_paths,
-      min.len = 1L,
-      any.missing = FALSE,
-      unique = TRUE,
-      .var.name = sprintf("input[[%d]]", i)
-    )
-    checkmate::assert_file_exists(
-      chr_paths,
-      .var.name = sprintf("input[[%d]]", i)
-    )
-  }
   # ----------------------------------------------------------------------------
   # Quote identifiers, including names containing capitals or punctuation.
   chr_by_sql <- paste0('"', gsub('"', '""', by, fixed = TRUE), '"')
@@ -121,19 +140,7 @@ join_variables <- function(
   chr_data_columns <- character(0)
   # ----------------------------------------------------------------------------
   # Drop only views created by this call, including when an R error occurs.
-  on.exit(
-    {
-      for (h in rev(chr_merge_views)) {
-        tryCatch(
-          sedonadb::sd_drop_view(h),
-          error = function(e) {
-            message("Could not remove view ", h, ": ", conditionMessage(e))
-          }
-        )
-      }
-    },
-    add = TRUE
-  )
+  on.exit(amadeusdb::cleanup_views(chr_merge_views), add = TRUE)
   # ----------------------------------------------------------------------------
   # Read each group as one logical table and check its schema and join keys.
   for (i in seq_along(input)) {
@@ -154,8 +161,7 @@ join_variables <- function(
         sedonadb::sd_collect()
     )
     # --------------------------------------------------------------------------
-    # Ensure merge columns are in data.
-    # NEW CHECKMATE PROPOSAL: optional replacement for schema membership only.
+    # Ensure merge keys (`by`) are in data.
     checkmate::assert_subset(
       by,
       chr_columns,
@@ -503,24 +509,7 @@ join_covariates <- function(
   # ----------------------------------------------------------------------------
   # Track successfully registered views for the exit cleanup below.
   chr_join_views <- character(0)
-  # ----------------------------------------------------------------------------
-  # Remove only views registered by this call, on normal return or an R error.
-  # Input and output files are not deleted.
-  # Attempt cleanup in reverse registration order and continue if dropping
-  # an individual view fails.
-  on.exit(
-    {
-      for (h in rev(chr_join_views)) {
-        tryCatch(
-          sedonadb::sd_drop_view(h),
-          error = function(e) {
-            message("Could not remove view ", h, ": ", conditionMessage(e))
-          }
-        )
-      }
-    },
-    add = TRUE
-  )
+  on.exit(amadeusdb::cleanup_views(chr_join_views), add = TRUE)
   # ----------------------------------------------------------------------------
   # Store SQL projections and output fields; source rows stay in SedonaDB.
   # Start with all AQS columns, then append each source's selected fields

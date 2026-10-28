@@ -20,17 +20,15 @@ sedona_geos(
 )
 }
 \arguments{
-\item{date}{integer(1) or integer(2). Inclusive start and end dates in
-chronological order, expressed as days since \code{1970-01-01}, for example
-\code{as.integer(as.Date("2024-01-01"))}. A single date is repeated to process
-one day. The current check requires integer storage; character and \code{Date}
-vectors are not accepted.}
+\item{date}{character(1) or character(2). Inclusive start and end dates in
+chronological order, formatted as \code{"YYYY-MM-DD"}. A single date is
+repeated to process one day.}
 
 \item{input}{character(1). Non-empty path to an existing directory containing
-GEOS-CF files with their original \code{GEOS-CF.v01.rpl} filenames. File discovery
-is recursive, but the current input check requires all listed immediate
-entries to be files. Supply files from a compatible collection with no
-repeated filename timestamps.}
+GEOS-CF files with their original \code{GEOS-CF.v01.rpl} filenames. File
+discovery is recursive, but the current input check requires all listed
+immediate entries to be files. Supply files from a compatible collection
+with no repeated filename timestamps.}
 
 \item{output}{character(1). Non-empty directory path for the output Parquet
 files. Created recursively if it does not exist.}

@@ -7,11 +7,9 @@
 sedona_hms(date, input, output, locs, locs_id, radius = 0, batch = 50L)
 }
 \arguments{
-\item{date}{integer(1) or integer(2). Inclusive start and end dates in
-chronological order, expressed as days since \code{1970-01-01}, for example
-\code{as.integer(as.Date("2024-01-01"))}. A single date is repeated to process
-one day. The current check requires integer storage; character and \code{Date}
-vectors are not accepted.}
+\item{date}{character(1) or character(2). Inclusive start and end dates in
+chronological order, formatted as \code{"YYYY-MM-DD"}. A single date is
+repeated to process one day.}
 
 \item{input}{character(1). Non-empty path to an existing directory containing
 HMS smoke shapefiles named with the \code{hms_smoke} prefix and a final

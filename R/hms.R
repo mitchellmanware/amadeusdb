@@ -6,11 +6,9 @@
 #' Hazard Mapping System (HMS) smoke polygons, and write daily light, medium,
 #' and heavy smoke indicators to Parquet files in batches.
 #'
-#' @param date integer(1) or integer(2). Inclusive start and end dates in
-#'   chronological order, expressed as days since `1970-01-01`, for example
-#'   `as.integer(as.Date("2024-01-01"))`. A single date is repeated to process
-#'   one day. The current check requires integer storage; character and `Date`
-#'   vectors are not accepted.
+#' @param date character(1) or character(2). Inclusive start and end dates in
+#'   chronological order, formatted as `"YYYY-MM-DD"`. A single date is
+#'   repeated to process one day.
 #' @param input character(1). Non-empty path to an existing directory containing
 #'   HMS smoke shapefiles named with the `hms_smoke` prefix and a final
 #'   `YYYYMMDD.shp` date suffix. The accompanying shapefile components must be
@@ -230,12 +228,6 @@ sedona_hms <- function(
     FUN.VALUE = character(1),
     USE.NAMES = FALSE
   )
-  # ----------------------------------------------------------------------------
-  # Create output path if does not exist.
-  if (!dir.exists(output)) {
-    dir.create(output, recursive = TRUE, showWarnings = FALSE)
-  }
-  stopifnot(dir.exists(output))
   # ----------------------------------------------------------------------------
   # Generate .parquet paths for each batch view.
   chr_output <- normalizePath(
