@@ -291,7 +291,7 @@ sedona_hms <- function(
       # Compute the spatial join.
       db_date <- sedonadb::sd_sql(
         sql_processhms,
-        params = list(as.character(df_hms_batch$date[i]))
+        params = list(as.character(df_hms_batch$time[i]))
       ) |>
         sedonadb::sd_compute()
       # ------------------------------------------------------------------------
