@@ -259,9 +259,6 @@ join_variables <- function(
     )
   }
   # ----------------------------------------------------------------------------
-  # Create output directory if does not exist.
-  dir.create(dirname(output), recursive = TRUE, showWarnings = FALSE)
-  # ----------------------------------------------------------------------------
   # Extract file names in output before parquet file writing.
   chr_output1 <- list.files(
     output,
@@ -815,9 +812,6 @@ join_covariates <- function(
     " IS NOT NULL",
     collapse = " AND "
   )
-  # ----------------------------------------------------------------------------
-  # Create output directory if does not exist.
-  dir.create(dirname(output), recursive = TRUE, showWarnings = FALSE)
   # ----------------------------------------------------------------------------
   # Extract file names in output before parquet file writing.
   chr_output1 <- list.files(
