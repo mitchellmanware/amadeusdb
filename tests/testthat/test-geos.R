@@ -23,7 +23,7 @@ testthat::test_that("sedona_geos; locs = sf::polygons; aqc", {
     "polygons.shp"
   ))
   # ----------------------------------------------------------------------------
-  # No errors at runtime
+  # No errors at runtime.
   testthat::expect_no_error(
     db_geos <- amadeusdb::sedona_geos(
       date = c("2018-01-01", "2018-01-01"),
@@ -38,7 +38,7 @@ testthat::test_that("sedona_geos; locs = sf::polygons; aqc", {
   # ----------------------------------------------------------------------------
   # !!! OUTPUT CHECKS !!!
   # ----------------------------------------------------------------------------
-  # Only .parquet files in the output directory.
+  # Only .parquet files in the output database.
   testthat::expect_true(all(grepl("\\.parquet", db_geos)))
   # ----------------------------------------------------------------------------
   # No errors on read as .parquet.
@@ -48,22 +48,22 @@ testthat::test_that("sedona_geos; locs = sf::polygons; aqc", {
   testthat::expect_s3_class(db_geos1, "sedonadb_dataframe")
   # ----------------------------------------------------------------------------
   # No errors on collection to data frame.
-  testthat::expect_no_error(db_geos1 <- sedonadb::sd_collect(db_geos1))
+  testthat::expect_no_error(df_geos <- sedonadb::sd_collect(db_geos1))
   # ----------------------------------------------------------------------------
   # Expect 8 rows (4 fixture site x 2 hours).
-  testthat::expect_equal(nrow(db_geos1), 8)
+  testthat::expect_equal(nrow(df_geos), 8)
   # ----------------------------------------------------------------------------
   # Expect 3 columns (locs_id, time, variable)
-  testthat::expect_equal(ncol(db_geos1), 3)
+  testthat::expect_equal(ncol(df_geos), 3)
   # ----------------------------------------------------------------------------
   # Expect character location identifer column.
-  testthat::expect_type(db_geos1$NAME, "character")
+  testthat::expect_type(df_geos$NAME, "character")
   # ----------------------------------------------------------------------------
   # Expect character "time" column.
-  testthat::expect_type(db_geos1$time, "character")
+  testthat::expect_type(df_geos$time, "character")
   # ----------------------------------------------------------------------------
   # Expect numeric for variable columns.
-  testthat::expect_equal(class(db_geos1$O3), "numeric")
+  testthat::expect_equal(class(df_geos$O3), "numeric")
   # ----------------------------------------------------------------------------
   # Clean up temporary directory.
   file.remove(list.files(chr_tempdir, full.names = TRUE, recursive = TRUE))
@@ -87,7 +87,7 @@ testthat::test_that("sedona_geos; locs = sf::points; aqc", {
     "points.shp"
   ))
   # ----------------------------------------------------------------------------
-  # No errors at runtime
+  # No errors at runtime.
   testthat::expect_no_error(
     db_geos <- amadeusdb::sedona_geos(
       date = c("2018-01-01", "2018-01-01"),
@@ -102,7 +102,7 @@ testthat::test_that("sedona_geos; locs = sf::points; aqc", {
   # ----------------------------------------------------------------------------
   # !!! OUTPUT CHECKS !!!
   # ----------------------------------------------------------------------------
-  # Only .parquet files in the output directory.
+  # Only .parquet files in the output database.
   testthat::expect_true(all(grepl("\\.parquet", db_geos)))
   # ----------------------------------------------------------------------------
   # No errors on read as .parquet.
@@ -112,22 +112,22 @@ testthat::test_that("sedona_geos; locs = sf::points; aqc", {
   testthat::expect_s3_class(db_geos1, "sedonadb_dataframe")
   # ----------------------------------------------------------------------------
   # No errors on collection to data frame.
-  testthat::expect_no_error(db_geos1 <- sedonadb::sd_collect(db_geos1))
+  testthat::expect_no_error(df_geos <- sedonadb::sd_collect(db_geos1))
   # ----------------------------------------------------------------------------
   # Expect 8 rows (4 fixture site x 2 hours).
-  testthat::expect_equal(nrow(db_geos1), 8)
+  testthat::expect_equal(nrow(df_geos), 8)
   # ----------------------------------------------------------------------------
   # Expect 3 columns (locs_id, time, variable)
-  testthat::expect_equal(ncol(db_geos1), 3)
+  testthat::expect_equal(ncol(df_geos), 3)
   # ----------------------------------------------------------------------------
   # Expect character location identifer column.
-  testthat::expect_type(db_geos1$NAME, "character")
+  testthat::expect_type(df_geos$NAME, "character")
   # ----------------------------------------------------------------------------
   # Expect character "time" column.
-  testthat::expect_type(db_geos1$time, "character")
+  testthat::expect_type(df_geos$time, "character")
   # ----------------------------------------------------------------------------
   # Expect numeric for variable columns.
-  testthat::expect_equal(class(db_geos1$O3), "numeric")
+  testthat::expect_equal(class(df_geos$O3), "numeric")
   # ----------------------------------------------------------------------------
   # Clean up temporary directory.
   file.remove(list.files(chr_tempdir, full.names = TRUE, recursive = TRUE))
@@ -151,7 +151,7 @@ testthat::test_that("sedona_geos; locs = terra::polygons; aqc", {
     "polygons.shp"
   ))
   # ----------------------------------------------------------------------------
-  # No errors at runtime
+  # No errors at runtime.
   testthat::expect_no_error(
     db_geos <- amadeusdb::sedona_geos(
       date = c("2018-01-01", "2018-01-01"),
@@ -166,7 +166,7 @@ testthat::test_that("sedona_geos; locs = terra::polygons; aqc", {
   # ----------------------------------------------------------------------------
   # !!! OUTPUT CHECKS !!!
   # ----------------------------------------------------------------------------
-  # Only .parquet files in the output directory.
+  # Only .parquet files in the output database.
   testthat::expect_true(all(grepl("\\.parquet", db_geos)))
   # ----------------------------------------------------------------------------
   # No errors on read as .parquet.
@@ -176,22 +176,22 @@ testthat::test_that("sedona_geos; locs = terra::polygons; aqc", {
   testthat::expect_s3_class(db_geos1, "sedonadb_dataframe")
   # ----------------------------------------------------------------------------
   # No errors on collection to data frame.
-  testthat::expect_no_error(db_geos1 <- sedonadb::sd_collect(db_geos1))
+  testthat::expect_no_error(df_geos <- sedonadb::sd_collect(db_geos1))
   # ----------------------------------------------------------------------------
   # Expect 8 rows (4 fixture site x 2 hours).
-  testthat::expect_equal(nrow(db_geos1), 8)
+  testthat::expect_equal(nrow(df_geos), 8)
   # ----------------------------------------------------------------------------
   # Expect 3 columns (locs_id, time, variable)
-  testthat::expect_equal(ncol(db_geos1), 3)
+  testthat::expect_equal(ncol(df_geos), 3)
   # ----------------------------------------------------------------------------
   # Expect character location identifer column.
-  testthat::expect_type(db_geos1$NAME, "character")
+  testthat::expect_type(df_geos$NAME, "character")
   # ----------------------------------------------------------------------------
   # Expect character "time" column.
-  testthat::expect_type(db_geos1$time, "character")
+  testthat::expect_type(df_geos$time, "character")
   # ----------------------------------------------------------------------------
   # Expect numeric for variable columns.
-  testthat::expect_equal(class(db_geos1$O3), "numeric")
+  testthat::expect_equal(class(df_geos$O3), "numeric")
   # ----------------------------------------------------------------------------
   # Clean up temporary directory.
   file.remove(list.files(chr_tempdir, full.names = TRUE, recursive = TRUE))
@@ -215,7 +215,7 @@ testthat::test_that("sedona_geos; locs = terra::points; aqc", {
     "points.shp"
   ))
   # ----------------------------------------------------------------------------
-  # No errors at runtime
+  # No errors at runtime.
   testthat::expect_no_error(
     db_geos <- amadeusdb::sedona_geos(
       date = c("2018-01-01", "2018-01-01"),
@@ -230,7 +230,7 @@ testthat::test_that("sedona_geos; locs = terra::points; aqc", {
   # ----------------------------------------------------------------------------
   # !!! OUTPUT CHECKS !!!
   # ----------------------------------------------------------------------------
-  # Only .parquet files in the output directory.
+  # Only .parquet files in the output database.
   testthat::expect_true(all(grepl("\\.parquet", db_geos)))
   # ----------------------------------------------------------------------------
   # No errors on read as .parquet.
@@ -240,22 +240,22 @@ testthat::test_that("sedona_geos; locs = terra::points; aqc", {
   testthat::expect_s3_class(db_geos1, "sedonadb_dataframe")
   # ----------------------------------------------------------------------------
   # No errors on collection to data frame.
-  testthat::expect_no_error(db_geos1 <- sedonadb::sd_collect(db_geos1))
+  testthat::expect_no_error(df_geos <- sedonadb::sd_collect(db_geos1))
   # ----------------------------------------------------------------------------
   # Expect 8 rows (4 fixture site x 2 hours).
-  testthat::expect_equal(nrow(db_geos1), 8)
+  testthat::expect_equal(nrow(df_geos), 8)
   # ----------------------------------------------------------------------------
   # Expect 3 columns (locs_id, time, variable)
-  testthat::expect_equal(ncol(db_geos1), 3)
+  testthat::expect_equal(ncol(df_geos), 3)
   # ----------------------------------------------------------------------------
   # Expect character location identifer column.
-  testthat::expect_type(db_geos1$NAME, "character")
+  testthat::expect_type(df_geos$NAME, "character")
   # ----------------------------------------------------------------------------
   # Expect character "time" column.
-  testthat::expect_type(db_geos1$time, "character")
+  testthat::expect_type(df_geos$time, "character")
   # ----------------------------------------------------------------------------
   # Expect numeric for variable columns.
-  testthat::expect_equal(class(db_geos1$O3), "numeric")
+  testthat::expect_equal(class(df_geos$O3), "numeric")
   # ----------------------------------------------------------------------------
   # Clean up temporary directory.
   file.remove(list.files(chr_tempdir, full.names = TRUE, recursive = TRUE))
@@ -274,7 +274,7 @@ testthat::test_that("sedona_geos; locs = data.frame; aqc", {
   # Import data.frame points.
   df <- read.csv(testthat::test_path("..", "testdata", "locs", "df.csv"))
   # ----------------------------------------------------------------------------
-  # No errors at runtime
+  # No errors at runtime.
   testthat::expect_no_error(
     db_geos <- amadeusdb::sedona_geos(
       date = c("2018-01-01", "2018-01-01"),
@@ -289,7 +289,7 @@ testthat::test_that("sedona_geos; locs = data.frame; aqc", {
   # ----------------------------------------------------------------------------
   # !!! OUTPUT CHECKS !!!
   # ----------------------------------------------------------------------------
-  # Only .parquet files in the output directory.
+  # Only .parquet files in the output database.
   testthat::expect_true(all(grepl("\\.parquet", db_geos)))
   # ----------------------------------------------------------------------------
   # No errors on read as .parquet.
@@ -299,22 +299,22 @@ testthat::test_that("sedona_geos; locs = data.frame; aqc", {
   testthat::expect_s3_class(db_geos1, "sedonadb_dataframe")
   # ----------------------------------------------------------------------------
   # No errors on collection to data frame.
-  testthat::expect_no_error(db_geos1 <- sedonadb::sd_collect(db_geos1))
+  testthat::expect_no_error(df_geos <- sedonadb::sd_collect(db_geos1))
   # ----------------------------------------------------------------------------
   # Expect 8 rows (4 fixture site x 2 hours).
-  testthat::expect_equal(nrow(db_geos1), 8)
+  testthat::expect_equal(nrow(df_geos), 8)
   # ----------------------------------------------------------------------------
   # Expect 3 columns (locs_id, time, variable)
-  testthat::expect_equal(ncol(db_geos1), 3)
+  testthat::expect_equal(ncol(df_geos), 3)
   # ----------------------------------------------------------------------------
   # Expect character location identifer column.
-  testthat::expect_type(db_geos1$NAME, "character")
+  testthat::expect_type(df_geos$NAME, "character")
   # ----------------------------------------------------------------------------
   # Expect character "time" column.
-  testthat::expect_type(db_geos1$time, "character")
+  testthat::expect_type(df_geos$time, "character")
   # ----------------------------------------------------------------------------
   # Expect numeric for variable columns.
-  testthat::expect_equal(class(db_geos1$O3), "numeric")
+  testthat::expect_equal(class(df_geos$O3), "numeric")
   # ----------------------------------------------------------------------------
   # Clean up temporary directory.
   file.remove(list.files(chr_tempdir, full.names = TRUE, recursive = TRUE))
@@ -338,7 +338,7 @@ testthat::test_that("sedona_geos; locs = sf::polygons; chm", {
     "polygons.shp"
   ))
   # ----------------------------------------------------------------------------
-  # No errors at runtime
+  # No errors at runtime.
   testthat::expect_no_error(
     db_geos <- amadeusdb::sedona_geos(
       date = c("2018-01-01", "2018-01-01"),
@@ -347,13 +347,13 @@ testthat::test_that("sedona_geos; locs = sf::polygons; chm", {
       locs = polygons,
       locs_id = "NAME",
       radius = 0,
-      variable = "O3"
+      variable = "CO"
     )
   )
   # ----------------------------------------------------------------------------
   # !!! OUTPUT CHECKS !!!
   # ----------------------------------------------------------------------------
-  # Only .parquet files in the output directory.
+  # Only .parquet files in the output database.
   testthat::expect_true(all(grepl("\\.parquet", db_geos)))
   # ----------------------------------------------------------------------------
   # No errors on read as .parquet.
@@ -363,22 +363,22 @@ testthat::test_that("sedona_geos; locs = sf::polygons; chm", {
   testthat::expect_s3_class(db_geos1, "sedonadb_dataframe")
   # ----------------------------------------------------------------------------
   # No errors on collection to data frame.
-  testthat::expect_no_error(db_geos1 <- sedonadb::sd_collect(db_geos1))
+  testthat::expect_no_error(df_geos <- sedonadb::sd_collect(db_geos1))
   # ----------------------------------------------------------------------------
   # Expect 8 rows (4 fixture site x 2 hours).
-  testthat::expect_equal(nrow(db_geos1), 8)
+  testthat::expect_equal(nrow(df_geos), 8)
   # ----------------------------------------------------------------------------
   # Expect 3 columns (locs_id, time, variable)
-  testthat::expect_equal(ncol(db_geos1), 3)
+  testthat::expect_equal(ncol(df_geos), 3)
   # ----------------------------------------------------------------------------
   # Expect character location identifer column.
-  testthat::expect_type(db_geos1$NAME, "character")
+  testthat::expect_type(df_geos$NAME, "character")
   # ----------------------------------------------------------------------------
   # Expect character "time" column.
-  testthat::expect_type(db_geos1$time, "character")
+  testthat::expect_type(df_geos$time, "character")
   # ----------------------------------------------------------------------------
   # Expect numeric for variable columns.
-  testthat::expect_equal(class(db_geos1$O3), "numeric")
+  testthat::expect_equal(class(df_geos$CO), "numeric")
   # ----------------------------------------------------------------------------
   # Clean up temporary directory.
   file.remove(list.files(chr_tempdir, full.names = TRUE, recursive = TRUE))
@@ -402,7 +402,7 @@ testthat::test_that("sedona_geos; locs = sf::points; chm", {
     "points.shp"
   ))
   # ----------------------------------------------------------------------------
-  # No errors at runtime
+  # No errors at runtime.
   testthat::expect_no_error(
     db_geos <- amadeusdb::sedona_geos(
       date = c("2018-01-01", "2018-01-01"),
@@ -411,13 +411,13 @@ testthat::test_that("sedona_geos; locs = sf::points; chm", {
       locs = points,
       locs_id = "NAME",
       radius = 0,
-      variable = "O3"
+      variable = "CO"
     )
   )
   # ----------------------------------------------------------------------------
   # !!! OUTPUT CHECKS !!!
   # ----------------------------------------------------------------------------
-  # Only .parquet files in the output directory.
+  # Only .parquet files in the output database.
   testthat::expect_true(all(grepl("\\.parquet", db_geos)))
   # ----------------------------------------------------------------------------
   # No errors on read as .parquet.
@@ -427,22 +427,22 @@ testthat::test_that("sedona_geos; locs = sf::points; chm", {
   testthat::expect_s3_class(db_geos1, "sedonadb_dataframe")
   # ----------------------------------------------------------------------------
   # No errors on collection to data frame.
-  testthat::expect_no_error(db_geos1 <- sedonadb::sd_collect(db_geos1))
+  testthat::expect_no_error(df_geos <- sedonadb::sd_collect(db_geos1))
   # ----------------------------------------------------------------------------
   # Expect 8 rows (4 fixture site x 2 hours).
-  testthat::expect_equal(nrow(db_geos1), 8)
+  testthat::expect_equal(nrow(df_geos), 8)
   # ----------------------------------------------------------------------------
   # Expect 3 columns (locs_id, time, variable)
-  testthat::expect_equal(ncol(db_geos1), 3)
+  testthat::expect_equal(ncol(df_geos), 3)
   # ----------------------------------------------------------------------------
   # Expect character location identifer column.
-  testthat::expect_type(db_geos1$NAME, "character")
+  testthat::expect_type(df_geos$NAME, "character")
   # ----------------------------------------------------------------------------
   # Expect character "time" column.
-  testthat::expect_type(db_geos1$time, "character")
+  testthat::expect_type(df_geos$time, "character")
   # ----------------------------------------------------------------------------
   # Expect numeric for variable columns.
-  testthat::expect_equal(class(db_geos1$O3), "numeric")
+  testthat::expect_equal(class(df_geos$CO), "numeric")
   # ----------------------------------------------------------------------------
   # Clean up temporary directory.
   file.remove(list.files(chr_tempdir, full.names = TRUE, recursive = TRUE))
@@ -466,7 +466,7 @@ testthat::test_that("sedona_geos; locs = terra::polygons; chm", {
     "polygons.shp"
   ))
   # ----------------------------------------------------------------------------
-  # No errors at runtime
+  # No errors at runtime.
   testthat::expect_no_error(
     db_geos <- amadeusdb::sedona_geos(
       date = c("2018-01-01", "2018-01-01"),
@@ -475,13 +475,13 @@ testthat::test_that("sedona_geos; locs = terra::polygons; chm", {
       locs = polygons,
       locs_id = "NAME",
       radius = 0,
-      variable = "O3"
+      variable = "CO"
     )
   )
   # ----------------------------------------------------------------------------
   # !!! OUTPUT CHECKS !!!
   # ----------------------------------------------------------------------------
-  # Only .parquet files in the output directory.
+  # Only .parquet files in the output database.
   testthat::expect_true(all(grepl("\\.parquet", db_geos)))
   # ----------------------------------------------------------------------------
   # No errors on read as .parquet.
@@ -491,22 +491,22 @@ testthat::test_that("sedona_geos; locs = terra::polygons; chm", {
   testthat::expect_s3_class(db_geos1, "sedonadb_dataframe")
   # ----------------------------------------------------------------------------
   # No errors on collection to data frame.
-  testthat::expect_no_error(db_geos1 <- sedonadb::sd_collect(db_geos1))
+  testthat::expect_no_error(df_geos <- sedonadb::sd_collect(db_geos1))
   # ----------------------------------------------------------------------------
   # Expect 8 rows (4 fixture site x 2 hours).
-  testthat::expect_equal(nrow(db_geos1), 8)
+  testthat::expect_equal(nrow(df_geos), 8)
   # ----------------------------------------------------------------------------
   # Expect 3 columns (locs_id, time, variable)
-  testthat::expect_equal(ncol(db_geos1), 3)
+  testthat::expect_equal(ncol(df_geos), 3)
   # ----------------------------------------------------------------------------
   # Expect character location identifer column.
-  testthat::expect_type(db_geos1$NAME, "character")
+  testthat::expect_type(df_geos$NAME, "character")
   # ----------------------------------------------------------------------------
   # Expect character "time" column.
-  testthat::expect_type(db_geos1$time, "character")
+  testthat::expect_type(df_geos$time, "character")
   # ----------------------------------------------------------------------------
   # Expect numeric for variable columns.
-  testthat::expect_equal(class(db_geos1$O3), "numeric")
+  testthat::expect_equal(class(df_geos$CO), "numeric")
   # ----------------------------------------------------------------------------
   # Clean up temporary directory.
   file.remove(list.files(chr_tempdir, full.names = TRUE, recursive = TRUE))
@@ -530,7 +530,7 @@ testthat::test_that("sedona_geos; locs = terra::points; chm", {
     "points.shp"
   ))
   # ----------------------------------------------------------------------------
-  # No errors at runtime
+  # No errors at runtime.
   testthat::expect_no_error(
     db_geos <- amadeusdb::sedona_geos(
       date = c("2018-01-01", "2018-01-01"),
@@ -539,13 +539,13 @@ testthat::test_that("sedona_geos; locs = terra::points; chm", {
       locs = points,
       locs_id = "NAME",
       radius = 0,
-      variable = "O3"
+      variable = "CO"
     )
   )
   # ----------------------------------------------------------------------------
   # !!! OUTPUT CHECKS !!!
   # ----------------------------------------------------------------------------
-  # Only .parquet files in the output directory.
+  # Only .parquet files in the output database.
   testthat::expect_true(all(grepl("\\.parquet", db_geos)))
   # ----------------------------------------------------------------------------
   # No errors on read as .parquet.
@@ -555,22 +555,22 @@ testthat::test_that("sedona_geos; locs = terra::points; chm", {
   testthat::expect_s3_class(db_geos1, "sedonadb_dataframe")
   # ----------------------------------------------------------------------------
   # No errors on collection to data frame.
-  testthat::expect_no_error(db_geos1 <- sedonadb::sd_collect(db_geos1))
+  testthat::expect_no_error(df_geos <- sedonadb::sd_collect(db_geos1))
   # ----------------------------------------------------------------------------
   # Expect 8 rows (4 fixture site x 2 hours).
-  testthat::expect_equal(nrow(db_geos1), 8)
+  testthat::expect_equal(nrow(df_geos), 8)
   # ----------------------------------------------------------------------------
   # Expect 3 columns (locs_id, time, variable)
-  testthat::expect_equal(ncol(db_geos1), 3)
+  testthat::expect_equal(ncol(df_geos), 3)
   # ----------------------------------------------------------------------------
   # Expect character location identifer column.
-  testthat::expect_type(db_geos1$NAME, "character")
+  testthat::expect_type(df_geos$NAME, "character")
   # ----------------------------------------------------------------------------
   # Expect character "time" column.
-  testthat::expect_type(db_geos1$time, "character")
+  testthat::expect_type(df_geos$time, "character")
   # ----------------------------------------------------------------------------
   # Expect numeric for variable columns.
-  testthat::expect_equal(class(db_geos1$O3), "numeric")
+  testthat::expect_equal(class(df_geos$CO), "numeric")
   # ----------------------------------------------------------------------------
   # Clean up temporary directory.
   file.remove(list.files(chr_tempdir, full.names = TRUE, recursive = TRUE))
@@ -589,7 +589,7 @@ testthat::test_that("sedona_geos; locs = data.frame; chm", {
   # Import data.frame points.
   df <- read.csv(testthat::test_path("..", "testdata", "locs", "df.csv"))
   # ----------------------------------------------------------------------------
-  # No errors at runtime
+  # No errors at runtime.
   testthat::expect_no_error(
     db_geos <- amadeusdb::sedona_geos(
       date = c("2018-01-01", "2018-01-01"),
@@ -598,13 +598,13 @@ testthat::test_that("sedona_geos; locs = data.frame; chm", {
       locs = df,
       locs_id = "NAME",
       radius = 0,
-      variable = "O3"
+      variable = "CO"
     )
   )
   # ----------------------------------------------------------------------------
   # !!! OUTPUT CHECKS !!!
   # ----------------------------------------------------------------------------
-  # Only .parquet files in the output directory.
+  # Only .parquet files in the output database.
   testthat::expect_true(all(grepl("\\.parquet", db_geos)))
   # ----------------------------------------------------------------------------
   # No errors on read as .parquet.
@@ -614,22 +614,22 @@ testthat::test_that("sedona_geos; locs = data.frame; chm", {
   testthat::expect_s3_class(db_geos1, "sedonadb_dataframe")
   # ----------------------------------------------------------------------------
   # No errors on collection to data frame.
-  testthat::expect_no_error(db_geos1 <- sedonadb::sd_collect(db_geos1))
+  testthat::expect_no_error(df_geos <- sedonadb::sd_collect(db_geos1))
   # ----------------------------------------------------------------------------
   # Expect 8 rows (4 fixture site x 2 hours).
-  testthat::expect_equal(nrow(db_geos1), 8)
+  testthat::expect_equal(nrow(df_geos), 8)
   # ----------------------------------------------------------------------------
   # Expect 3 columns (locs_id, time, variable)
-  testthat::expect_equal(ncol(db_geos1), 3)
+  testthat::expect_equal(ncol(df_geos), 3)
   # ----------------------------------------------------------------------------
   # Expect character location identifer column.
-  testthat::expect_type(db_geos1$NAME, "character")
+  testthat::expect_type(df_geos$NAME, "character")
   # ----------------------------------------------------------------------------
   # Expect character "time" column.
-  testthat::expect_type(db_geos1$time, "character")
+  testthat::expect_type(df_geos$time, "character")
   # ----------------------------------------------------------------------------
   # Expect numeric for variable columns.
-  testthat::expect_equal(class(db_geos1$O3), "numeric")
+  testthat::expect_equal(class(df_geos$CO), "numeric")
   # ----------------------------------------------------------------------------
   # Clean up temporary directory.
   file.remove(list.files(chr_tempdir, full.names = TRUE, recursive = TRUE))
@@ -653,7 +653,7 @@ testthat::test_that("sedona_geos; skip existing .parquet", {
     "points.shp"
   ))
   # ----------------------------------------------------------------------------
-  # No errors at runtime
+  # No errors at runtime.
   testthat::expect_no_error(
     db_geos <- amadeusdb::sedona_geos(
       date = c("2018-01-01", "2018-01-01"),
@@ -709,52 +709,11 @@ testthat::test_that("sedona_geos; expected failures", {
     "locs"
   )
   # ----------------------------------------------------------------------------
-  # Improper batch arguments.
-  testthat::expect_error(
-    amadeusdb::sedona_geos(locs = points, locs_id = "NAME", batch = NULL),
-    regexp = "batch"
-  )
-  testthat::expect_error(
-    amadeusdb::sedona_geos(locs = points, locs_id = "NAME", batch = 1.1),
-    regexp = "batch"
-  )
-  # ----------------------------------------------------------------------------
-  # Improper input arguments.
-  testthat::expect_error(
-    amadeusdb::sedona_geos(
-      locs = points,
-      locs_id = "NAME",
-      batch = 1,
-      input = NULL
-    ),
-    regexp = "input"
-  )
-  testthat::expect_error(
-    amadeusdb::sedona_geos(
-      locs = points,
-      locs_id = "NAME",
-      batch = 1,
-      input = 10
-    ),
-    regexp = "input"
-  )
-  testthat::expect_error(
-    amadeusdb::sedona_geos(
-      locs = points,
-      locs_id = "NAME",
-      batch = 1,
-      input = "path/to/empty/"
-    ),
-    regexp = "input"
-  )
-  # ----------------------------------------------------------------------------
   # Improper radius arguments.
   testthat::expect_error(
     amadeusdb::sedona_geos(
       locs = points,
       locs_id = "NAME",
-      batch = 1,
-      input = tempdir(),
       radius = -1
     ),
     regexp = "radius"
@@ -763,8 +722,6 @@ testthat::test_that("sedona_geos; expected failures", {
     amadeusdb::sedona_geos(
       locs = points,
       locs_id = "NAME",
-      batch = 1,
-      input = tempdir(),
       radius = NULL
     ),
     regexp = "radius"
@@ -773,11 +730,121 @@ testthat::test_that("sedona_geos; expected failures", {
     amadeusdb::sedona_geos(
       locs = points,
       locs_id = "NAME",
-      batch = 1,
-      input = tempdir(),
       radius = "text"
     ),
     regexp = "radius"
+  )
+  # ----------------------------------------------------------------------------
+  # Improper date arguments.
+  testthat::expect_error(
+    amadeusdb::sedona_geos(locs = points, locs_id = "NAME", date = NULL),
+    regexp = "date"
+  )
+  testthat::expect_error(
+    amadeusdb::sedona_geos(locs = points, locs_id = "NAME", date = 1L),
+    regexp = "date"
+  )
+  # ----------------------------------------------------------------------------
+  # Improper input arguments.
+  testthat::expect_error(
+    amadeusdb::sedona_geos(
+      locs = points,
+      locs_id = "NAME",
+      date = "2018-01-01",
+      input = NULL
+    ),
+    regexp = "input"
+  )
+  testthat::expect_error(
+    amadeusdb::sedona_geos(
+      locs = points,
+      locs_id = "NAME",
+      date = "2018-01-01",
+      input = 10
+    ),
+    regexp = "input"
+  )
+  testthat::expect_error(
+    amadeusdb::sedona_geos(
+      locs = points,
+      locs_id = "NAME",
+      date = "2018-01-01",
+      input = "path/to/empty/"
+    ),
+    regexp = "input"
+  )
+  # ----------------------------------------------------------------------------
+  # Create fixture files in chr_tempdir.
+  file.create(file.path(chr_tempdir, "/fixturepath.txt"))
+  # ----------------------------------------------------------------------------
+  # Improper output arguments.
+  testthat::expect_error(
+    amadeusdb::sedona_geos(
+      locs = points,
+      locs_id = "NAME",
+      date = "2018-01-01",
+      input = chr_tempdir,
+      output = NULL
+    ),
+    regexp = "output"
+  )
+  testthat::expect_error(
+    amadeusdb::sedona_geos(
+      locs = points,
+      locs_id = "NAME",
+      date = "2018-01-01",
+      input = chr_tempdir,
+      output = 1L
+    ),
+    regexp = "output"
+  )
+  # ----------------------------------------------------------------------------
+  # Improper batch arguments.
+  testthat::expect_error(
+    amadeusdb::sedona_geos(
+      locs = points,
+      locs_id = "NAME",
+      date = "2018-01-01",
+      input = chr_tempdir,
+      output = tempdir(),
+      batch = NULL
+    ),
+    regexp = "batch"
+  )
+  testthat::expect_error(
+    amadeusdb::sedona_geos(
+      locs = points,
+      locs_id = "NAME",
+      date = "2018-01-01",
+      input = chr_tempdir,
+      output = tempdir(),
+      batch = 1.111111
+    ),
+    regexp = "batch"
+  )
+  # ----------------------------------------------------------------------------
+  # Improper fun arguments.
+  testthat::expect_error(
+    amadeusdb::sedona_geos(
+      locs = points,
+      locs_id = "NAME",
+      date = "2018-01-01",
+      input = chr_tempdir,
+      output = tempdir(),
+      batch = 1L,
+      fun = NULL
+    )
+  )
+  testthat::expect_error(
+    amadeusdb::sedona_geos(
+      locs = points,
+      locs_id = "NAME",
+      date = "2018-01-01",
+      input = chr_tempdir,
+      output = tempdir(),
+      batch = 1L,
+      fun = "function"
+    )
   )
   # ----------------------------------------------------------------------------
   # Improper variable arguments.
@@ -785,9 +852,10 @@ testthat::test_that("sedona_geos; expected failures", {
     amadeusdb::sedona_geos(
       locs = points,
       locs_id = "NAME",
-      batch = 1,
-      input = tempdir(),
-      radius = 0,
+      date = "2018-01-01",
+      input = chr_tempdir,
+      output = tempdir(),
+      batch = 1L,
       variable = NULL
     ),
     regexp = "variable"
@@ -796,9 +864,10 @@ testthat::test_that("sedona_geos; expected failures", {
     amadeusdb::sedona_geos(
       locs = points,
       locs_id = "NAME",
-      batch = 1,
-      input = tempdir(),
-      radius = 0,
+      date = "2018-01-01",
+      input = chr_tempdir,
+      output = tempdir(),
+      batch = 1L,
       variable = 1L
     ),
     regexp = "variable"
@@ -807,51 +876,113 @@ testthat::test_that("sedona_geos; expected failures", {
   # Improper level arguements.
   testthat::expect_error(
     amadeusdb::sedona_geos(
-      date = c("2018-01-01", "2018-01-01"),
-      input = testthat::test_path("..", "testdata", "geos", "aqc_tavg"),
-      output = chr_tempdir,
-      locs = polygons,
+      locs = points,
       locs_id = "NAME",
-      radius = 0,
+      date = "2018-01-01",
+      input = testthat::test_path("..", "testdata", "geos", "aqc_tavg"),
+      output = tempdir(),
+      batch = 1L,
       variable = "O3",
       level = 2 # single level for current data
     )
   )
   testthat::expect_error(
     amadeusdb::sedona_geos(
-      date = c("2018-01-01", "2018-01-01"),
-      input = testthat::test_path("..", "testdata", "geos", "chm_tavg"),
-      output = chr_tempdir,
-      locs = polygons,
+      locs = points,
       locs_id = "NAME",
-      radius = 0,
+      date = "2018-01-01",
+      input = testthat::test_path("..", "testdata", "geos", "aqc_tavg"),
+      output = tempdir(),
+      batch = 1L,
       variable = "O3",
       level = 2 # single level for current data
     )
   )
   testthat::expect_error(
     amadeusdb::sedona_geos(
-      date = c("2018-01-01", "2018-01-01"),
-      input = testthat::test_path("..", "testdata", "geos", "aqc_tavg"),
-      output = chr_tempdir,
-      locs = polygons,
+      locs = points,
       locs_id = "NAME",
-      radius = 0,
+      date = "2018-01-01",
+      input = testthat::test_path("..", "testdata", "geos", "aqc_tavg"),
+      output = tempdir(),
+      batch = 1L,
       variable = "O3",
       level = 2.1
     )
   )
   testthat::expect_error(
     amadeusdb::sedona_geos(
-      date = c("2018-01-01", "2018-01-01"),
-      input = testthat::test_path("..", "testdata", "geos", "aqc_tavg"),
-      output = chr_tempdir,
-      locs = polygons,
+      locs = points,
       locs_id = "NAME",
-      radius = 0,
+      date = "2018-01-01",
+      input = testthat::test_path("..", "testdata", "geos", "aqc_tavg"),
+      output = tempdir(),
+      batch = 1L,
       variable = "O3",
       level = "level"
     )
+  )
+  # ----------------------------------------------------------------------------
+  # Improper touches arguements.
+  testthat::expect_error(
+    amadeusdb::sedona_geos(
+      locs = points,
+      locs_id = "NAME",
+      date = "2018-01-01",
+      input = testthat::test_path("..", "testdata", "geos", "aqc_tavg"),
+      output = tempdir(),
+      batch = 1L,
+      variable = "O3",
+      level = 1L,
+      touches = 1
+    ),
+    regexp = "touches"
+  )
+  testthat::expect_error(
+    amadeusdb::sedona_geos(
+      locs = points,
+      locs_id = "NAME",
+      date = "2018-01-01",
+      input = testthat::test_path("..", "testdata", "geos", "aqc_tavg"),
+      output = tempdir(),
+      batch = 1L,
+      variable = "O3",
+      level = 1L,
+      touches = "no"
+    ),
+    regexp = "touches"
+  )
+  # ----------------------------------------------------------------------------
+  # Improper exclude_nodata arguements.
+  testthat::expect_error(
+    amadeusdb::sedona_geos(
+      locs = points,
+      locs_id = "NAME",
+      date = "2018-01-01",
+      input = testthat::test_path("..", "testdata", "geos", "aqc_tavg"),
+      output = tempdir(),
+      batch = 1L,
+      variable = "O3",
+      level = 1L,
+      touches = TRUE,
+      exclude_nodata = 1L
+    ),
+    regexp = "exclude_nodata"
+  )
+  testthat::expect_error(
+    amadeusdb::sedona_geos(
+      locs = points,
+      locs_id = "NAME",
+      date = "2018-01-01",
+      input = testthat::test_path("..", "testdata", "geos", "aqc_tavg"),
+      output = tempdir(),
+      batch = 1L,
+      variable = "O3",
+      level = 1L,
+      touches = TRUE,
+      exclude_nodata = "no"
+    ),
+    regexp = "exclude_nodata"
   )
   # ----------------------------------------------------------------------------
   # Clean up temporary directory.

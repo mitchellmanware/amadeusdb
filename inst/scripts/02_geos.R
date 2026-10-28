@@ -104,6 +104,7 @@ fixture_geos <- function(input, output, bbox, variable = "O3") {
 # ------------------------------------------------------------------------------
 # Perform fixture creation for aqc and chm files.
 chr_geos <- c("aqc", "chm")
+chr_geos <- "chm" # Manual overwrite for CO as chm variable.
 
 # ------------------------------------------------------------------------------
 for (g in chr_geos) {
@@ -116,7 +117,7 @@ for (g in chr_geos) {
   # ----------------------------------------------------------------------------
   # Append file names to paths for full and subset data file path.s
   chr_full <- paste0("tests/testdata/geos/full/", g, "/", chr_base)
-  chr_sub <- paste0("tests/testdata/geos/", g, "/", chr_base)
+  chr_sub <- paste0("tests/testdata/geos/", g, "_tavg/", chr_base)
   # ----------------------------------------------------------------------------
   for (b in seq_along(chr_base)) {
     fixture_geos(
@@ -128,11 +129,16 @@ for (g in chr_geos) {
         ymin = 35.625,
         ymax = 36.125
       ),
-      variable = "O3"
+      variable = "CO" # manual change.
     )
   }
 }
 
 # ------------------------------------------------------------------------------
 # Test read.
-terra::rast(chr_sub[1])
+chr_aqc_tavg <- list.files("tests/testdata/geos/aqc_tavg/", full.names = TRUE)
+terra::rast(chr_aqc_tavg[1])
+terra::rast(chr_aqc_tavg[2])
+chr_chm_tavg <- list.files("tests/testdata/geos/chm_tavg/", full.names = TRUE)
+terra::rast(chr_chm_tavg[1])
+terra::rast(chr_chm_tavg[2])
