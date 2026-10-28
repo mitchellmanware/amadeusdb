@@ -469,9 +469,6 @@ testthat::test_that("sedona_hms; expected failures", {
   # Initiate temporary directory.
   chr_tempdir <- file.path(tempdir(), "hms")
   # ----------------------------------------------------------------------------
-  # Remove temporary directory to force recreation.
-  file.remove(chr_tempdir)
-  # ----------------------------------------------------------------------------
   # Import fixture points.
   points <- sf::st_read(testthat::test_path(
     "..",
@@ -490,52 +487,11 @@ testthat::test_that("sedona_hms; expected failures", {
     "locs"
   )
   # ----------------------------------------------------------------------------
-  # Improper batch arguments.
-  testthat::expect_error(
-    amadeusdb::sedona_hms(locs = points, locs_id = "NAME", batch = NULL),
-    regexp = "batch"
-  )
-  testthat::expect_error(
-    amadeusdb::sedona_hms(locs = points, locs_id = "NAME", batch = 1.1),
-    regexp = "batch"
-  )
-  # ----------------------------------------------------------------------------
-  # Improper input arguments.
-  testthat::expect_error(
-    amadeusdb::sedona_hms(
-      locs = points,
-      locs_id = "NAME",
-      batch = 1,
-      input = NULL
-    ),
-    regexp = "input"
-  )
-  testthat::expect_error(
-    amadeusdb::sedona_hms(
-      locs = points,
-      locs_id = "NAME",
-      batch = 1,
-      input = 10
-    ),
-    regexp = "input"
-  )
-  testthat::expect_error(
-    amadeusdb::sedona_hms(
-      locs = points,
-      locs_id = "NAME",
-      batch = 1,
-      input = "path/to/empty/"
-    ),
-    regexp = "input"
-  )
-  # ----------------------------------------------------------------------------
   # Improper radius arguments.
   testthat::expect_error(
     amadeusdb::sedona_hms(
       locs = points,
       locs_id = "NAME",
-      batch = 1,
-      input = tempdir(),
       radius = -1
     ),
     regexp = "radius"
@@ -544,8 +500,6 @@ testthat::test_that("sedona_hms; expected failures", {
     amadeusdb::sedona_hms(
       locs = points,
       locs_id = "NAME",
-      batch = 1,
-      input = tempdir(),
       radius = NULL
     ),
     regexp = "radius"
@@ -554,11 +508,97 @@ testthat::test_that("sedona_hms; expected failures", {
     amadeusdb::sedona_hms(
       locs = points,
       locs_id = "NAME",
-      batch = 1,
-      input = tempdir(),
       radius = "text"
     ),
     regexp = "radius"
+  )
+  # ----------------------------------------------------------------------------
+  # Improper date arguments.
+  testthat::expect_error(
+    amadeusdb::sedona_hms(locs = points, locs_id = "NAME", date = NULL),
+    regexp = "date"
+  )
+  testthat::expect_error(
+    amadeusdb::sedona_hms(locs = points, locs_id = "NAME", date = 1L),
+    regexp = "date"
+  )
+  # ----------------------------------------------------------------------------
+  # Improper input arguments.
+  testthat::expect_error(
+    amadeusdb::sedona_hms(
+      locs = points,
+      locs_id = "NAME",
+      date = "2018-01-01",
+      input = NULL
+    ),
+    regexp = "input"
+  )
+  testthat::expect_error(
+    amadeusdb::sedona_hms(
+      locs = points,
+      locs_id = "NAME",
+      date = "2018-01-01",
+      input = 10
+    ),
+    regexp = "input"
+  )
+  testthat::expect_error(
+    amadeusdb::sedona_hms(
+      locs = points,
+      locs_id = "NAME",
+      date = "2018-01-01",
+      input = "path/to/empty/"
+    ),
+    regexp = "input"
+  )
+  # ----------------------------------------------------------------------------
+  # Create fixture files in chr_tempdir.
+  file.create(file.path(chr_tempdir, "/fixturepath.txt"))
+  # ----------------------------------------------------------------------------
+  # Improper output arguments.
+  testthat::expect_error(
+    amadeusdb::sedona_hms(
+      locs = points,
+      locs_id = "NAME",
+      date = "2018-01-01",
+      input = chr_tempdir,
+      output = NULL
+    ),
+    regexp = "output"
+  )
+  testthat::expect_error(
+    amadeusdb::sedona_hms(
+      locs = points,
+      locs_id = "NAME",
+      date = "2018-01-01",
+      input = chr_tempdir,
+      output = 1L
+    ),
+    regexp = "output"
+  )
+  # ----------------------------------------------------------------------------
+  # Improper batch arguments.
+  testthat::expect_error(
+    amadeusdb::sedona_hms(
+      locs = points,
+      locs_id = "NAME",
+      date = "2018-01-01",
+      input = chr_tempdir,
+      output = tempdir(),
+      batch = NULL
+    ),
+    regexp = "batch"
+  )
+  testthat::expect_error(
+    amadeusdb::sedona_hms(
+      locs = points,
+      locs_id = "NAME",
+      date = "2018-01-01",
+      input = chr_tempdir,
+      output = tempdir(),
+      batch = 1.111111
+    ),
+    regexp = "batch"
   )
   # ----------------------------------------------------------------------------
   # Clean up temporary directory.
