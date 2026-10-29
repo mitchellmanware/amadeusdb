@@ -4,11 +4,13 @@
 \alias{hmsunion}
 \title{Build an HMS indicator union query}
 \usage{
-hmsunion(l, v)
+hmsunion(l, c = c("time, light, medium, heavy"), v)
 }
 \arguments{
 \item{l}{character(1). SQL identifier for the location column, already quoted
 if necessary.}
+
+\item{c}{character. Non-empty vector of SQL column names.}
 
 \item{v}{character. Non-empty vector of SQL view names to stack, in query
 order. Names are inserted verbatim and must already be valid SQL
@@ -29,6 +31,7 @@ the views.
 \examples{
 amadeusdb::hmsunion(
   l = '"site_id"',
+  c = c("time", "light", "medium", "heavy"),
   v = c("db_day_001", "db_day_002")
 )
 }
