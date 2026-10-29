@@ -90,7 +90,7 @@ testthat::test_that("join_covariates; GEOS (O3) & HMS", {
   testthat::expect_equal(nrow(df_join), 8)
   # ----------------------------------------------------------------------------
   # Expect 10 columns (NAME, time, lon/lat, outcome, 1 GEOS, 3 HMS).
-  testthat::expect_equal(ncol(df_join), 9)
+  testthat::expect_equal(ncol(df_join), 10) # !!! drop level dev!!!
   # ----------------------------------------------------------------------------
   # Expect character location identifer column.
   testthat::expect_type(df_join$NAME, "character")
@@ -99,14 +99,18 @@ testthat::test_that("join_covariates; GEOS (O3) & HMS", {
   testthat::expect_s3_class(df_join$time, "POSIXct")
   # ----------------------------------------------------------------------------
   # Expect numeric for variable columns.
-  testthat::expect_equal(class(df_join$O3), "numeric")
-  testthat::expect_equal(class(df_join$light), "numeric")
-  testthat::expect_equal(class(df_join$medium), "numeric")
-  testthat::expect_equal(class(df_join$heavy), "numeric")
+  testthat::expect_equal(class(df_join$o3_0), "numeric")
+  testthat::expect_equal(class(df_join$light_00000), "numeric")
+  testthat::expect_equal(class(df_join$medium_00000), "numeric")
+  testthat::expect_equal(class(df_join$heavy_00000), "numeric")
   # ----------------------------------------------------------------------------
   # Expect light, medium, and heavy columns contain only 0 or 1.
   testthat::expect_true(all(
-    unique(c(df_join$light, df_join$medium, df_join$heavy)) %in%
+    unique(c(
+      df_join$light_00000,
+      df_join$medium_00000,
+      df_join$heavy_00000
+    )) %in%
       c(0, 1)
   ))
   # ----------------------------------------------------------------------------
@@ -175,7 +179,7 @@ testthat::test_that("join_covariates; GEOS (O3 & CO) & HMS", {
     db_geos <- amadeusdb::join_variables(
       input = list_geos_sptmpl,
       output = chr_geosdir,
-      by = c("NAME", "time")
+      by = c("NAME", "time", "level")
     )
   )
   # ----------------------------------------------------------------------------
@@ -226,7 +230,7 @@ testthat::test_that("join_covariates; GEOS (O3 & CO) & HMS", {
   testthat::expect_equal(nrow(df_join), 8)
   # ----------------------------------------------------------------------------
   # Expect 10 columns (NAME, time, lon/lat, outcome, 2 GEOS, 3 HMS).
-  testthat::expect_equal(ncol(df_join), 10)
+  testthat::expect_equal(ncol(df_join), 11) # !!! drop level dev!!!
   # ----------------------------------------------------------------------------
   # Expect character location identifer column.
   testthat::expect_type(df_join$NAME, "character")
@@ -235,15 +239,19 @@ testthat::test_that("join_covariates; GEOS (O3 & CO) & HMS", {
   testthat::expect_s3_class(df_join$time, "POSIXct")
   # ----------------------------------------------------------------------------
   # Expect numeric for variable columns.
-  testthat::expect_equal(class(df_join$O3), "numeric")
-  testthat::expect_equal(class(df_join$CO), "numeric")
-  testthat::expect_equal(class(df_join$light), "numeric")
-  testthat::expect_equal(class(df_join$medium), "numeric")
-  testthat::expect_equal(class(df_join$heavy), "numeric")
+  testthat::expect_equal(class(df_join$o3_0), "numeric")
+  testthat::expect_equal(class(df_join$co_0), "numeric")
+  testthat::expect_equal(class(df_join$light_00000), "numeric")
+  testthat::expect_equal(class(df_join$medium_00000), "numeric")
+  testthat::expect_equal(class(df_join$heavy_00000), "numeric")
   # ----------------------------------------------------------------------------
   # Expect light, medium, and heavy columns contain only 0 or 1.
   testthat::expect_true(all(
-    unique(c(df_join$light, df_join$medium, df_join$heavy)) %in%
+    unique(c(
+      df_join$light_00000,
+      df_join$medium_00000,
+      df_join$heavy_00000
+    )) %in%
       c(0, 1)
   ))
   # ----------------------------------------------------------------------------
@@ -333,13 +341,17 @@ testthat::test_that("join_covariates; GEOS (empty) & HMS", {
   testthat::expect_s3_class(df_join$time, "POSIXct")
   # ----------------------------------------------------------------------------
   # Expect numeric for variable columns.
-  testthat::expect_equal(class(df_join$light), "numeric")
-  testthat::expect_equal(class(df_join$medium), "numeric")
-  testthat::expect_equal(class(df_join$heavy), "numeric")
+  testthat::expect_equal(class(df_join$light_00000), "numeric")
+  testthat::expect_equal(class(df_join$medium_00000), "numeric")
+  testthat::expect_equal(class(df_join$heavy_00000), "numeric")
   # ----------------------------------------------------------------------------
   # Expect light, medium, and heavy columns contain only 0 or 1.
   testthat::expect_true(all(
-    unique(c(df_join$light, df_join$medium, df_join$heavy)) %in%
+    unique(c(
+      df_join$light_00000,
+      df_join$medium_00000,
+      df_join$heavy_00000
+    )) %in%
       c(0, 1)
   ))
   # ----------------------------------------------------------------------------
@@ -697,7 +709,7 @@ testthat::test_that("join_covariates; expected failures", code = {
   # ----------------------------------------------------------------------------
   # Path with no parquet files.
   chr_empty <- file.path(chr_tempdir, "empty")
-  dir.create(chr_empty)
+  suppressWarnings(dir.create(chr_empty))
   testthat::expect_error(
     amadeusdb::join_covariates(
       input = testthat::test_path(

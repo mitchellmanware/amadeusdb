@@ -55,7 +55,7 @@ testthat::test_that("join_variables; GEOS (CO & O3); points", {
     db_geos <- amadeusdb::join_variables(
       input = list_geos_sptmpl,
       output = chr_output,
-      by = c("NAME", "time")
+      by = c("NAME", "time", "level")
     )
   )
   # ----------------------------------------------------------------------------
@@ -77,17 +77,17 @@ testthat::test_that("join_variables; GEOS (CO & O3); points", {
   testthat::expect_equal(nrow(df_geos), 8)
   # ----------------------------------------------------------------------------
   # Expect 4 columns (locs_id, time, O3, CO)
-  testthat::expect_equal(ncol(df_geos), 4)
+  testthat::expect_equal(ncol(df_geos), 5) # !!! drop level dev!!!
   # ----------------------------------------------------------------------------
   # Expect character location identifer column.
   testthat::expect_type(df_geos$NAME, "character")
   # ----------------------------------------------------------------------------
   # Expect character "time" column.
-  testthat::expect_type(df_geos$time, "character")
+  testthat::expect_s3_class(df_geos$time, "POSIXct")
   # ----------------------------------------------------------------------------
   # Expect numeric for variable columns.
-  testthat::expect_equal(class(df_geos$O3), "numeric")
-  testthat::expect_equal(class(df_geos$CO), "numeric")
+  testthat::expect_equal(class(df_geos$o3_0), "numeric")
+  testthat::expect_equal(class(df_geos$co_0), "numeric")
   # ----------------------------------------------------------------------------
   # Clean up temporary directory.
   file.remove(list.files(chr_tempdir, full.names = TRUE, recursive = TRUE))

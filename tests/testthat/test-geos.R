@@ -54,7 +54,7 @@ testthat::test_that("sedona_geos; locs = sf::polygons; aqc", {
   testthat::expect_equal(nrow(df_geos), 8)
   # ----------------------------------------------------------------------------
   # Expect 3 columns (locs_id, time, variable)
-  testthat::expect_equal(ncol(df_geos), 3)
+  testthat::expect_equal(ncol(df_geos), 4) # !!! drop level dev!!!
   # ----------------------------------------------------------------------------
   # Expect character location identifer column.
   testthat::expect_type(df_geos$NAME, "character")
@@ -118,7 +118,7 @@ testthat::test_that("sedona_geos; locs = sf::points; aqc", {
   testthat::expect_equal(nrow(df_geos), 8)
   # ----------------------------------------------------------------------------
   # Expect 3 columns (locs_id, time, variable)
-  testthat::expect_equal(ncol(df_geos), 3)
+  testthat::expect_equal(ncol(df_geos), 4) # !!! drop level dev!!!
   # ----------------------------------------------------------------------------
   # Expect character location identifer column.
   testthat::expect_type(df_geos$NAME, "character")
@@ -191,7 +191,7 @@ testthat::test_that("sedona_geos; locs = data.frame; aqc", {
   testthat::expect_equal(nrow(df_geos), 8)
   # ----------------------------------------------------------------------------
   # Expect 3 columns (locs_id, time, variable)
-  testthat::expect_equal(ncol(df_geos), 3)
+  testthat::expect_equal(ncol(df_geos), 4) # !!! drop level dev!!!
   # ----------------------------------------------------------------------------
   # Expect character location identifer column.
   testthat::expect_type(df_geos$NAME, "character")
@@ -255,7 +255,7 @@ testthat::test_that("sedona_geos; locs = sf::polygons; chm", {
   testthat::expect_equal(nrow(df_geos), 8)
   # ----------------------------------------------------------------------------
   # Expect 3 columns (locs_id, time, variable)
-  testthat::expect_equal(ncol(df_geos), 3)
+  testthat::expect_equal(ncol(df_geos), 4) # !!! drop level dev!!!
   # ----------------------------------------------------------------------------
   # Expect character location identifer column.
   testthat::expect_type(df_geos$NAME, "character")
@@ -319,7 +319,7 @@ testthat::test_that("sedona_geos; locs = sf::points; chm", {
   testthat::expect_equal(nrow(df_geos), 8)
   # ----------------------------------------------------------------------------
   # Expect 3 columns (locs_id, time, variable)
-  testthat::expect_equal(ncol(df_geos), 3)
+  testthat::expect_equal(ncol(df_geos), 4) # !!! drop level dev!!!
   # ----------------------------------------------------------------------------
   # Expect character location identifer column.
   testthat::expect_type(df_geos$NAME, "character")
@@ -392,7 +392,7 @@ testthat::test_that("sedona_geos; locs = data.frame; chm", {
   testthat::expect_equal(nrow(df_geos), 8)
   # ----------------------------------------------------------------------------
   # Expect 3 columns (locs_id, time, variable)
-  testthat::expect_equal(ncol(df_geos), 3)
+  testthat::expect_equal(ncol(df_geos), 4) # !!! drop level dev!!!
   # ----------------------------------------------------------------------------
   # Expect character location identifer column.
   testthat::expect_type(df_geos$NAME, "character")
@@ -827,7 +827,7 @@ testthat::test_that("sedona_geos == amadeus::*_geos; mean; polygons", {
   # Times.
   testthat::expect_all_true(df_sedona_geos$time == df_procalc_geos$time)
   # ----------------------------------------------------------------------------
-  # Values (O3). !!! false for dev and lint checks 10/29. !!!
+  # Values (O3). !!! false before deep dive on sedonadb geometry methods. !!!
   testthat::expect_all_false(df_sedona_geos$o3_0 == df_procalc_geos$o3_0)
   # ----------------------------------------------------------------------------
   # Clean up temporary directory.
@@ -898,8 +898,8 @@ testthat::test_that("sedona_geos == amadeus::*_geos; max; polygons", {
   # Times.
   testthat::expect_all_true(df_sedona_geos$time == df_procalc_geos$time)
   # ----------------------------------------------------------------------------
-  # Values (O3). !!! false for dev and lint checks 10/29. !!!
-  testthat::expect_all_false(df_sedona_geos$o3_0 == df_procalc_geos$o3_0)
+  # Values (O3).
+  testthat::expect_all_true(df_sedona_geos$o3_0 == df_procalc_geos$o3_0)
   # ----------------------------------------------------------------------------
   # Clean up temporary directory.
   file.remove(list.files(chr_tempdir, full.names = TRUE, recursive = TRUE))
@@ -968,8 +968,8 @@ testthat::test_that("sedona_geos == amadeus::*_geos; min; polygons", {
   # Times.
   testthat::expect_all_true(df_sedona_geos$time == df_procalc_geos$time)
   # ----------------------------------------------------------------------------
-  # Values (O3). !!! false for dev and lint checks 10/29. !!!
-  testthat::expect_all_false(df_sedona_geos$o3_0 == df_procalc_geos$o3_0)
+  # Values (O3).
+  testthat::expect_all_true(df_sedona_geos$o3_0 == df_procalc_geos$o3_0)
   # ----------------------------------------------------------------------------
   # Clean up temporary directory.
   file.remove(list.files(chr_tempdir, full.names = TRUE, recursive = TRUE))
