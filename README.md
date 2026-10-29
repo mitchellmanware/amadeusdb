@@ -64,6 +64,7 @@ df_geos_input <- data.frame(
   asset = c("aqc_tavg", "chm_tavg"),
   variable = c("O3", "CO")
 )
+
 # ------------------------------------------------------------------------------
 # Split the data.frame into a list.
 list_geos_input <- split(df_geos_input, seq_len(nrow(df_geos_input)))
@@ -141,12 +142,14 @@ sedonadb::sd_collect(sedonadb::sd_read_parquet(db_join))
 8 1.749639e-07     0      0     0
 ```
 
-The table below lists datas sources with `amadeus` download functions and their associated `sedona_*` processing and extraction implementation in `amadeusdb`.
+## Data Sources
 
-| Dataset | `amadeusdb` |
+The table below lists `amadeus`-downloadable data sources and their associated `amadeusdb` Tier 2 function(s).
+
+| Data Source | `amadeusdb` |
 | :--- | :--- |
-| NASA GEOS-CF | `sedona_geos()` |
-| NOAA HMS smoke | `sedona_hms()` |
+| NASA Goddard Earth Observing System Composition Forcasting (GEOS-CF) | `sedona_geos()` |
+| NOAA Hazard Mapping System Fire and Smoke Product | `sedona_hms()` |
 | Climatology Lab gridMET | Not yet supported |
 | Climatology Lab TerraClimate | Not yet supported |
 | Drought indices and classifications (SPEI, EDDI, USDM) | Not yet supported |
