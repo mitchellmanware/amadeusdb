@@ -1,6 +1,7 @@
 # amadeusdb <a><img src="man/figures/amadeusdb.svg" align="right" width="250" alt="amadeus website" /></a>
 
 [![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
+[![Package version](https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fraw.githubusercontent.com%2Fmitchellmanware%2Famadeusdb%2FHEAD%2FDESCRIPTION&search=Version%3A%5Cs%2B%28%5CS%2B%29&replace=%241&label=version&color=blue)](https://github.com/mitchellmanware/amadeusdb)
 [![R-CMD-check](https://github.com/mitchellmanware/amadeusdb/actions/workflows/check-standard.yaml/badge.svg)](https://github.com/mitchellmanware/amadeusdb/actions/workflows/check-standard.yaml)
 [![lint](https://github.com/mitchellmanware/amadeusdb/actions/workflows/lint.yaml/badge.svg)](https://github.com/mitchellmanware/amadeusdb/actions/workflows/lint.yaml)
 [![cov](https://mitchellmanware.github.io/amadeusdb/badges/coverage.svg)](https://github.com/mitchellmanware/amadeusdb/actions)
