@@ -164,33 +164,20 @@ sedona_hms <- function(
     '"'
   )
   # ----------------------------------------------------------------------------
+  # Define column names based on radius buffer.
+  light_sql <- sprintf("\"light_%05d\"", radius)
+  medium_sql <- sprintf("\"medium_%05d\"", radius)
+  heavy_sql <- sprintf("\"heavy_%05d\"", radius)
+  # ----------------------------------------------------------------------------
   # Define SQL code for processing HMS data.
-  sql_processhms <- glue::glue(
-    "
-      SELECT
-        db_locs.{locs_id_sql} AS {locs_id_sql},
-        CAST($1 AS DATE) AS date,
-
-        MAX(CASE
-          WHEN LOWER(TRIM(db_hms.\"Density\")) = 'light' THEN 1
-          ELSE 0
-        END) AS light,
-
-        MAX(CASE
-          WHEN LOWER(TRIM(db_hms.\"Density\")) = 'medium' THEN 1
-          ELSE 0
-        END) AS medium,
-
-        MAX(CASE
-          WHEN LOWER(TRIM(db_hms.\"Density\")) = 'heavy' THEN 1
-          ELSE 0
-        END) AS heavy
-
-      FROM db_locs
-      LEFT JOIN db_hms
-        ON ST_Intersects(db_locs.geometry, db_hms.wkb_geometry)
-      GROUP BY db_locs.{locs_id_sql}
-    "
+  sql_processhms <- glue::glue_data(
+    paste(readLines("inst/sql/sedona_hms.sql", warn = FALSE), collapse = "\n"),
+    .x = list(
+      locs_id_sql = locs_id_sql,
+      light_sql = light_sql,
+      medium_sql = medium_sql,
+      heavy_sql = heavy_sql
+    )
   )
   # ----------------------------------------------------------------------------
   # Initiate database cleanup upon exit.
@@ -297,7 +284,17 @@ sedona_hms <- function(
     # --------------------------------------------------------------------------
     # Materialize and union the batch before removing its daily views.
     db_batch <- sedonadb::sd_sql(
-      amadeusdb::hmsunion(locs_id_sql, chr_hms_daily)
+      amadeusdb::hmsunion(
+        locs_id_sql,
+        paste0(
+          "time, ",
+          paste0(
+            sprintf("%s_%05d", c("light", "medium", "heavy"), radius),
+            collapse = ", "
+          )
+        ),
+        chr_hms_daily
+      )
     )
     sedonadb::sd_write_parquet(
       db_batch,
@@ -344,11 +341,12 @@ sedona_hms <- function(
 #'   v = c("db_day_001", "db_day_002")
 #' )
 #' @export
-hmsunion <- function(l, v) {
+hmsunion <- function(l, c = c("time, light, medium, heavy"), v) {
   paste(
     sprintf(
-      "SELECT %s, date, light, medium, heavy FROM %s",
+      "SELECT %s, %s FROM %s",
       l,
+      c,
       v
     ),
     collapse = "\nUNION ALL\n"

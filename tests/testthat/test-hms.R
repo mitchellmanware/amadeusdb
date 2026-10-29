@@ -62,13 +62,13 @@ testthat::test_that("sedona_hms; locs = sf::polygons", {
   testthat::expect_s3_class(df_hms$date, "Date")
   # ----------------------------------------------------------------------------
   # Expect numeric (binary) for light, medium, and heavy columns.
-  testthat::expect_equal(class(df_hms$light), "numeric")
-  testthat::expect_equal(class(df_hms$medium), "numeric")
-  testthat::expect_equal(class(df_hms$heavy), "numeric")
+  testthat::expect_equal(class(df_hms$light_00000), "numeric")
+  testthat::expect_equal(class(df_hms$medium_00000), "numeric")
+  testthat::expect_equal(class(df_hms$heavy_00000), "numeric")
   # ----------------------------------------------------------------------------
   # Expect light, medium, and heavy columns contain only 0 or 1.
   testthat::expect_true(all(
-    unique(c(df_hms$light, df_hms$medium, df_hms$heavy)) %in%
+    unique(c(df_hms$light_00000, df_hms$medium_00000, df_hms$heavy_00000)) %in%
       c(0, 1)
   ))
   # ----------------------------------------------------------------------------
@@ -132,13 +132,13 @@ testthat::test_that("sedona_hms; locs = sf::points", {
   testthat::expect_s3_class(df_hms$date, "Date")
   # ----------------------------------------------------------------------------
   # Expect numeric (binary) for light, medium, and heavy columns.
-  testthat::expect_equal(class(df_hms$light), "numeric")
-  testthat::expect_equal(class(df_hms$medium), "numeric")
-  testthat::expect_equal(class(df_hms$heavy), "numeric")
+  testthat::expect_equal(class(df_hms$light_00000), "numeric")
+  testthat::expect_equal(class(df_hms$medium_00000), "numeric")
+  testthat::expect_equal(class(df_hms$heavy_00000), "numeric")
   # ----------------------------------------------------------------------------
   # Expect light, medium, and heavy columns contain only 0 or 1.
   testthat::expect_true(all(
-    unique(c(df_hms$light, df_hms$medium, df_hms$heavy)) %in%
+    unique(c(df_hms$light_00000, df_hms$medium_00000, df_hms$heavy_00000)) %in%
       c(0, 1)
   ))
   # ----------------------------------------------------------------------------
@@ -203,13 +203,13 @@ testthat::test_that("sedona_hms; locs = terra::polygons", {
   testthat::expect_s3_class(df_hms$date, "Date")
   # ----------------------------------------------------------------------------
   # Expect numeric (binary) for light, medium, and heavy columns.
-  testthat::expect_equal(class(df_hms$light), "numeric")
-  testthat::expect_equal(class(df_hms$medium), "numeric")
-  testthat::expect_equal(class(df_hms$heavy), "numeric")
+  testthat::expect_equal(class(df_hms$light_00000), "numeric")
+  testthat::expect_equal(class(df_hms$medium_00000), "numeric")
+  testthat::expect_equal(class(df_hms$heavy_00000), "numeric")
   # ----------------------------------------------------------------------------
   # Expect light, medium, and heavy columns contain only 0 or 1.
   testthat::expect_true(all(
-    unique(c(df_hms$light, df_hms$medium, df_hms$heavy)) %in%
+    unique(c(df_hms$light_00000, df_hms$medium_00000, df_hms$heavy_00000)) %in%
       c(0, 1)
   ))
   # ----------------------------------------------------------------------------
@@ -273,13 +273,13 @@ testthat::test_that("sedona_hms; locs = terra::points", {
   testthat::expect_s3_class(df_hms$date, "Date")
   # ----------------------------------------------------------------------------
   # Expect numeric (binary) for light, medium, and heavy columns.
-  testthat::expect_equal(class(df_hms$light), "numeric")
-  testthat::expect_equal(class(df_hms$medium), "numeric")
-  testthat::expect_equal(class(df_hms$heavy), "numeric")
+  testthat::expect_equal(class(df_hms$light_00000), "numeric")
+  testthat::expect_equal(class(df_hms$medium_00000), "numeric")
+  testthat::expect_equal(class(df_hms$heavy_00000), "numeric")
   # ----------------------------------------------------------------------------
   # Expect light, medium, and heavy columns contain only 0 or 1.
   testthat::expect_true(all(
-    unique(c(df_hms$light, df_hms$medium, df_hms$heavy)) %in%
+    unique(c(df_hms$light_00000, df_hms$medium_00000, df_hms$heavy_00000)) %in%
       c(0, 1)
   ))
   # ----------------------------------------------------------------------------
@@ -338,13 +338,13 @@ testthat::test_that("sedona_hms; locs = data.frame", {
   testthat::expect_s3_class(df_hms$date, "Date")
   # ----------------------------------------------------------------------------
   # Expect numeric (binary) for light, medium, and heavy columns.
-  testthat::expect_equal(class(df_hms$light), "numeric")
-  testthat::expect_equal(class(df_hms$medium), "numeric")
-  testthat::expect_equal(class(df_hms$heavy), "numeric")
+  testthat::expect_equal(class(df_hms$light_00000), "numeric")
+  testthat::expect_equal(class(df_hms$medium_00000), "numeric")
+  testthat::expect_equal(class(df_hms$heavy_00000), "numeric")
   # ----------------------------------------------------------------------------
   # Expect light, medium, and heavy columns contain only 0 or 1.
   testthat::expect_true(all(
-    unique(c(df_hms$light, df_hms$medium, df_hms$heavy)) %in%
+    unique(c(df_hms$light_00000, df_hms$medium_00000, df_hms$heavy_00000)) %in%
       c(0, 1)
   ))
   # ----------------------------------------------------------------------------
@@ -407,7 +407,7 @@ testthat::test_that("sedona_hms; empty .shp", {
   # ----------------------------------------------------------------------------
   # Expect all 0 values for missing data.
   testthat::expect_equal(
-    unique(c(df_hms$light, df_hms$medium, df_hms$heavy)),
+    unique(c(df_hms$light_00000, df_hms$medium_00000, df_hms$heavy_00000)),
     0
   )
   # ----------------------------------------------------------------------------
@@ -600,6 +600,234 @@ testthat::test_that("sedona_hms; expected failures", {
     ),
     regexp = "batch"
   )
+  # ----------------------------------------------------------------------------
+  # Clean up temporary directory.
+  file.remove(list.files(chr_tempdir, full.names = TRUE, recursive = TRUE))
+  unlink(chr_tempdir)
+})
+################################################################################
+
+################################################################################
+# Alignment.
+################################################################################
+testthat::test_that("sedona_hms == amadeus::*_hms; polygons", {
+  # ----------------------------------------------------------------------------
+  # Initiate temporary directory.
+  chr_tempdir <- file.path(tempdir(), "hms")
+  # ----------------------------------------------------------------------------
+  # Remove temporary directory to force recreation.
+  file.remove(chr_tempdir)
+  # ----------------------------------------------------------------------------
+  # Define common arguments.
+  chr_dates <- "2023-06-07"
+  chr_hmspath <- testthat::test_path("..", "testdata", "hms")
+  polygons <- sf::st_read(testthat::test_path(
+    "..",
+    "testdata",
+    "locs",
+    "polygons.shp"
+  ))
+  chr_locsid <- "NAME"
+  int_radius <- 0
+  # ----------------------------------------------------------------------------
+  # No errors at runtime.
+  testthat::expect_no_error(
+    db_hms <- amadeusdb::sedona_hms(
+      date = chr_dates,
+      input = chr_hmspath,
+      output = chr_tempdir,
+      locs = polygons,
+      locs_id = chr_locsid,
+      radius = int_radius
+    )
+  )
+  testthat::expect_no_error(db_hms1 <- sedonadb::sd_read_parquet(db_hms))
+  testthat::expect_no_error(
+    df_sedona_hms <- sedonadb::sd_collect(db_hms1) |> dplyr::arrange(NAME, time)
+  )
+  # ----------------------------------------------------------------------------
+  # Base {amadeus} implementation.
+  df_procalc_hms <- suppressWarnings(amadeus::calculate_hms(
+    from = amadeus::process_hms(
+      date = chr_dates,
+      path = chr_hmspath
+    ),
+    locs = polygons,
+    locs_id = chr_locsid,
+    radius = int_radius,
+    geom = FALSE
+  )) |>
+    # Sort by characterized NAME, but does not change the class.
+    dplyr::arrange(as.character(NAME), time)
+  # ----------------------------------------------------------------------------
+  # Expectations across {amadeus} and {amadeusdb} functions.
+  # ----------------------------------------------------------------------------
+  # Dimensions.
+  testthat::expect_equal(dim(df_sedona_hms), dim(df_procalc_hms))
+  # ----------------------------------------------------------------------------
+  # Column mames
+  testthat::expect_all_true(names(df_sedona_hms) == names(df_procalc_hms))
+  # ----------------------------------------------------------------------------
+  # Locations (10/29: fails as {amadeus::*_hms} returns factored names).
+  testthat::expect_all_true(df_sedona_hms$NAME == df_procalc_hms$NAME)
+  # ----------------------------------------------------------------------------
+  # Dates (10/29: {amadeus::*_hms} returns POSIXct date).
+  testthat::expect_all_true(df_sedona_hms$time == as.Date(df_procalc_hms$time))
+  # ----------------------------------------------------------------------------
+  # Values (3 = light; 4 = medium; 5 = heavy).
+  testthat::expect_all_true(df_sedona_hms[, 3] == df_procalc_hms[, 3])
+  testthat::expect_all_true(df_sedona_hms[, 4] == df_procalc_hms[, 4])
+  testthat::expect_all_true(df_sedona_hms[, 5] == df_procalc_hms[, 5])
+  # ----------------------------------------------------------------------------
+  # Clean up temporary directory.
+  file.remove(list.files(chr_tempdir, full.names = TRUE, recursive = TRUE))
+  unlink(chr_tempdir)
+})
+
+################################################################################
+testthat::test_that("sedona_hms == amadeus::*_hms; points", {
+  # ----------------------------------------------------------------------------
+  # Initiate temporary directory.
+  chr_tempdir <- file.path(tempdir(), "hms")
+  # ----------------------------------------------------------------------------
+  # Remove temporary directory to force recreation.
+  file.remove(chr_tempdir)
+  # ----------------------------------------------------------------------------
+  # Define common arguments.
+  chr_dates <- "2023-06-07"
+  chr_hmspath <- testthat::test_path("..", "testdata", "hms")
+  points <- sf::st_read(testthat::test_path(
+    "..",
+    "testdata",
+    "locs",
+    "points.shp"
+  ))
+  chr_locsid <- "NAME"
+  int_radius <- 0
+  # ----------------------------------------------------------------------------
+  # No errors at runtime.
+  testthat::expect_no_error(
+    db_hms <- amadeusdb::sedona_hms(
+      date = chr_dates,
+      input = chr_hmspath,
+      output = chr_tempdir,
+      locs = points,
+      locs_id = chr_locsid,
+      radius = int_radius
+    )
+  )
+  testthat::expect_no_error(db_hms1 <- sedonadb::sd_read_parquet(db_hms))
+  testthat::expect_no_error(
+    df_sedona_hms <- sedonadb::sd_collect(db_hms1) |> dplyr::arrange(NAME, time)
+  )
+  # ----------------------------------------------------------------------------
+  # Base {amadeus} implementation.
+  df_procalc_hms <- suppressWarnings(amadeus::calculate_hms(
+    from = amadeus::process_hms(
+      date = chr_dates,
+      path = chr_hmspath
+    ),
+    locs = points,
+    locs_id = chr_locsid,
+    radius = int_radius,
+    geom = FALSE
+  )) |>
+    # Sort by characterized NAME, but does not change the class.
+    dplyr::arrange(as.character(NAME), time)
+  # ----------------------------------------------------------------------------
+  # Expectations across {amadeus} and {amadeusdb} functions.
+  # ----------------------------------------------------------------------------
+  # Dimensions.
+  testthat::expect_equal(dim(df_sedona_hms), dim(df_procalc_hms))
+  # ----------------------------------------------------------------------------
+  # Column mames.
+  testthat::expect_all_true(names(df_sedona_hms) == names(df_procalc_hms))
+  # ----------------------------------------------------------------------------
+  # Locations (10/29: fails as {amadeus::*_hms} returns factored names).
+  testthat::expect_all_true(df_sedona_hms$NAME == df_procalc_hms$NAME)
+  # ----------------------------------------------------------------------------
+  # Dates (10/29: {amadeus::*_hms} returns POSIXct date).
+  testthat::expect_all_true(df_sedona_hms$time == as.Date(df_procalc_hms$time))
+  # ----------------------------------------------------------------------------
+  # Values (3 = light; 4 = medium; 5 = heavy).
+  testthat::expect_all_true(df_sedona_hms[, 3] == df_procalc_hms[, 3])
+  testthat::expect_all_true(df_sedona_hms[, 4] == df_procalc_hms[, 4])
+  testthat::expect_all_true(df_sedona_hms[, 5] == df_procalc_hms[, 5])
+  # ----------------------------------------------------------------------------
+  # Clean up temporary directory.
+  file.remove(list.files(chr_tempdir, full.names = TRUE, recursive = TRUE))
+  unlink(chr_tempdir)
+})
+
+################################################################################
+testthat::test_that("sedona_hms == amadeus::*_hms; radius = 1e6", {
+  # ----------------------------------------------------------------------------
+  # Initiate temporary directory.
+  chr_tempdir <- file.path(tempdir(), "hms")
+  # ----------------------------------------------------------------------------
+  # Remove temporary directory to force recreation.
+  file.remove(chr_tempdir)
+  # ----------------------------------------------------------------------------
+  # Define common arguments.
+  chr_dates <- "2023-06-07"
+  chr_hmspath <- testthat::test_path("..", "testdata", "hms")
+  points <- sf::st_read(testthat::test_path(
+    "..",
+    "testdata",
+    "locs",
+    "points.shp"
+  ))
+  chr_locsid <- "NAME"
+  int_radius <- 1e6
+  # ----------------------------------------------------------------------------
+  # No errors at runtime.
+  testthat::expect_no_error(
+    db_hms <- amadeusdb::sedona_hms(
+      date = chr_dates,
+      input = chr_hmspath,
+      output = chr_tempdir,
+      locs = points,
+      locs_id = chr_locsid,
+      radius = int_radius
+    )
+  )
+  testthat::expect_no_error(db_hms1 <- sedonadb::sd_read_parquet(db_hms))
+  testthat::expect_no_error(
+    df_sedona_hms <- sedonadb::sd_collect(db_hms1) |> dplyr::arrange(NAME, time)
+  )
+  # ----------------------------------------------------------------------------
+  # Base {amadeus} implementation.
+  df_procalc_hms <- suppressWarnings(amadeus::calculate_hms(
+    from = amadeus::process_hms(
+      date = chr_dates,
+      path = chr_hmspath
+    ),
+    locs = points,
+    locs_id = chr_locsid,
+    radius = int_radius,
+    geom = FALSE
+  )) |>
+    # Sort by characterized NAME, but does not change the class.
+    dplyr::arrange(as.character(NAME), time)
+  # ----------------------------------------------------------------------------
+  # Expectations across {amadeus} and {amadeusdb} functions.
+  # ----------------------------------------------------------------------------
+  # Dimensions.
+  testthat::expect_equal(dim(df_sedona_hms), dim(df_procalc_hms))
+  # ----------------------------------------------------------------------------
+  # Column mames.
+  testthat::expect_all_true(names(df_sedona_hms) == names(df_procalc_hms))
+  # ----------------------------------------------------------------------------
+  # Locations (10/29: fails as {amadeus::*_hms} returns factored names).
+  testthat::expect_all_true(df_sedona_hms$NAME == df_procalc_hms$NAME)
+  # ----------------------------------------------------------------------------
+  # Dates (10/29: {amadeus::*_hms} returns POSIXct date).
+  testthat::expect_all_true(df_sedona_hms$time == as.Date(df_procalc_hms$time))
+  # ----------------------------------------------------------------------------
+  # Values (3 = light; 4 = medium; 5 = heavy).
+  testthat::expect_all_true(df_sedona_hms[, 3] == df_procalc_hms[, 3])
+  testthat::expect_all_true(df_sedona_hms[, 4] == df_procalc_hms[, 4])
+  testthat::expect_all_true(df_sedona_hms[, 5] == df_procalc_hms[, 5])
   # ----------------------------------------------------------------------------
   # Clean up temporary directory.
   file.remove(list.files(chr_tempdir, full.names = TRUE, recursive = TRUE))
