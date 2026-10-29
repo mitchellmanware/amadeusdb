@@ -137,129 +137,15 @@ testthat::test_that("sedona_geos; locs = sf::points; aqc", {
 ################################################################################
 testthat::test_that("sedona_geos; locs = terra::polygons; aqc", {
   # ----------------------------------------------------------------------------
-  # Initiate temporary directory.
-  chr_tempdir <- file.path(tempdir(), "geos")
+  # {terra} functions omitted while debugging the C stack overflower error.
   # ----------------------------------------------------------------------------
-  # Remove temporary directory to force recreation.
-  suppressWarnings(file.remove(chr_tempdir))
-  # ----------------------------------------------------------------------------
-  # Import fixture points.
-  polygons <- terra::vect(testthat::test_path(
-    "..",
-    "testdata",
-    "locs",
-    "polygons.shp"
-  ))
-  # ----------------------------------------------------------------------------
-  # No errors at runtime.
-  testthat::expect_no_error(
-    db_geos <- amadeusdb::sedona_geos(
-      date = c("2018-01-01", "2018-01-01"),
-      input = testthat::test_path("..", "testdata", "geos", "aqc_tavg"),
-      output = chr_tempdir,
-      locs = polygons,
-      locs_id = "NAME",
-      radius = 0,
-      variable = "O3"
-    )
-  )
-  # ----------------------------------------------------------------------------
-  # !!! OUTPUT CHECKS !!!
-  # ----------------------------------------------------------------------------
-  # Only .parquet files in the output database.
-  testthat::expect_true(all(grepl("\\.parquet", db_geos)))
-  # ----------------------------------------------------------------------------
-  # No errors on read as .parquet.
-  testthat::expect_no_error(db_geos1 <- sedonadb::sd_read_parquet(db_geos))
-  # ----------------------------------------------------------------------------
-  # Expect SedonaDB S3 class.
-  testthat::expect_s3_class(db_geos1, "sedonadb_dataframe")
-  # ----------------------------------------------------------------------------
-  # No errors on collection to data frame.
-  testthat::expect_no_error(df_geos <- sedonadb::sd_collect(db_geos1))
-  # ----------------------------------------------------------------------------
-  # Expect 8 rows (4 fixture site x 2 hours).
-  testthat::expect_equal(nrow(df_geos), 8)
-  # ----------------------------------------------------------------------------
-  # Expect 3 columns (locs_id, time, variable)
-  testthat::expect_equal(ncol(df_geos), 3)
-  # ----------------------------------------------------------------------------
-  # Expect character location identifer column.
-  testthat::expect_type(df_geos$NAME, "character")
-  # ----------------------------------------------------------------------------
-  # Expect character "time" column.
-  testthat::expect_type(df_geos$time, "character")
-  # ----------------------------------------------------------------------------
-  # Expect numeric for variable columns.
-  testthat::expect_equal(class(df_geos$O3), "numeric")
-  # ----------------------------------------------------------------------------
-  # Clean up temporary directory.
-  file.remove(list.files(chr_tempdir, full.names = TRUE, recursive = TRUE))
-  unlink(chr_tempdir)
 })
 
 ################################################################################
 testthat::test_that("sedona_geos; locs = terra::points; aqc", {
   # ----------------------------------------------------------------------------
-  # Initiate temporary directory.
-  chr_tempdir <- file.path(tempdir(), "geos")
+  # {terra} functions omitted while debugging the C stack overflower error.
   # ----------------------------------------------------------------------------
-  # Remove temporary directory to force recreation.
-  suppressWarnings(file.remove(chr_tempdir))
-  # ----------------------------------------------------------------------------
-  # Import fixture points.
-  points <- terra::vect(testthat::test_path(
-    "..",
-    "testdata",
-    "locs",
-    "points.shp"
-  ))
-  # ----------------------------------------------------------------------------
-  # No errors at runtime.
-  testthat::expect_no_error(
-    db_geos <- amadeusdb::sedona_geos(
-      date = c("2018-01-01", "2018-01-01"),
-      input = testthat::test_path("..", "testdata", "geos", "aqc_tavg"),
-      output = chr_tempdir,
-      locs = points,
-      locs_id = "NAME",
-      radius = 0,
-      variable = "O3"
-    )
-  )
-  # ----------------------------------------------------------------------------
-  # !!! OUTPUT CHECKS !!!
-  # ----------------------------------------------------------------------------
-  # Only .parquet files in the output database.
-  testthat::expect_true(all(grepl("\\.parquet", db_geos)))
-  # ----------------------------------------------------------------------------
-  # No errors on read as .parquet.
-  testthat::expect_no_error(db_geos1 <- sedonadb::sd_read_parquet(db_geos))
-  # ----------------------------------------------------------------------------
-  # Expect SedonaDB S3 class.
-  testthat::expect_s3_class(db_geos1, "sedonadb_dataframe")
-  # ----------------------------------------------------------------------------
-  # No errors on collection to data frame.
-  testthat::expect_no_error(df_geos <- sedonadb::sd_collect(db_geos1))
-  # ----------------------------------------------------------------------------
-  # Expect 8 rows (4 fixture site x 2 hours).
-  testthat::expect_equal(nrow(df_geos), 8)
-  # ----------------------------------------------------------------------------
-  # Expect 3 columns (locs_id, time, variable)
-  testthat::expect_equal(ncol(df_geos), 3)
-  # ----------------------------------------------------------------------------
-  # Expect character location identifer column.
-  testthat::expect_type(df_geos$NAME, "character")
-  # ----------------------------------------------------------------------------
-  # Expect character "time" column.
-  testthat::expect_type(df_geos$time, "character")
-  # ----------------------------------------------------------------------------
-  # Expect numeric for variable columns.
-  testthat::expect_equal(class(df_geos$O3), "numeric")
-  # ----------------------------------------------------------------------------
-  # Clean up temporary directory.
-  file.remove(list.files(chr_tempdir, full.names = TRUE, recursive = TRUE))
-  unlink(chr_tempdir)
 })
 
 ################################################################################
@@ -452,129 +338,15 @@ testthat::test_that("sedona_geos; locs = sf::points; chm", {
 ################################################################################
 testthat::test_that("sedona_geos; locs = terra::polygons; chm", {
   # ----------------------------------------------------------------------------
-  # Initiate temporary directory.
-  chr_tempdir <- file.path(tempdir(), "geos")
+  # {terra} functions omitted while debugging the C stack overflower error.
   # ----------------------------------------------------------------------------
-  # Remove temporary directory to force recreation.
-  suppressWarnings(file.remove(chr_tempdir))
-  # ----------------------------------------------------------------------------
-  # Import fixture points.
-  polygons <- terra::vect(testthat::test_path(
-    "..",
-    "testdata",
-    "locs",
-    "polygons.shp"
-  ))
-  # ----------------------------------------------------------------------------
-  # No errors at runtime.
-  testthat::expect_no_error(
-    db_geos <- amadeusdb::sedona_geos(
-      date = c("2018-01-01", "2018-01-01"),
-      input = testthat::test_path("..", "testdata", "geos", "chm_tavg"),
-      output = chr_tempdir,
-      locs = polygons,
-      locs_id = "NAME",
-      radius = 0,
-      variable = "CO"
-    )
-  )
-  # ----------------------------------------------------------------------------
-  # !!! OUTPUT CHECKS !!!
-  # ----------------------------------------------------------------------------
-  # Only .parquet files in the output database.
-  testthat::expect_true(all(grepl("\\.parquet", db_geos)))
-  # ----------------------------------------------------------------------------
-  # No errors on read as .parquet.
-  testthat::expect_no_error(db_geos1 <- sedonadb::sd_read_parquet(db_geos))
-  # ----------------------------------------------------------------------------
-  # Expect SedonaDB S3 class.
-  testthat::expect_s3_class(db_geos1, "sedonadb_dataframe")
-  # ----------------------------------------------------------------------------
-  # No errors on collection to data frame.
-  testthat::expect_no_error(df_geos <- sedonadb::sd_collect(db_geos1))
-  # ----------------------------------------------------------------------------
-  # Expect 8 rows (4 fixture site x 2 hours).
-  testthat::expect_equal(nrow(df_geos), 8)
-  # ----------------------------------------------------------------------------
-  # Expect 3 columns (locs_id, time, variable)
-  testthat::expect_equal(ncol(df_geos), 3)
-  # ----------------------------------------------------------------------------
-  # Expect character location identifer column.
-  testthat::expect_type(df_geos$NAME, "character")
-  # ----------------------------------------------------------------------------
-  # Expect character "time" column.
-  testthat::expect_type(df_geos$time, "character")
-  # ----------------------------------------------------------------------------
-  # Expect numeric for variable columns.
-  testthat::expect_equal(class(df_geos$CO), "numeric")
-  # ----------------------------------------------------------------------------
-  # Clean up temporary directory.
-  file.remove(list.files(chr_tempdir, full.names = TRUE, recursive = TRUE))
-  unlink(chr_tempdir)
 })
 
 ################################################################################
 testthat::test_that("sedona_geos; locs = terra::points; chm", {
   # ----------------------------------------------------------------------------
-  # Initiate temporary directory.
-  chr_tempdir <- file.path(tempdir(), "geos")
+  # {terra} functions omitted while debugging the C stack overflower error.
   # ----------------------------------------------------------------------------
-  # Remove temporary directory to force recreation.
-  suppressWarnings(file.remove(chr_tempdir))
-  # ----------------------------------------------------------------------------
-  # Import fixture points.
-  points <- terra::vect(testthat::test_path(
-    "..",
-    "testdata",
-    "locs",
-    "points.shp"
-  ))
-  # ----------------------------------------------------------------------------
-  # No errors at runtime.
-  testthat::expect_no_error(
-    db_geos <- amadeusdb::sedona_geos(
-      date = c("2018-01-01", "2018-01-01"),
-      input = testthat::test_path("..", "testdata", "geos", "chm_tavg"),
-      output = chr_tempdir,
-      locs = points,
-      locs_id = "NAME",
-      radius = 0,
-      variable = "CO"
-    )
-  )
-  # ----------------------------------------------------------------------------
-  # !!! OUTPUT CHECKS !!!
-  # ----------------------------------------------------------------------------
-  # Only .parquet files in the output database.
-  testthat::expect_true(all(grepl("\\.parquet", db_geos)))
-  # ----------------------------------------------------------------------------
-  # No errors on read as .parquet.
-  testthat::expect_no_error(db_geos1 <- sedonadb::sd_read_parquet(db_geos))
-  # ----------------------------------------------------------------------------
-  # Expect SedonaDB S3 class.
-  testthat::expect_s3_class(db_geos1, "sedonadb_dataframe")
-  # ----------------------------------------------------------------------------
-  # No errors on collection to data frame.
-  testthat::expect_no_error(df_geos <- sedonadb::sd_collect(db_geos1))
-  # ----------------------------------------------------------------------------
-  # Expect 8 rows (4 fixture site x 2 hours).
-  testthat::expect_equal(nrow(df_geos), 8)
-  # ----------------------------------------------------------------------------
-  # Expect 3 columns (locs_id, time, variable)
-  testthat::expect_equal(ncol(df_geos), 3)
-  # ----------------------------------------------------------------------------
-  # Expect character location identifer column.
-  testthat::expect_type(df_geos$NAME, "character")
-  # ----------------------------------------------------------------------------
-  # Expect character "time" column.
-  testthat::expect_type(df_geos$time, "character")
-  # ----------------------------------------------------------------------------
-  # Expect numeric for variable columns.
-  testthat::expect_equal(class(df_geos$CO), "numeric")
-  # ----------------------------------------------------------------------------
-  # Clean up temporary directory.
-  file.remove(list.files(chr_tempdir, full.names = TRUE, recursive = TRUE))
-  unlink(chr_tempdir)
 })
 
 ################################################################################

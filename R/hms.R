@@ -171,7 +171,18 @@ sedona_hms <- function(
   # ----------------------------------------------------------------------------
   # Define SQL code for processing HMS data.
   sql_processhms <- glue::glue_data(
-    paste(readLines("inst/sql/sedona_hms.sql", warn = FALSE), collapse = "\n"),
+    paste(
+      readLines(
+        system.file(
+          "sql",
+          "sedona_hms.sql",
+          package = "amadeusdb",
+          mustWork = TRUE
+        ),
+        warn = FALSE
+      ),
+      collapse = "\n"
+    ),
     .x = list(
       locs_id_sql = locs_id_sql,
       light_sql = light_sql,
@@ -193,6 +204,7 @@ sedona_hms <- function(
     "db_locs",
     overwrite = TRUE
   )
+  chr_hms_views <- unique(c(chr_hms_views, "db_locs"))
   # ----------------------------------------------------------------------------
   # Split date row indices into batches.
   list_hms_batch <- split(
@@ -266,6 +278,7 @@ sedona_hms <- function(
         "db_hms",
         overwrite = TRUE
       )
+      chr_hms_views <- unique(c(chr_hms_views, "db_hms"))
       # ------------------------------------------------------------------------
       # Compute the spatial join.
       db_date <- sedonadb::sd_sql(
@@ -273,6 +286,7 @@ sedona_hms <- function(
         params = list(as.character(df_hms_batch$time[i]))
       ) |>
         sedonadb::sd_compute()
+
       # ------------------------------------------------------------------------
       # Register post-spatial join data in the database.
       sedonadb::sd_to_view(
@@ -280,6 +294,7 @@ sedona_hms <- function(
         chr_hms_daily[i],
         overwrite = TRUE
       )
+      chr_hms_views <- unique(c(chr_hms_views, chr_hms_daily[i]))
     }
     # --------------------------------------------------------------------------
     # Materialize and union the batch before removing its daily views.
@@ -287,7 +302,7 @@ sedona_hms <- function(
       amadeusdb::hmsunion(
         locs_id_sql,
         paste0(
-          "time, ",
+          "date, ",
           paste0(
             sprintf("%s_%05d", c("light", "medium", "heavy"), radius),
             collapse = ", "
