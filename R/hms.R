@@ -38,12 +38,18 @@
 #' date. Only dates with selected input files are processed; missing dates are
 #' not filled with additional rows.
 #'
-#' A spatial left join uses `ST_Intersects()` to retain locations without
-#' matching smoke polygons. For each processed date and location identifier,
-#' `light`, `medium`, and `heavy` are 1 when any intersecting polygon has that
-#' density and 0 otherwise. Density labels are trimmed and compared without
-#' regard to case. The three indicators are independent, so more than one can
-#' equal 1. Polygon overlap fractions and within-day exposure durations are
+#' Density labels are trimmed and compared without regard to case; only
+#' `light`, `medium`, and `heavy` are used. Polygons of the same density are
+#' dissolved, then higher-density coverage is removed from lower-density
+#' regions, with precedence `heavy > medium > light`.
+#'
+#' A spatial left join retains locations without matching smoke regions.
+#' Points match using `ST_Intersects()`; polygons must also share positive
+#' intersection area, so boundary-only contact does not count for polygons.
+#' For each processed date and location identifier, each density indicator is
+#' 1 when a remaining region of that density matches and 0 otherwise. A
+#' location spanning multiple density regions can have more than one indicator
+#' equal to 1. Polygon overlap fractions and within-day exposure durations are
 #' not calculated.
 #'
 #' Each batch is written as `hms_<first_date>_<last_date>.parquet`, with dates
@@ -56,7 +62,9 @@
 #' Invisibly, a character vector of absolute Parquet file paths, including
 #' existing batches that were skipped. Each file contains the location
 #' identifier column, a `date` column stored as a SQL date, and integer
-#' `light`, `medium`, and `heavy` indicator columns.
+#' indicator columns named with `sprintf("%s_%05d", density, radius)` for
+#' densities `light`, `medium`, and `heavy`. For `radius = 0`, these are
+#' `light_00000`, `medium_00000`, and `heavy_00000`.
 #'
 #' @note
 #' Uses the default SedonaDB context and view names `db_locs`, `db_hms`, and
@@ -77,7 +85,7 @@
 #'   crs = 4326
 #' )
 #' hms_files <- sedona_hms(
-#'   date = as.integer(as.Date(c("2024-01-01", "2024-01-31"))),
+#'   date = c("2024-01-01", "2024-01-31"),
 #'   input = "data/hms",
 #'   output = tempfile("hms_covariates_"),
 #'   locs = locs,
@@ -337,16 +345,19 @@ sedona_hms <- function(
 #'
 #' @param l character(1). SQL identifier for the location column, already quoted
 #'   if necessary.
-#' @param c character. Non-empty vector of SQL column names.
+#' @param c character(1). Non-empty, comma-separated SQL column list, inserted
+#'   verbatim into each `SELECT`. Quote column identifiers if necessary. Supply
+#'   one string containing all columns, rather than a vector of column names.
 #' @param v character. Non-empty vector of SQL view names to stack, in query
 #'   order. Names are inserted verbatim and must already be valid SQL
 #'   identifiers.
 #'
 #' @details
 #' Every view must contain the location column identified by `l`, together with
-#' `date`, `light`, `medium`, and `heavy`. The query retains duplicate rows.
-#' This helper builds SQL text only; it does not execute the query or validate
-#' the views.
+#' the columns listed in `c`. For [sedona_hms()] output, explicitly supply
+#' `date` and the radius-suffixed indicator names, as in the example below.
+#' The query retains duplicate rows. This helper builds SQL text only; it does
+#' not execute the query or validate the views.
 #'
 #' @return A character(1) SQL query.
 #' @seealso [sedona_hms()], [quote_sql()]
@@ -354,7 +365,7 @@ sedona_hms <- function(
 #' @examples
 #' amadeusdb::hmsunion(
 #'   l = '"site_id"',
-#'   c = c("time", "light", "medium", "heavy"),
+#'   c = "date, light_00000, medium_00000, heavy_00000",
 #'   v = c("db_day_001", "db_day_002")
 #' )
 #' @export

@@ -11,8 +11,9 @@ prepare_sf(locs, crs, radius)
 a source CRS. Data frames must contain numeric \code{lon} and \code{lat} columns in
 longitude and latitude degrees, interpreted as \code{"EPSG:4326"}.}
 
-\item{crs}{character(1). Non-empty target CRS description passed to
-\code{\link[sf:st_transform]{sf::st_transform()}}. See the note below for the current validation.}
+\item{crs}{An object of class \code{crs}, as returned by \code{\link[sf:st_crs]{sf::st_crs()}}. The
+target CRS must match an entry in the package's \code{.amadeusdb$list_crs}
+lookup and is passed to \code{\link[sf:st_transform]{sf::st_transform()}}.}
 
 \item{radius}{numeric(1). Non-negative buffer distance. For projected CRSs,
 use the CRS units; for longitude/latitude coordinates, distance units
@@ -34,10 +35,9 @@ retaining their original \code{lon} and \code{lat} columns. Those columns are no
 updated when the geometry is transformed or buffered.
 }
 \note{
-The current CRS check compares \code{crs} with the path returned by
-\code{system.file("amadeusdb/crs.csv", package = "amadeusdb")}, instead of reading
-CRS values from that file. Standard CRS identifiers therefore fail this
-check.
+CRS validation requires class \code{crs} and compares the supplied object with
+each stored \code{crs} entry in \code{.amadeusdb$list_crs} using CRS equality. The
+lookup is loaded from \code{extdata/list_crs.rds} when the package is loaded.
 }
 \seealso{
 \code{\link[amadeus:process_locs_vector]{amadeus::process_locs_vector()}} for the corresponding base amadeus

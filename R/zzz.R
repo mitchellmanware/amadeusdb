@@ -8,8 +8,9 @@
 #'
 #' @format
 #' An environment with an empty parent environment. After [.onLoad()] runs,
-#' `df_crs` contains the data frame read from `extdata/df_crs.csv`, with all
-#' columns stored as character vectors.
+#' `list_crs` contains the source CRS lookup list read from
+#' `extdata/list_crs.rds`. Each source entry contains a `crs` object used for
+#' CRS validation and transformation.
 #'
 #' @seealso [.onLoad()], [prepare_sf()]
 #' @keywords internal

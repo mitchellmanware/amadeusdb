@@ -52,8 +52,8 @@ to \code{"date"}. Values must be castable to a SQL date. A separate date column
 is not required in the observation table.}
 
 \item{prefix}{logical(1). Whether to prefix right-hand data column names
-with their resolution and dataset label, for example \code{hourly_geos_CO} for
-column \code{CO} in \code{hourly = list(geos = geos_files)}. Defaults to \code{FALSE}.}
+with their resolution and dataset label, for example \code{hourly_geos_co_0}
+for column \code{co_0} in \code{hourly = list(geos = geos_files)}. Defaults to \code{FALSE}.}
 }
 \value{
 A character vector of newly created \code{.parquet} file paths under \code{output}.
@@ -62,8 +62,9 @@ written to disk rather than returned as an R data frame.
 }
 \description{
 Left-join Parquet covariate tables onto an observation table, such as AQS,
-using location identifiers and resolution-specific temporal keys. Preserve
-observation rows and write the combined dataset to Parquet using SedonaDB.
+using location identifiers and resolution-specific temporal keys. Write
+only rows with non-NULL values in every output column to Parquet using
+SedonaDB.
 }
 \details{
 The names supplied to \code{locs_id}, \code{time_id}, and \code{date_id} must be distinct
@@ -91,9 +92,16 @@ averaging windows.
 
 Right-hand keys must be non-missing and unique after temporal normalization.
 Multiple records for the same location and normalized hour or date cause an
-error; they are not aggregated. Repeated observation keys are retained.
-No additional observation hours are generated, and unmatched covariates
-remain SQL \code{NULL}.
+error; they are not aggregated. GEOS \code{level} is retained as a data column,
+not used as an additional join key. Supply only one record per location and
+normalized hour, selecting a single level before joining if necessary.
+Repeated observation keys are not deduplicated, and no additional
+observation hours are generated.
+
+After joining, rows containing SQL \code{NULL} in any output column are removed.
+This includes unmatched covariates, missing values in matched covariate
+columns, and missing values in any original observation column. Only
+observations with non-NULL values throughout the combined row are written.
 
 All observation columns and non-key covariate columns are retained. Column
 conflicts after optional prefixing cause an error. Every output column name

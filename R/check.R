@@ -9,7 +9,7 @@
 #' @param locs sf object. Locations returned by [prepare_locs()], with a column
 #'   named `geometry` and exactly one geometry type: `POINT`, `POLYGON`, or
 #'   `MULTIPOLYGON`.
-#' @param date integer(2). Start and end dates after the caller has repeated a
+#' @param date character(2). Start and end dates after the caller has repeated a
 #'   single date. Only storage type and length are checked; date values,
 #'   missingness, and chronological order are not checked.
 #' @param input character(1). Non-empty path to an existing input directory.
@@ -19,7 +19,7 @@
 #' @param output character(1). Non-empty output directory path. Created
 #'   recursively if absent, then checked for existence.
 #' @param batch integer. Number of source files per batch, with values at least
-#'   `1L`. See the note below about the current assertion.
+#'   `1L`.
 #' @param raster logical(1). Whether to check the raster-specific arguments.
 #'   This flag is used directly in an `if` condition without an assertion.
 #' @param fun character(1). Non-empty raster summary statistic name. Checked
@@ -45,11 +45,6 @@
 #' Called for validation and directory creation; failures raise an error.
 #' On successful completion, invisibly returns `exclude_nodata` when
 #' `raster = TRUE`, or `NULL` otherwise.
-#'
-#' @note
-#' The current batch assertion passes `finite = TRUE` to
-#' `checkmate::assert_integer()`, which does not accept that argument.
-#' Execution therefore fails at that check if the preceding checks pass.
 #'
 #' @importFrom checkmate assert_choice assert_class assert_directory_exists
 #'   assert_file assert_flag assert_integer assert_string assert_subset

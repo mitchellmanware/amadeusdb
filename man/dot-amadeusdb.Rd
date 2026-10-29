@@ -5,8 +5,9 @@
 \title{Store internal package data}
 \format{
 An environment with an empty parent environment. After \code{\link[=.onLoad]{.onLoad()}} runs,
-\code{df_crs} contains the data frame read from \code{extdata/df_crs.csv}, with all
-columns stored as character vectors.
+\code{list_crs} contains the source CRS lookup list read from
+\code{extdata/list_crs.rds}. Each source entry contains a \code{crs} object used for
+CRS validation and transformation.
 }
 \usage{
 .amadeusdb

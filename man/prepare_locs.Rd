@@ -16,8 +16,9 @@ and latitude degrees, interpreted as \code{"EPSG:4326"}.}
 \code{locs}. The column is checked for presence; its values are not checked for
 uniqueness or missingness.}
 
-\item{crs}{character(1). Non-empty target CRS description passed to
-\code{\link[sf:st_transform]{sf::st_transform()}} after the validation in \code{\link[=prepare_sf]{prepare_sf()}}.}
+\item{crs}{An object of class \code{crs}, as returned by \code{\link[sf:st_crs]{sf::st_crs()}}. The
+target CRS must match an entry in the package's \code{.amadeusdb$list_crs}
+lookup. Validated by \code{\link[=prepare_sf]{prepare_sf()}} before transformation.}
 
 \item{radius}{numeric(1). Non-negative buffer distance. For projected CRSs,
 use the CRS units; for longitude/latitude coordinates, distance units
@@ -34,8 +35,8 @@ an optional buffer. The result can be supplied as \code{locs} to \verb{sedona_*(
 functions.
 }
 \note{
-CRS validation is delegated to \code{\link[=prepare_sf]{prepare_sf()}}; see its note about the
-current file-path comparison.
+CRS validation is delegated to \code{\link[=prepare_sf]{prepare_sf()}}. Supply a CRS object rather
+than a character CRS identifier.
 }
 \seealso{
 \code{\link[amadeus:calc_prepare_locs]{amadeus::calc_prepare_locs()}} for the corresponding base amadeus

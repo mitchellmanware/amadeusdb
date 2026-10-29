@@ -14,13 +14,18 @@
 #'   Supply a new directory; existing output files are not removed.
 #' @param by character. Non-empty vector of distinct join column names present
 #'   in every input group. Defaults to `c("site_id", "time")`. Key types must
-#'   be compatible across groups.
+#'   be compatible across groups. For [sedona_geos()] output, include `"level"`
+#'   as well, for example `c("site_id", "time", "level")`.
 #'
 #' @details
 #' Each group must contain at least one non-key data column. Join keys must
 #' be non-missing and unique across all files within that group. Non-key column
 #' names must be distinct across groups; rename conflicting columns before
 #' calling this function.
+#'
+#' GEOS tables contain a shared `level` column. Include it in `by` when joining
+#' variable-specific GEOS outputs so that it is matched as a key and retained
+#' once, instead of causing a non-key column conflict.
 #'
 #' Full outer joins retain keys present in any group and one shared copy of
 #' each key column. Missing covariate values remain SQL `NULL`. Timestamp keys
@@ -53,7 +58,7 @@
 #' geos_files <- join_variables(
 #'   input = list(CO = co_files, NO2 = no2_files),
 #'   output = file.path("outdir"),
-#'   by = c("site_id", "time")
+#'   by = c("site_id", "time", "level")
 #' )
 #' }
 #' @export
@@ -296,8 +301,9 @@ join_variables <- function(
 #'
 #' @description
 #' Left-join Parquet covariate tables onto an observation table, such as AQS,
-#' using location identifiers and resolution-specific temporal keys. Preserve
-#' observation rows and write the combined dataset to Parquet using SedonaDB.
+#' using location identifiers and resolution-specific temporal keys. Write
+#' only rows with non-NULL values in every output column to Parquet using
+#' SedonaDB.
 #'
 #' @param input character(1). Path to one existing observation Parquet file
 #'   containing the columns named by `locs_id` and `time_id`. A directory or
@@ -326,8 +332,8 @@ join_variables <- function(
 #'   to `"date"`. Values must be castable to a SQL date. A separate date column
 #'   is not required in the observation table.
 #' @param prefix logical(1). Whether to prefix right-hand data column names
-#'   with their resolution and dataset label, for example `hourly_geos_CO` for
-#'   column `CO` in `hourly = list(geos = geos_files)`. Defaults to `FALSE`.
+#'   with their resolution and dataset label, for example `hourly_geos_co_0`
+#'   for column `co_0` in `hourly = list(geos = geos_files)`. Defaults to `FALSE`.
 #'
 #' @details
 #' The names supplied to `locs_id`, `time_id`, and `date_id` must be distinct
@@ -355,9 +361,16 @@ join_variables <- function(
 #'
 #' Right-hand keys must be non-missing and unique after temporal normalization.
 #' Multiple records for the same location and normalized hour or date cause an
-#' error; they are not aggregated. Repeated observation keys are retained.
-#' No additional observation hours are generated, and unmatched covariates
-#' remain SQL `NULL`.
+#' error; they are not aggregated. GEOS `level` is retained as a data column,
+#' not used as an additional join key. Supply only one record per location and
+#' normalized hour, selecting a single level before joining if necessary.
+#' Repeated observation keys are not deduplicated, and no additional
+#' observation hours are generated.
+#'
+#' After joining, rows containing SQL `NULL` in any output column are removed.
+#' This includes unmatched covariates, missing values in matched covariate
+#' columns, and missing values in any original observation column. Only
+#' observations with non-NULL values throughout the combined row are written.
 #'
 #' All observation columns and non-key covariate columns are retained. Column
 #' conflicts after optional prefixing cause an error. Every output column name

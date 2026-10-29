@@ -18,7 +18,8 @@ Supply a new directory; existing output files are not removed.}
 
 \item{by}{character. Non-empty vector of distinct join column names present
 in every input group. Defaults to \code{c("site_id", "time")}. Key types must
-be compatible across groups.}
+be compatible across groups. For \code{\link[=sedona_geos]{sedona_geos()}} output, include \code{"level"}
+as well, for example \code{c("site_id", "time", "level")}.}
 }
 \value{
 A character vector of newly created \code{.parquet} file paths under \code{output}.
@@ -35,6 +36,10 @@ Each group must contain at least one non-key data column. Join keys must
 be non-missing and unique across all files within that group. Non-key column
 names must be distinct across groups; rename conflicting columns before
 calling this function.
+
+GEOS tables contain a shared \code{level} column. Include it in \code{by} when joining
+variable-specific GEOS outputs so that it is matched as a key and retained
+once, instead of causing a non-key column conflict.
 
 Full outer joins retain keys present in any group and one shared copy of
 each key column. Missing covariate values remain SQL \code{NULL}. Timestamp keys
@@ -56,7 +61,7 @@ no2_files <- list.files(
 geos_files <- join_variables(
   input = list(CO = co_files, NO2 = no2_files),
   output = file.path("outdir"),
-  by = c("site_id", "time")
+  by = c("site_id", "time", "level")
 )
 }
 }

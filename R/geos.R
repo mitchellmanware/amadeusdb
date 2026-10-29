@@ -18,8 +18,9 @@
 #' @param output character(1). Non-empty directory path for the output Parquet
 #'   files. Created recursively if it does not exist.
 #' @param variable character(1). Non-empty, case-sensitive NetCDF variable name.
-#'   The same variable is read from every selected file and used as the output
-#'   value column name.
+#'   The same variable is read from every selected file. The output value
+#'   column is named with `sprintf("%s_%d", tolower(variable), radius)`, for
+#'   example `co_0` for `variable = "CO"` and `radius = 0`.
 #' @param band integer(1). One-based raster band or vertical pressure level
 #'   index for polygon statistics, at least `1L`. Defaults to `1L`. Inspect the
 #'   NetCDF file to identify the desired band. Point extraction uses band 1
@@ -57,7 +58,9 @@
 #' @details
 #' Files are selected using the requested dates, and timestamps are derived
 #' from their filenames and parsed as UTC. Point extraction uses band 1 of the
-#' requested NetCDF variable; polygon statistics use `level`.
+#' requested NetCDF variable; polygon statistics use `band`. The output
+#' `level` column is derived from each file's NetCDF `lev` coordinate using
+#' [geoslev()].
 #'
 #' Each batch is written as
 #' `geos_<variable>_<first_timestamp>_<last_timestamp>.parquet`. A batch whose
@@ -68,8 +71,9 @@
 #' @return
 #' Invisibly, a character vector of absolute Parquet file paths, including
 #' existing batches that were skipped. Each file contains the location
-#' identifier column, a character `time` column derived from the source
-#' filenames, and a value column named by `variable`.
+#' identifier column, a `time` column stored as a SQL timestamp and derived
+#' from the source filenames, a character `level` column, and a value column
+#' named with the lowercase `variable` and `radius`, such as `co_0`.
 #'
 #' @note
 #' Uses the default SedonaDB context and view names `db_locs` and
@@ -91,11 +95,11 @@
 #'   crs = 4326
 #' )
 #' geos_files <- sedona_geos(
-#'   date = as.integer(as.Date(c("2024-01-01", "2024-01-02"))),
+#'   date = c("2024-01-01", "2024-01-02"),
 #'   input = "data/geos",
 #'   output = tempdir(),
 #'   variable = "CO",
-#'   level = 1L,
+#'   band = 1L,
 #'   locs = locs,
 #'   locs_id = "site_id",
 #'   radius = 0,
@@ -405,7 +409,7 @@ sedona_geos <- function(
 #'
 #' @description
 #' Construct SQL that stacks GEOS extraction views using `UNION ALL`, retaining
-#' the location identifier, time, and selected variable columns.
+#' the location identifier, `time`, `level`, and selected variable columns.
 #'
 #' @param l character(1). SQL identifier for the location column, already quoted
 #'   if necessary.
@@ -416,9 +420,10 @@ sedona_geos <- function(
 #'   identifiers.
 #'
 #' @details
-#' Every view must contain the columns identified by `l` and `var`, and a column
-#' named `time`. The query retains duplicate rows. This helper builds SQL text
-#' only; it does not execute the query or validate the views.
+#' Every view must contain the columns identified by `l` and `var`, together
+#' with columns named `time` and `level`. The query retains duplicate rows.
+#' This helper builds SQL text only; it does not execute the query or validate
+#' the views.
 #'
 #' @return A character(1) SQL query.
 #' @seealso [sedona_geos()], [quote_sql()]
@@ -426,7 +431,7 @@ sedona_geos <- function(
 #' @examples
 #' amadeusdb::geosunion(
 #'   l = '"site_id"',
-#'   var = '"CO"',
+#'   var = '"co_0"',
 #'   views = c("db_time_001", "db_time_002")
 #' )
 #' @export

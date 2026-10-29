@@ -14,8 +14,9 @@
 #' @param locs_id character(1). Name of the location identifier column in
 #'   `locs`. The column is checked for presence; its values are not checked for
 #'   uniqueness or missingness.
-#' @param crs character(1). Non-empty target CRS description passed to
-#'   [sf::st_transform()] after the validation in [prepare_sf()].
+#' @param crs An object of class `crs`, as returned by [sf::st_crs()]. The
+#'   target CRS must match an entry in the package's `.amadeusdb$list_crs`
+#'   lookup. Validated by [prepare_sf()] before transformation.
 #' @param radius numeric(1). Non-negative buffer distance. For projected CRSs,
 #'   use the CRS units; for longitude/latitude coordinates, distance units
 #'   follow [sf::st_buffer()]. Defaults to `0`, which skips buffering.
@@ -25,8 +26,8 @@
 #' `crs`, buffered when `radius > 0`.
 #'
 #' @note
-#' CRS validation is delegated to [prepare_sf()]; see its note about the
-#' current file-path comparison.
+#' CRS validation is delegated to [prepare_sf()]. Supply a CRS object rather
+#' than a character CRS identifier.
 #'
 #' @importFrom checkmate assert_false assert_subset
 #'
@@ -66,8 +67,9 @@ prepare_locs <- function(
 #' @param locs sf, SpatVector, or data.frame object. Spatial objects must have
 #'   a source CRS. Data frames must contain numeric `lon` and `lat` columns in
 #'   longitude and latitude degrees, interpreted as `"EPSG:4326"`.
-#' @param crs character(1). Non-empty target CRS description passed to
-#'   [sf::st_transform()]. See the note below for the current validation.
+#' @param crs An object of class `crs`, as returned by [sf::st_crs()]. The
+#'   target CRS must match an entry in the package's `.amadeusdb$list_crs`
+#'   lookup and is passed to [sf::st_transform()].
 #' @param radius numeric(1). Non-negative buffer distance. For projected CRSs,
 #'   use the CRS units; for longitude/latitude coordinates, distance units
 #'   follow [sf::st_buffer()]. Use `0` to skip buffering.
@@ -84,10 +86,9 @@ prepare_locs <- function(
 #' `crs`, buffered when `radius > 0`.
 #'
 #' @note
-#' The current CRS check compares `crs` with the path returned by
-#' `system.file("amadeusdb/crs.csv", package = "amadeusdb")`, instead of reading
-#' CRS values from that file. Standard CRS identifiers therefore fail this
-#' check.
+#' CRS validation requires class `crs` and compares the supplied object with
+#' each stored `crs` entry in `.amadeusdb$list_crs` using CRS equality. The
+#' lookup is loaded from `extdata/list_crs.rds` when the package is loaded.
 #'
 #' @importFrom checkmate assert_number assert_string assert_subset
 #' @importFrom methods is
