@@ -26,7 +26,7 @@
 #'   only when `raster = TRUE`; supported names are resolved by the caller.
 #' @param variable character(1). Non-empty raster variable name. Checked only
 #'   when `raster = TRUE`; existence in the source files is not checked.
-#' @param level integer. Raster band or vertical level index, with values at
+#' @param band integer. Raster band or vertical level index, with values at
 #'   least `1L`. Checked only when `raster = TRUE`.
 #' @param touches logical(1). Non-missing flag controlling inclusion of raster
 #'   cells touched by polygons. Checked only when `raster = TRUE`.
@@ -35,8 +35,8 @@
 #'
 #' @details
 #' This helper does not coerce inputs. The integer checks do not enforce
-#' scalar `batch` or `level` values or reject missing integers. The arguments
-#' `fun`, `variable`, `level`, `touches`, and `exclude_nodata` may be omitted
+#' scalar `batch` or `band` values or reject missing integers. The arguments
+#' `fun`, `variable`, `band`, `touches`, and `exclude_nodata` may be omitted
 #' when `raster = FALSE`, because they are not evaluated in that branch.
 #'
 #' Creating `output` is a side effect and can occur before a later check fails.
@@ -68,7 +68,7 @@ check_arguments <- function(
   raster,
   fun,
   variable,
-  level,
+  band,
   touches,
   exclude_nodata
 ) {
@@ -123,7 +123,7 @@ check_arguments <- function(
   # ----------------------------------------------------------------------------
 
   # ----------------------------------------------------------------------------
-  # Arguments `fun`, `variable`, `level`, `touches`, and `exclude_nodata` are
+  # Arguments `fun`, `variable`, `band`, `touches`, and `exclude_nodata` are
   # used in raster extraction data only.
   if (raster) {
     # --------------------------------------------------------------------------
@@ -137,9 +137,9 @@ check_arguments <- function(
     # --------------------------------------------------------------------------
 
     # --------------------------------------------------------------------------
-    # Ensure `level` is an integer.
+    # Ensure `band` is an integer.
     # --------------------------------------------------------------------------
-    checkmate::assert_integer(level, lower = 1)
+    checkmate::assert_integer(band, lower = 1)
     # --------------------------------------------------------------------------
 
     # --------------------------------------------------------------------------

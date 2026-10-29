@@ -13,7 +13,7 @@ check_arguments(
   raster,
   fun,
   variable,
-  level,
+  band,
   touches,
   exclude_nodata
 )
@@ -47,7 +47,7 @@ only when \code{raster = TRUE}; supported names are resolved by the caller.}
 \item{variable}{character(1). Non-empty raster variable name. Checked only
 when \code{raster = TRUE}; existence in the source files is not checked.}
 
-\item{level}{integer. Raster band or vertical level index, with values at
+\item{band}{integer. Raster band or vertical level index, with values at
 least \code{1L}. Checked only when \code{raster = TRUE}.}
 
 \item{touches}{logical(1). Non-missing flag controlling inclusion of raster
@@ -68,8 +68,8 @@ when \code{raster = TRUE}.
 }
 \details{
 This helper does not coerce inputs. The integer checks do not enforce
-scalar \code{batch} or \code{level} values or reject missing integers. The arguments
-\code{fun}, \code{variable}, \code{level}, \code{touches}, and \code{exclude_nodata} may be omitted
+scalar \code{batch} or \code{band} values or reject missing integers. The arguments
+\code{fun}, \code{variable}, \code{band}, \code{touches}, and \code{exclude_nodata} may be omitted
 when \code{raster = FALSE}, because they are not evaluated in that branch.
 
 Creating \code{output} is a side effect and can occur before a later check fails.

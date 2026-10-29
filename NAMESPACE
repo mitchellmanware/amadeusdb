@@ -3,6 +3,7 @@
 export(check_arguments)
 export(check_views)
 export(cleanup_views)
+export(geoslev)
 export(geosunion)
 export(hmsdates)
 export(hmsunion)
@@ -37,6 +38,11 @@ importFrom(checkmate,
 )
 importFrom(glue,glue)
 importFrom(methods,is)
+importFrom(ncdf4,
+  nc_close,
+  nc_open,
+  ncvar_get
+)
 importFrom(sedonadb,
   as_sedonadb_dataframe,
   sd_collect,

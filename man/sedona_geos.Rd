@@ -9,7 +9,7 @@ sedona_geos(
   input,
   output,
   variable,
-  level = 1L,
+  band = 1L,
   locs,
   locs_id,
   radius = 0,
@@ -37,9 +37,9 @@ files. Created recursively if it does not exist.}
 The same variable is read from every selected file and used as the output
 value column name.}
 
-\item{level}{integer(1). One-based raster band or vertical pressure level
+\item{band}{integer(1). One-based raster band or vertical pressure level
 index for polygon statistics, at least \code{1L}. Defaults to \code{1L}. Inspect the
-NetCDF file to identify the desired level. Point extraction uses band 1
+NetCDF file to identify the desired band. Point extraction uses band 1
 regardless of this value.}
 
 \item{locs}{sf, SpatVector, or data.frame object. Extraction locations with

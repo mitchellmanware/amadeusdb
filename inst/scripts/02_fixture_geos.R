@@ -1,5 +1,6 @@
 ################################################################################
-# Manual script for creating GEOS fixture data for unit/integration tests.
+# Manual script for creating GEOS fixture data for unit, integration, and
+# alignment tests.
 # Mitchell Manware
 # 27 October 2026
 
@@ -142,3 +143,125 @@ terra::rast(chr_aqc_tavg[2])
 chr_chm_tavg <- list.files("tests/testdata/geos/chm_tavg/", full.names = TRUE)
 terra::rast(chr_chm_tavg[1])
 terra::rast(chr_chm_tavg[2])
+
+################################################################################
+# Alignmet .rds generation.
+# ------------------------------------------------------------------------------
+# Load libraries.
+library(amadeus)
+
+# ------------------------------------------------------------------------------
+# Define common arguments.
+chr_dates <- "2018-01-01"
+chr_geospath <- testthat::test_path("..", "testdata", "geos", "aqc_tavg")
+chr_locsid <- "NAME"
+
+# ------------------------------------------------------------------------------
+# {amadeus} calculation: polygons; mean.
+polygons <- sf::st_read(testthat::test_path(
+  "..",
+  "testdata",
+  "locs",
+  "polygons.shp"
+))
+df_procalc_mean <- suppressWarnings(amadeus::calculate_geos(
+  from = amadeus::process_geos(
+    date = chr_dates,
+    path = chr_geospath,
+    variable = "O3"
+  ),
+  locs = polygons,
+  locs_id = chr_locsid,
+  radius = 0,
+  geom = FALSE
+))
+saveRDS(
+  df_procalc_mean,
+  testthat::test_path(
+    "..",
+    "testdata",
+    "amadeus",
+    "geos",
+    "df_procalc_mean.rds"
+  )
+)
+
+# ------------------------------------------------------------------------------
+# {amadeus} calculation: polygons; max.
+df_procalc_max <- suppressWarnings(amadeus::calculate_geos(
+  from = amadeus::process_geos(
+    date = chr_dates,
+    path = chr_geospath,
+    variable = "O3"
+  ),
+  locs = polygons,
+  locs_id = chr_locsid,
+  radius = 0,
+  geom = FALSE,
+  fun = "max"
+))
+saveRDS(
+  df_procalc_max,
+  testthat::test_path(
+    "..",
+    "testdata",
+    "amadeus",
+    "geos",
+    "df_procalc_max.rds"
+  )
+)
+
+# ------------------------------------------------------------------------------
+# {amadeus} calculation: polygons; min.
+df_procalc_min <- suppressWarnings(amadeus::calculate_geos(
+  from = amadeus::process_geos(
+    date = chr_dates,
+    path = chr_geospath,
+    variable = "O3"
+  ),
+  locs = polygons,
+  locs_id = chr_locsid,
+  radius = 0,
+  geom = FALSE,
+  fun = "min"
+))
+saveRDS(
+  df_procalc_min,
+  testthat::test_path(
+    "..",
+    "testdata",
+    "amadeus",
+    "geos",
+    "df_procalc_min.rds"
+  )
+)
+
+# ------------------------------------------------------------------------------
+# {amadeus} calculation: points.
+points <- sf::st_read(testthat::test_path(
+  "..",
+  "testdata",
+  "locs",
+  "points.shp"
+))
+df_procalc_points <- suppressWarnings(amadeus::calculate_geos(
+  from = amadeus::process_geos(
+    date = chr_dates,
+    path = chr_geospath,
+    variable = "O3"
+  ),
+  locs = points,
+  locs_id = chr_locsid,
+  radius = 0,
+  geom = FALSE
+))
+saveRDS(
+  df_procalc_points,
+  testthat::test_path(
+    "..",
+    "testdata",
+    "amadeus",
+    "geos",
+    "df_procalc_points.rds"
+  )
+)
