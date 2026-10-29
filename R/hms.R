@@ -337,6 +337,7 @@ sedona_hms <- function(
 #'
 #' @param l character(1). SQL identifier for the location column, already quoted
 #'   if necessary.
+#' @param c character. Non-empty vector of SQL column names.
 #' @param v character. Non-empty vector of SQL view names to stack, in query
 #'   order. Names are inserted verbatim and must already be valid SQL
 #'   identifiers.
@@ -353,6 +354,7 @@ sedona_hms <- function(
 #' @examples
 #' amadeusdb::hmsunion(
 #'   l = '"site_id"',
+#'   c = c("time", "light", "medium", "heavy"),
 #'   v = c("db_day_001", "db_day_002")
 #' )
 #' @export

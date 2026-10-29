@@ -772,4 +772,4 @@ testthat::test_that("sedona_geos == amadeus::*_geos; polygons", {})
 testthat::test_that("sedona_geos == amadeus::*_geos; points", {})
 
 ################################################################################
-testthat::test_that("sedona_geos == amadeus::*_geos; polygons", {})
+testthat::test_that("sedona_geos == amadeus::*_geos; radius = 1e6", {})
