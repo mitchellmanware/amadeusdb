@@ -167,31 +167,12 @@ sedona_geos <- function(
     exclude_nodata = exclude_nodata
   )
   # ----------------------------------------------------------------------------
-  # Identify GEOS file paths from all files in the path.
-  chr_paths <- list.files(
-    input,
+  # Identify time-relevant GEOS file paths in `input`.
+  chr_datapaths <- amadeusdb::discover(
+    date = date,
+    input = input,
     pattern = "GEOS-CF.v01.rpl",
-    full.names = TRUE,
-    recursive = TRUE
-  )
-  # ----------------------------------------------------------------------------
-  # Generate sequence from user supplied dates.
-  chr_datesofinterest <- amadeus::generate_date_sequence(
-    date[1],
-    date[2],
     sub_hyphen = TRUE
-  )
-  # ----------------------------------------------------------------------------
-  # Select only those file paths which align with user supplied date sequence.
-  chr_datapaths <- unique(
-    grep(
-      paste(
-        chr_datesofinterest,
-        collapse = "|"
-      ),
-      chr_paths,
-      value = TRUE
-    )
   )
   # ----------------------------------------------------------------------------
   # Store file path, NetCDF variable path, date, and generated db names.

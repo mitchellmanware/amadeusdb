@@ -126,30 +126,12 @@ sedona_hms <- function(
     raster = FALSE
   )
   # ----------------------------------------------------------------------------
-  # Identify HMS shapefile paths from all files in the path.
-  chr_paths <- list.files(
-    input,
+  # Identify time-relevant HMS file paths in `input`.
+  chr_datapaths <- amadeusdb::discover(
+    date = date,
+    input = input,
     pattern = "hms_smoke*.*.shp$",
-    full.names = TRUE
-  )
-  # ----------------------------------------------------------------------------
-  # Generate sequence from user supplied dates.
-  chr_datesofinterest <- amadeus::generate_date_sequence(
-    date[1],
-    date[2],
     sub_hyphen = TRUE
-  )
-  # ----------------------------------------------------------------------------
-  # Select paths which align with the requested date sequence.
-  chr_datapaths <- unique(
-    grep(
-      paste(
-        chr_datesofinterest,
-        collapse = "|"
-      ),
-      chr_paths,
-      value = TRUE
-    )
   )
   # ----------------------------------------------------------------------------
   # Store file path, date from file, and generated database view names.
