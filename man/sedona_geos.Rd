@@ -9,7 +9,7 @@ sedona_geos(
   input,
   output,
   variable,
-  level = 1L,
+  band = 1L,
   locs,
   locs_id,
   radius = 0,
@@ -34,12 +34,13 @@ with no repeated filename timestamps.}
 files. Created recursively if it does not exist.}
 
 \item{variable}{character(1). Non-empty, case-sensitive NetCDF variable name.
-The same variable is read from every selected file and used as the output
-value column name.}
+The same variable is read from every selected file. The output value
+column is named with \code{sprintf("\%s_\%d", tolower(variable), radius)}, for
+example \code{co_0} for \code{variable = "CO"} and \code{radius = 0}.}
 
-\item{level}{integer(1). One-based raster band or vertical pressure level
+\item{band}{integer(1). One-based raster band or vertical pressure level
 index for polygon statistics, at least \code{1L}. Defaults to \code{1L}. Inspect the
-NetCDF file to identify the desired level. Point extraction uses band 1
+NetCDF file to identify the desired band. Point extraction uses band 1
 regardless of this value.}
 
 \item{locs}{sf, SpatVector, or data.frame object. Extraction locations with
@@ -81,8 +82,9 @@ Defaults to \code{50L}.}
 \value{
 Invisibly, a character vector of absolute Parquet file paths, including
 existing batches that were skipped. Each file contains the location
-identifier column, a character \code{time} column derived from the source
-filenames, and a value column named by \code{variable}.
+identifier column, a \code{time} column stored as a SQL timestamp and derived
+from the source filenames, a character \code{level} column, and a value column
+named with the lowercase \code{variable} and \code{radius}, such as \code{co_0}.
 }
 \description{
 Read local NASA GEOS-CF NetCDF files, extract one variable at prepared
@@ -93,7 +95,9 @@ uses raster cell values; polygon extraction uses zonal statistics.
 \details{
 Files are selected using the requested dates, and timestamps are derived
 from their filenames and parsed as UTC. Point extraction uses band 1 of the
-requested NetCDF variable; polygon statistics use \code{level}.
+requested NetCDF variable; polygon statistics use \code{band}. The output
+\code{level} column is derived from each file's NetCDF \code{lev} coordinate using
+\code{\link[=geoslev]{geoslev()}}.
 
 Each batch is written as
 \verb{geos_<variable>_<first_timestamp>_<last_timestamp>.parquet}. A batch whose
@@ -113,11 +117,11 @@ locs <- sf::st_as_sf(
   crs = 4326
 )
 geos_files <- sedona_geos(
-  date = as.integer(as.Date(c("2024-01-01", "2024-01-02"))),
+  date = c("2024-01-01", "2024-01-02"),
   input = "data/geos",
   output = tempdir(),
   variable = "CO",
-  level = 1L,
+  band = 1L,
   locs = locs,
   locs_id = "site_id",
   radius = 0,

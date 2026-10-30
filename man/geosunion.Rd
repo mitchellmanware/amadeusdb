@@ -22,17 +22,18 @@ A character(1) SQL query.
 }
 \description{
 Construct SQL that stacks GEOS extraction views using \verb{UNION ALL}, retaining
-the location identifier, time, and selected variable columns.
+the location identifier, \code{time}, \code{level}, and selected variable columns.
 }
 \details{
-Every view must contain the columns identified by \code{l} and \code{var}, and a column
-named \code{time}. The query retains duplicate rows. This helper builds SQL text
-only; it does not execute the query or validate the views.
+Every view must contain the columns identified by \code{l} and \code{var}, together
+with columns named \code{time} and \code{level}. The query retains duplicate rows.
+This helper builds SQL text only; it does not execute the query or validate
+the views.
 }
 \examples{
 amadeusdb::geosunion(
   l = '"site_id"',
-  var = '"CO"',
+  var = '"co_0"',
   views = c("db_time_001", "db_time_002")
 )
 }

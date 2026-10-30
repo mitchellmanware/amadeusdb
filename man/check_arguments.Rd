@@ -13,7 +13,7 @@ check_arguments(
   raster,
   fun,
   variable,
-  level,
+  band,
   touches,
   exclude_nodata
 )
@@ -23,7 +23,7 @@ check_arguments(
 named \code{geometry} and exactly one geometry type: \code{POINT}, \code{POLYGON}, or
 \code{MULTIPOLYGON}.}
 
-\item{date}{integer(2). Start and end dates after the caller has repeated a
+\item{date}{character(2). Start and end dates after the caller has repeated a
 single date. Only storage type and length are checked; date values,
 missingness, and chronological order are not checked.}
 
@@ -36,7 +36,7 @@ select source-specific filenames.}
 recursively if absent, then checked for existence.}
 
 \item{batch}{integer. Number of source files per batch, with values at least
-\code{1L}. See the note below about the current assertion.}
+\code{1L}.}
 
 \item{raster}{logical(1). Whether to check the raster-specific arguments.
 This flag is used directly in an \code{if} condition without an assertion.}
@@ -47,7 +47,7 @@ only when \code{raster = TRUE}; supported names are resolved by the caller.}
 \item{variable}{character(1). Non-empty raster variable name. Checked only
 when \code{raster = TRUE}; existence in the source files is not checked.}
 
-\item{level}{integer. Raster band or vertical level index, with values at
+\item{band}{integer. Raster band or vertical level index, with values at
 least \code{1L}. Checked only when \code{raster = TRUE}.}
 
 \item{touches}{logical(1). Non-missing flag controlling inclusion of raster
@@ -68,16 +68,11 @@ when \code{raster = TRUE}.
 }
 \details{
 This helper does not coerce inputs. The integer checks do not enforce
-scalar \code{batch} or \code{level} values or reject missing integers. The arguments
-\code{fun}, \code{variable}, \code{level}, \code{touches}, and \code{exclude_nodata} may be omitted
+scalar \code{batch} or \code{band} values or reject missing integers. The arguments
+\code{fun}, \code{variable}, \code{band}, \code{touches}, and \code{exclude_nodata} may be omitted
 when \code{raster = FALSE}, because they are not evaluated in that branch.
 
 Creating \code{output} is a side effect and can occur before a later check fails.
-}
-\note{
-The current batch assertion passes \code{finite = TRUE} to
-\code{checkmate::assert_integer()}, which does not accept that argument.
-Execution therefore fails at that check if the preceding checks pass.
 }
 \seealso{
 \code{\link{check_views}()}, \code{\link[=prepare_locs]{prepare_locs()}}, \code{\link[=sedona_geos]{sedona_geos()}},

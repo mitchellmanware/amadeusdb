@@ -90,7 +90,7 @@ testthat::test_that("join_covariates; GEOS (O3) & HMS", {
   testthat::expect_equal(nrow(df_join), 8)
   # ----------------------------------------------------------------------------
   # Expect 10 columns (NAME, time, lon/lat, outcome, 1 GEOS, 3 HMS).
-  testthat::expect_equal(ncol(df_join), 9)
+  testthat::expect_equal(ncol(df_join), 10) # !!! drop level dev!!!
   # ----------------------------------------------------------------------------
   # Expect character location identifer column.
   testthat::expect_type(df_join$NAME, "character")
@@ -99,14 +99,18 @@ testthat::test_that("join_covariates; GEOS (O3) & HMS", {
   testthat::expect_s3_class(df_join$time, "POSIXct")
   # ----------------------------------------------------------------------------
   # Expect numeric for variable columns.
-  testthat::expect_equal(class(df_join$O3), "numeric")
-  testthat::expect_equal(class(df_join$light), "numeric")
-  testthat::expect_equal(class(df_join$medium), "numeric")
-  testthat::expect_equal(class(df_join$heavy), "numeric")
+  testthat::expect_equal(class(df_join$o3_0), "numeric")
+  testthat::expect_equal(class(df_join$light_00000), "numeric")
+  testthat::expect_equal(class(df_join$medium_00000), "numeric")
+  testthat::expect_equal(class(df_join$heavy_00000), "numeric")
   # ----------------------------------------------------------------------------
   # Expect light, medium, and heavy columns contain only 0 or 1.
   testthat::expect_true(all(
-    unique(c(df_join$light, df_join$medium, df_join$heavy)) %in%
+    unique(c(
+      df_join$light_00000,
+      df_join$medium_00000,
+      df_join$heavy_00000
+    )) %in%
       c(0, 1)
   ))
   # ----------------------------------------------------------------------------
@@ -175,7 +179,7 @@ testthat::test_that("join_covariates; GEOS (O3 & CO) & HMS", {
     db_geos <- amadeusdb::join_variables(
       input = list_geos_sptmpl,
       output = chr_geosdir,
-      by = c("NAME", "time")
+      by = c("NAME", "time", "level")
     )
   )
   # ----------------------------------------------------------------------------
@@ -226,7 +230,7 @@ testthat::test_that("join_covariates; GEOS (O3 & CO) & HMS", {
   testthat::expect_equal(nrow(df_join), 8)
   # ----------------------------------------------------------------------------
   # Expect 10 columns (NAME, time, lon/lat, outcome, 2 GEOS, 3 HMS).
-  testthat::expect_equal(ncol(df_join), 10)
+  testthat::expect_equal(ncol(df_join), 11) # !!! drop level dev!!!
   # ----------------------------------------------------------------------------
   # Expect character location identifer column.
   testthat::expect_type(df_join$NAME, "character")
@@ -235,15 +239,19 @@ testthat::test_that("join_covariates; GEOS (O3 & CO) & HMS", {
   testthat::expect_s3_class(df_join$time, "POSIXct")
   # ----------------------------------------------------------------------------
   # Expect numeric for variable columns.
-  testthat::expect_equal(class(df_join$O3), "numeric")
-  testthat::expect_equal(class(df_join$CO), "numeric")
-  testthat::expect_equal(class(df_join$light), "numeric")
-  testthat::expect_equal(class(df_join$medium), "numeric")
-  testthat::expect_equal(class(df_join$heavy), "numeric")
+  testthat::expect_equal(class(df_join$o3_0), "numeric")
+  testthat::expect_equal(class(df_join$co_0), "numeric")
+  testthat::expect_equal(class(df_join$light_00000), "numeric")
+  testthat::expect_equal(class(df_join$medium_00000), "numeric")
+  testthat::expect_equal(class(df_join$heavy_00000), "numeric")
   # ----------------------------------------------------------------------------
   # Expect light, medium, and heavy columns contain only 0 or 1.
   testthat::expect_true(all(
-    unique(c(df_join$light, df_join$medium, df_join$heavy)) %in%
+    unique(c(
+      df_join$light_00000,
+      df_join$medium_00000,
+      df_join$heavy_00000
+    )) %in%
       c(0, 1)
   ))
   # ----------------------------------------------------------------------------
@@ -333,13 +341,17 @@ testthat::test_that("join_covariates; GEOS (empty) & HMS", {
   testthat::expect_s3_class(df_join$time, "POSIXct")
   # ----------------------------------------------------------------------------
   # Expect numeric for variable columns.
-  testthat::expect_equal(class(df_join$light), "numeric")
-  testthat::expect_equal(class(df_join$medium), "numeric")
-  testthat::expect_equal(class(df_join$heavy), "numeric")
+  testthat::expect_equal(class(df_join$light_00000), "numeric")
+  testthat::expect_equal(class(df_join$medium_00000), "numeric")
+  testthat::expect_equal(class(df_join$heavy_00000), "numeric")
   # ----------------------------------------------------------------------------
   # Expect light, medium, and heavy columns contain only 0 or 1.
   testthat::expect_true(all(
-    unique(c(df_join$light, df_join$medium, df_join$heavy)) %in%
+    unique(c(
+      df_join$light_00000,
+      df_join$medium_00000,
+      df_join$heavy_00000
+    )) %in%
       c(0, 1)
   ))
   # ----------------------------------------------------------------------------
@@ -456,6 +468,125 @@ testthat::test_that("join_covariates; database directory", {
     file.remove(list.files(c, full.names = TRUE, recursive = TRUE))
     unlink(c)
   }
+})
+
+################################################################################
+testthat::test_that("join_covariates; prefix = TRUE", {
+  # ----------------------------------------------------------------------------
+  # Initiate an isolated temporary directory and clean up even on failure.
+  chr_tempdir <- file.path(tempdir(), "join")
+  dir.create(chr_tempdir)
+  on.exit(unlink(chr_tempdir, recursive = TRUE), add = TRUE)
+  # ----------------------------------------------------------------------------
+  # Import fixture data.
+  list_input <- list(
+    aqs = testthat::test_path("..", "testdata", "join", "aqs.parquet"),
+    geos = testthat::test_path("..", "testdata", "join", "geos.parquet"),
+    hms = testthat::test_path("..", "testdata", "join", "hms.parquet"),
+    gmted = testthat::test_path("..", "testdata", "join", "gmted.parquet")
+  )
+  # ----------------------------------------------------------------------------
+  # Confirm the shared name conflicts before prefixing is enabled.
+  testthat::expect_error(
+    amadeusdb::join_covariates(
+      input = list_input[["aqs"]],
+      output = file.path(chr_tempdir, "unprefixed"),
+      hourly = list(geos = list_input[["geos"]]),
+      prefix = FALSE
+    ),
+    regexp = "Conflicting data columns in hourly/geos: value",
+    fixed = TRUE
+  )
+  # ----------------------------------------------------------------------------
+  # Include two hourly datasets and a label containing a slash.
+  testthat::expect_no_error(
+    db_join <- amadeusdb::join_covariates(
+      input = list_input[["aqs"]],
+      output = file.path(chr_tempdir, "prefixed"),
+      hourly = list(
+        geos = list_input[["geos"]],
+        "geos/alt" = list_input[["geos"]]
+      ),
+      daily = list(hms = list_input[["hms"]]),
+      static = list(gmted = list_input[["gmted"]]),
+      prefix = TRUE
+    )
+  )
+  # ----------------------------------------------------------------------------
+  # !!! OUTPUT CHECKS !!!
+  # ----------------------------------------------------------------------------
+  # Require newly written Parquet files and read the joined values back.
+  testthat::expect_gt(length(db_join), 0L)
+  testthat::expect_true(all(file.exists(db_join)))
+  testthat::expect_true(all(grepl("\\.parquet$", db_join)))
+  testthat::expect_no_error(
+    df_join <- sedonadb::sd_collect(sedonadb::sd_read_parquet(db_join))
+  )
+  df_join <- df_join[order(df_join$value), , drop = FALSE]
+  # ----------------------------------------------------------------------------
+  # Keep observation names and prefix only non-key covariate columns.
+  testthat::expect_identical(
+    names(df_join),
+    c(
+      "site_id",
+      "time",
+      "value",
+      "hourly_geos_value",
+      "hourly_geos_alt_value",
+      "daily_hms_value",
+      "static_gmted_value"
+    )
+  )
+  # ----------------------------------------------------------------------------
+  # Import un-joined AQS data.
+  df_aqs <- sedonadb::sd_collect(sedonadb::sd_read_parquet(list_input[["aqs"]]))
+  # ----------------------------------------------------------------------------
+  # Retain repeated observations, leading zeroes, and original timestamps.
+  testthat::expect_equal(nrow(df_join), 3L)
+  testthat::expect_identical(df_join$site_id, df_aqs$site_id)
+  testthat::expect_s3_class(df_join$time, "POSIXct")
+  testthat::expect_equal(as.numeric(df_join$time), as.numeric(df_aqs$time))
+  testthat::expect_equal(df_join$value, df_aqs$value)
+  # ----------------------------------------------------------------------------
+  # Match within the hour and repeat daily/static values over observations.
+  testthat::expect_equal(df_join$hourly_geos_value, c(20, 20, 21))
+  testthat::expect_equal(df_join$hourly_geos_alt_value, c(20, 20, 21))
+  testthat::expect_equal(df_join$daily_hms_value, rep(30, 3))
+  testthat::expect_equal(df_join$static_gmted_value, rep(40, 3))
+  # ----------------------------------------------------------------------------
+  # Character file vectors form one table named for each resolution.
+  testthat::expect_no_error(
+    db_vector <- amadeusdb::join_covariates(
+      input = list_input[["aqs"]],
+      output = file.path(chr_tempdir, "file_vectors"),
+      hourly = list_input[["geos"]],
+      daily = list_input[["hms"]],
+      static = list_input[["gmted"]],
+      prefix = TRUE
+    )
+  )
+  testthat::expect_gt(length(db_vector), 0L)
+  testthat::expect_no_error(
+    df_vector <- sedonadb::sd_collect(sedonadb::sd_read_parquet(db_vector))
+  )
+  df_vector <- df_vector[order(df_vector$value), , drop = FALSE]
+  # ----------------------------------------------------------------------------
+  # Default labels must appear in prefixes without changing the joined values.
+  testthat::expect_identical(
+    names(df_vector),
+    c(
+      "site_id",
+      "time",
+      "value",
+      "hourly_hourly_value",
+      "daily_daily_value",
+      "static_static_value"
+    )
+  )
+  testthat::expect_equal(df_vector$value, df_aqs$value)
+  testthat::expect_equal(df_vector$hourly_hourly_value, c(20, 20, 21))
+  testthat::expect_equal(df_vector$daily_daily_value, rep(30, 3))
+  testthat::expect_equal(df_vector$static_static_value, rep(40, 3))
 })
 
 ################################################################################
@@ -697,7 +828,7 @@ testthat::test_that("join_covariates; expected failures", code = {
   # ----------------------------------------------------------------------------
   # Path with no parquet files.
   chr_empty <- file.path(chr_tempdir, "empty")
-  dir.create(chr_empty)
+  suppressWarnings(dir.create(chr_empty))
   testthat::expect_error(
     amadeusdb::join_covariates(
       input = testthat::test_path(
@@ -761,4 +892,389 @@ testthat::test_that("join_covariates; expected failures", code = {
   unlink(chr_tempdir)
   file.remove(list.files(chr_output, full.names = TRUE, recursive = TRUE))
   unlink(chr_output)
+})
+
+################################################################################
+testthat::test_that("join_covariates; invalid resolution", {
+  # ----------------------------------------------------------------------------
+  # Initiate temporary directory.
+  chr_tempdir <- file.path(tempdir(), "join")
+  dir.create(chr_tempdir)
+  on.exit(unlink(chr_tempdir, recursive = TRUE), add = TRUE)
+  # ----------------------------------------------------------------------------
+  # Import fixture data.
+  chr_input <- testthat::test_path(
+    "..",
+    "testdata",
+    "locs",
+    "db_hourly.parquet"
+  )
+  # ----------------------------------------------------------------------------
+  # Invalid optional resolution inputs.
+  # ----------------------------------------------------------------------------
+  # Invalid `hourly`.
+  testthat::expect_error(
+    amadeusdb::join_covariates(
+      input = chr_input,
+      output = chr_tempdir,
+      locs_id = "NAME",
+      hourly = 1L
+    ),
+    regexp = paste0("Assertion on 'hourly' failed:.*list")
+  )
+  # ----------------------------------------------------------------------------
+  # Invalid inputs must not write a joined dataset.
+  testthat::expect_length(
+    list.files(chr_tempdir, pattern = "\\.parquet$", recursive = TRUE),
+    0L
+  )
+  # ----------------------------------------------------------------------------
+  # Invalid optional resolution inputs.
+  testthat::expect_error(
+    amadeusdb::join_covariates(
+      input = chr_input,
+      output = chr_tempdir,
+      locs_id = "NAME",
+      hourly = TRUE
+    ),
+    regexp = paste0("Assertion on 'hourly' failed:.*list")
+  )
+  # ----------------------------------------------------------------------------
+  # Invalid inputs must not write a joined dataset.
+  testthat::expect_length(
+    list.files(chr_tempdir, pattern = "\\.parquet$", recursive = TRUE),
+    0L
+  )
+  # ----------------------------------------------------------------------------
+  # Invalid `daily`.
+  testthat::expect_error(
+    amadeusdb::join_covariates(
+      input = chr_input,
+      output = chr_tempdir,
+      locs_id = "NAME",
+      daily = 1L
+    ),
+    regexp = paste0("Assertion on 'daily' failed:.*list")
+  )
+  # ----------------------------------------------------------------------------
+  # Invalid inputs must not write a joined dataset.
+  testthat::expect_length(
+    list.files(chr_tempdir, pattern = "\\.parquet$", recursive = TRUE),
+    0L
+  )
+  # ----------------------------------------------------------------------------
+  # Invalid optional resolution inputs.
+  testthat::expect_error(
+    amadeusdb::join_covariates(
+      input = chr_input,
+      output = chr_tempdir,
+      locs_id = "NAME",
+      daily = TRUE
+    ),
+    regexp = paste0("Assertion on 'daily' failed:.*list")
+  )
+  # ----------------------------------------------------------------------------
+  # Invalid inputs must not write a joined dataset.
+  testthat::expect_length(
+    list.files(chr_tempdir, pattern = "\\.parquet$", recursive = TRUE),
+    0L
+  )
+  # ----------------------------------------------------------------------------
+  # Invalid `static`.
+  testthat::expect_error(
+    amadeusdb::join_covariates(
+      input = chr_input,
+      output = chr_tempdir,
+      locs_id = "NAME",
+      static = 1L
+    ),
+    regexp = paste0("Assertion on 'static' failed:.*list")
+  )
+  # ----------------------------------------------------------------------------
+  # Invalid inputs must not write a joined dataset.
+  testthat::expect_length(
+    list.files(chr_tempdir, pattern = "\\.parquet$", recursive = TRUE),
+    0L
+  )
+  # ----------------------------------------------------------------------------
+  # Invalid optional resolution inputs.
+  testthat::expect_error(
+    amadeusdb::join_covariates(
+      input = chr_input,
+      output = chr_tempdir,
+      locs_id = "NAME",
+      static = TRUE
+    ),
+    regexp = paste0("Assertion on 'static' failed:.*list")
+  )
+  # ----------------------------------------------------------------------------
+  # Invalid inputs must not write a joined dataset.
+  testthat::expect_length(
+    list.files(chr_tempdir, pattern = "\\.parquet$", recursive = TRUE),
+    0L
+  )
+})
+
+################################################################################
+testthat::test_that("join_covariates; duplicate normalized join keys", {
+  # ----------------------------------------------------------------------------
+  # Initiate temporary directory.
+  chr_tempdir <- tempfile("join_covariates_duplicate_")
+  dir.create(chr_tempdir)
+  on.exit(unlink(chr_tempdir, recursive = TRUE), add = TRUE)
+  # ----------------------------------------------------------------------------
+  # Import fixtures created by inst/scripts/04_fixture_join.R.
+  list_input <- list(
+    aqs = testthat::test_path("..", "testdata", "join", "aqs.parquet"),
+    geos = testthat::test_path("..", "testdata", "join", "geos.parquet"),
+    geos_duplicate = testthat::test_path(
+      "..",
+      "testdata",
+      "join",
+      "geos_duplicate.parquet"
+    ),
+    hms_duplicate = testthat::test_path(
+      "..",
+      "testdata",
+      "join",
+      "hms_duplicate.parquet"
+    ),
+    gmted_duplicate = testthat::test_path(
+      "..",
+      "testdata",
+      "join",
+      "gmted_duplicate.parquet"
+    )
+  )
+  # ----------------------------------------------------------------------------
+  # GEOS times at 00:30 and 00:55 in separate files share a normalized hour.
+  testthat::expect_error(
+    amadeusdb::join_covariates(
+      input = list_input[["aqs"]],
+      output = file.path(chr_tempdir, "hourly"),
+      hourly = list(
+        geos = c(
+          list_input[["geos"]],
+          list_input[["geos_duplicate"]]
+        )
+      ),
+      prefix = TRUE
+    ),
+    regexp = "Duplicate or missing normalized join keys in source: hourly/geos",
+    fixed = TRUE
+  )
+  # ----------------------------------------------------------------------------
+  # Duplicate hourly keys must be rejected before writing a joined dataset.
+  testthat::expect_length(
+    list.files(
+      file.path(chr_tempdir, "hourly"),
+      pattern = "\\.parquet$",
+      recursive = TRUE
+    ),
+    0L
+  )
+  # ----------------------------------------------------------------------------
+  # HMS timestamps at 00:05 and 23:55 share a normalized date.
+  testthat::expect_error(
+    amadeusdb::join_covariates(
+      input = list_input[["aqs"]],
+      output = file.path(chr_tempdir, "daily"),
+      daily = list(hms = list_input[["hms_duplicate"]]),
+      prefix = TRUE
+    ),
+    regexp = "Duplicate or missing normalized join keys in source: daily/hms",
+    fixed = TRUE
+  )
+  # ----------------------------------------------------------------------------
+  # Duplicate daily keys must be rejected before writing a joined dataset.
+  testthat::expect_length(
+    list.files(
+      file.path(chr_tempdir, "daily"),
+      pattern = "\\.parquet$",
+      recursive = TRUE
+    ),
+    0L
+  )
+  # ----------------------------------------------------------------------------
+  # GMTED contains two rows for the same static location key.
+  testthat::expect_error(
+    amadeusdb::join_covariates(
+      input = list_input[["aqs"]],
+      output = file.path(chr_tempdir, "static"),
+      static = list(gmted = list_input[["gmted_duplicate"]]),
+      prefix = TRUE
+    ),
+    regexp = paste0(
+      "Duplicate or missing normalized join keys in source: ",
+      "static/gmted"
+    ),
+    fixed = TRUE
+  )
+  # ----------------------------------------------------------------------------
+  # Duplicate static keys must be rejected before writing a joined dataset.
+  testthat::expect_length(
+    list.files(
+      file.path(chr_tempdir, "static"),
+      pattern = "\\.parquet$",
+      recursive = TRUE
+    ),
+    0L
+  )
+})
+
+################################################################################
+testthat::test_that("join_covariates; missing normalized join keys", {
+  # ----------------------------------------------------------------------------
+  # Initiate temporary directory.
+  chr_tempdir <- tempfile("join_covariates_missing_")
+  dir.create(chr_tempdir)
+  on.exit(unlink(chr_tempdir, recursive = TRUE), add = TRUE)
+  # ----------------------------------------------------------------------------
+  # Import fixtures with one missing key component per source.
+  list_input <- list(
+    aqs = testthat::test_path("..", "testdata", "join", "aqs.parquet"),
+    geos_missing_site = testthat::test_path(
+      "..",
+      "testdata",
+      "join",
+      "geos_missing_site.parquet"
+    ),
+    geos_missing_time = testthat::test_path(
+      "..",
+      "testdata",
+      "join",
+      "geos_missing_time.parquet"
+    ),
+    hms_missing_site = testthat::test_path(
+      "..",
+      "testdata",
+      "join",
+      "hms_missing_site.parquet"
+    ),
+    hms_missing_date = testthat::test_path(
+      "..",
+      "testdata",
+      "join",
+      "hms_missing_date.parquet"
+    ),
+    gmted_missing_site = testthat::test_path(
+      "..",
+      "testdata",
+      "join",
+      "gmted_missing_site.parquet"
+    )
+  )
+  # ----------------------------------------------------------------------------
+  # Missing GEOS location key.
+  testthat::expect_error(
+    amadeusdb::join_covariates(
+      input = list_input[["aqs"]],
+      output = file.path(chr_tempdir, "hourly_site"),
+      hourly = list(geos = list_input[["geos_missing_site"]]),
+      prefix = TRUE
+    ),
+    regexp = "Duplicate or missing normalized join keys in source: hourly/geos",
+    fixed = TRUE
+  )
+  # ----------------------------------------------------------------------------
+  # Missing hourly location keys must not produce a joined dataset.
+  testthat::expect_length(
+    list.files(
+      file.path(chr_tempdir, "hourly_site"),
+      pattern = "\\.parquet$",
+      recursive = TRUE
+    ),
+    0L
+  )
+  # ----------------------------------------------------------------------------
+  # Missing GEOS timestamp key.
+  testthat::expect_error(
+    amadeusdb::join_covariates(
+      input = list_input[["aqs"]],
+      output = file.path(chr_tempdir, "hourly_time"),
+      hourly = list(geos = list_input[["geos_missing_time"]]),
+      prefix = TRUE
+    ),
+    regexp = "Duplicate or missing normalized join keys in source: hourly/geos",
+    fixed = TRUE
+  )
+  # ----------------------------------------------------------------------------
+  # Missing hourly timestamp keys must not produce a joined dataset.
+  testthat::expect_length(
+    list.files(
+      file.path(chr_tempdir, "hourly_time"),
+      pattern = "\\.parquet$",
+      recursive = TRUE
+    ),
+    0L
+  )
+  # ----------------------------------------------------------------------------
+  # Missing HMS location key.
+  testthat::expect_error(
+    amadeusdb::join_covariates(
+      input = list_input[["aqs"]],
+      output = file.path(chr_tempdir, "daily_site"),
+      daily = list(hms = list_input[["hms_missing_site"]]),
+      prefix = TRUE
+    ),
+    regexp = "Duplicate or missing normalized join keys in source: daily/hms",
+    fixed = TRUE
+  )
+  # ----------------------------------------------------------------------------
+  # Missing daily location keys must not produce a joined dataset.
+  testthat::expect_length(
+    list.files(
+      file.path(chr_tempdir, "daily_site"),
+      pattern = "\\.parquet$",
+      recursive = TRUE
+    ),
+    0L
+  )
+  # ----------------------------------------------------------------------------
+  # Missing HMS date key.
+  testthat::expect_error(
+    amadeusdb::join_covariates(
+      input = list_input[["aqs"]],
+      output = file.path(chr_tempdir, "daily_date"),
+      daily = list(hms = list_input[["hms_missing_date"]]),
+      prefix = TRUE
+    ),
+    regexp = "Duplicate or missing normalized join keys in source: daily/hms",
+    fixed = TRUE
+  )
+  # ----------------------------------------------------------------------------
+  # Missing daily date keys must not produce a joined dataset.
+  testthat::expect_length(
+    list.files(
+      file.path(chr_tempdir, "daily_date"),
+      pattern = "\\.parquet$",
+      recursive = TRUE
+    ),
+    0L
+  )
+  # ----------------------------------------------------------------------------
+  # Missing GMTED location key.
+  testthat::expect_error(
+    amadeusdb::join_covariates(
+      input = list_input[["aqs"]],
+      output = file.path(chr_tempdir, "static_site"),
+      static = list(gmted = list_input[["gmted_missing_site"]]),
+      prefix = TRUE
+    ),
+    regexp = paste0(
+      "Duplicate or missing normalized join keys in source: ",
+      "static/gmted"
+    ),
+    fixed = TRUE
+  )
+  # ----------------------------------------------------------------------------
+  # Missing static location keys must not produce a joined dataset.
+  testthat::expect_length(
+    list.files(
+      file.path(chr_tempdir, "static_site"),
+      pattern = "\\.parquet$",
+      recursive = TRUE
+    ),
+    0L
+  )
 })

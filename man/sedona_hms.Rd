@@ -44,7 +44,9 @@ Defaults to \code{50L}.}
 Invisibly, a character vector of absolute Parquet file paths, including
 existing batches that were skipped. Each file contains the location
 identifier column, a \code{date} column stored as a SQL date, and integer
-\code{light}, \code{medium}, and \code{heavy} indicator columns.
+indicator columns named with \code{sprintf("\%s_\%05d", density, radius)} for
+densities \code{light}, \code{medium}, and \code{heavy}. For \code{radius = 0}, these are
+\code{light_00000}, \code{medium_00000}, and \code{heavy_00000}.
 }
 \description{
 Prepare locations with \code{\link[=prepare_locs]{prepare_locs()}}, intersect them with local NOAA
@@ -56,12 +58,18 @@ Dates are derived from filenames, with at most one selected shapefile per
 date. Only dates with selected input files are processed; missing dates are
 not filled with additional rows.
 
-A spatial left join uses \code{ST_Intersects()} to retain locations without
-matching smoke polygons. For each processed date and location identifier,
-\code{light}, \code{medium}, and \code{heavy} are 1 when any intersecting polygon has that
-density and 0 otherwise. Density labels are trimmed and compared without
-regard to case. The three indicators are independent, so more than one can
-equal 1. Polygon overlap fractions and within-day exposure durations are
+Density labels are trimmed and compared without regard to case; only
+\code{light}, \code{medium}, and \code{heavy} are used. Polygons of the same density are
+dissolved, then higher-density coverage is removed from lower-density
+regions, with precedence \verb{heavy > medium > light}.
+
+A spatial left join retains locations without matching smoke regions.
+Points match using \code{ST_Intersects()}; polygons must also share positive
+intersection area, so boundary-only contact does not count for polygons.
+For each processed date and location identifier, each density indicator is
+1 when a remaining region of that density matches and 0 otherwise. A
+location spanning multiple density regions can have more than one indicator
+equal to 1. Polygon overlap fractions and within-day exposure durations are
 not calculated.
 
 Each batch is written as \verb{hms_<first_date>_<last_date>.parquet}, with dates
@@ -82,7 +90,7 @@ locs <- sf::st_as_sf(
   crs = 4326
 )
 hms_files <- sedona_hms(
-  date = as.integer(as.Date(c("2024-01-01", "2024-01-31"))),
+  date = c("2024-01-01", "2024-01-31"),
   input = "data/hms",
   output = tempfile("hms_covariates_"),
   locs = locs,

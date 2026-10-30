@@ -9,7 +9,7 @@
 #' @param locs sf object. Locations returned by [prepare_locs()], with a column
 #'   named `geometry` and exactly one geometry type: `POINT`, `POLYGON`, or
 #'   `MULTIPOLYGON`.
-#' @param date integer(2). Start and end dates after the caller has repeated a
+#' @param date character(2). Start and end dates after the caller has repeated a
 #'   single date. Only storage type and length are checked; date values,
 #'   missingness, and chronological order are not checked.
 #' @param input character(1). Non-empty path to an existing input directory.
@@ -19,14 +19,14 @@
 #' @param output character(1). Non-empty output directory path. Created
 #'   recursively if absent, then checked for existence.
 #' @param batch integer. Number of source files per batch, with values at least
-#'   `1L`. See the note below about the current assertion.
+#'   `1L`.
 #' @param raster logical(1). Whether to check the raster-specific arguments.
 #'   This flag is used directly in an `if` condition without an assertion.
 #' @param fun character(1). Non-empty raster summary statistic name. Checked
 #'   only when `raster = TRUE`; supported names are resolved by the caller.
 #' @param variable character(1). Non-empty raster variable name. Checked only
 #'   when `raster = TRUE`; existence in the source files is not checked.
-#' @param level integer. Raster band or vertical level index, with values at
+#' @param band integer. Raster band or vertical level index, with values at
 #'   least `1L`. Checked only when `raster = TRUE`.
 #' @param touches logical(1). Non-missing flag controlling inclusion of raster
 #'   cells touched by polygons. Checked only when `raster = TRUE`.
@@ -35,8 +35,8 @@
 #'
 #' @details
 #' This helper does not coerce inputs. The integer checks do not enforce
-#' scalar `batch` or `level` values or reject missing integers. The arguments
-#' `fun`, `variable`, `level`, `touches`, and `exclude_nodata` may be omitted
+#' scalar `batch` or `band` values or reject missing integers. The arguments
+#' `fun`, `variable`, `band`, `touches`, and `exclude_nodata` may be omitted
 #' when `raster = FALSE`, because they are not evaluated in that branch.
 #'
 #' Creating `output` is a side effect and can occur before a later check fails.
@@ -45,11 +45,6 @@
 #' Called for validation and directory creation; failures raise an error.
 #' On successful completion, invisibly returns `exclude_nodata` when
 #' `raster = TRUE`, or `NULL` otherwise.
-#'
-#' @note
-#' The current batch assertion passes `finite = TRUE` to
-#' `checkmate::assert_integer()`, which does not accept that argument.
-#' Execution therefore fails at that check if the preceding checks pass.
 #'
 #' @importFrom checkmate assert_choice assert_class assert_directory_exists
 #'   assert_file assert_flag assert_integer assert_string assert_subset
@@ -68,7 +63,7 @@ check_arguments <- function(
   raster,
   fun,
   variable,
-  level,
+  band,
   touches,
   exclude_nodata
 ) {
@@ -123,7 +118,7 @@ check_arguments <- function(
   # ----------------------------------------------------------------------------
 
   # ----------------------------------------------------------------------------
-  # Arguments `fun`, `variable`, `level`, `touches`, and `exclude_nodata` are
+  # Arguments `fun`, `variable`, `band`, `touches`, and `exclude_nodata` are
   # used in raster extraction data only.
   if (raster) {
     # --------------------------------------------------------------------------
@@ -137,9 +132,9 @@ check_arguments <- function(
     # --------------------------------------------------------------------------
 
     # --------------------------------------------------------------------------
-    # Ensure `level` is an integer.
+    # Ensure `band` is an integer.
     # --------------------------------------------------------------------------
-    checkmate::assert_integer(level, lower = 1)
+    checkmate::assert_integer(band, lower = 1)
     # --------------------------------------------------------------------------
 
     # --------------------------------------------------------------------------

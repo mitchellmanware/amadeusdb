@@ -10,7 +10,9 @@ hmsunion(l, c = c("time, light, medium, heavy"), v)
 \item{l}{character(1). SQL identifier for the location column, already quoted
 if necessary.}
 
-\item{c}{character. Non-empty vector of SQL column names.}
+\item{c}{character(1). Non-empty, comma-separated SQL column list, inserted
+verbatim into each \code{SELECT}. Quote column identifiers if necessary. Supply
+one string containing all columns, rather than a vector of column names.}
 
 \item{v}{character. Non-empty vector of SQL view names to stack, in query
 order. Names are inserted verbatim and must already be valid SQL
@@ -24,14 +26,15 @@ Construct SQL that stacks daily HMS indicator views using \verb{UNION ALL}.
 }
 \details{
 Every view must contain the location column identified by \code{l}, together with
-\code{date}, \code{light}, \code{medium}, and \code{heavy}. The query retains duplicate rows.
-This helper builds SQL text only; it does not execute the query or validate
-the views.
+the columns listed in \code{c}. For \code{\link[=sedona_hms]{sedona_hms()}} output, explicitly supply
+\code{date} and the radius-suffixed indicator names, as in the example below.
+The query retains duplicate rows. This helper builds SQL text only; it does
+not execute the query or validate the views.
 }
 \examples{
 amadeusdb::hmsunion(
   l = '"site_id"',
-  c = c("time", "light", "medium", "heavy"),
+  c = "date, light_00000, medium_00000, heavy_00000",
   v = c("db_day_001", "db_day_002")
 )
 }
