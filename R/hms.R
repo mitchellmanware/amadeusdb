@@ -126,30 +126,12 @@ sedona_hms <- function(
     raster = FALSE
   )
   # ----------------------------------------------------------------------------
-  # Identify HMS shapefile paths from all files in the path.
-  chr_paths <- list.files(
-    input,
+  # Identify time-relevant HMS file paths in `input`.
+  chr_datapaths <- amadeusdb::discover(
+    date = date,
+    input = input,
     pattern = "hms_smoke*.*.shp$",
-    full.names = TRUE
-  )
-  # ----------------------------------------------------------------------------
-  # Generate sequence from user supplied dates.
-  chr_datesofinterest <- amadeus::generate_date_sequence(
-    date[1],
-    date[2],
     sub_hyphen = TRUE
-  )
-  # ----------------------------------------------------------------------------
-  # Select paths which align with the requested date sequence.
-  chr_datapaths <- unique(
-    grep(
-      paste(
-        chr_datesofinterest,
-        collapse = "|"
-      ),
-      chr_paths,
-      value = TRUE
-    )
   )
   # ----------------------------------------------------------------------------
   # Store file path, date from file, and generated database view names.
@@ -166,32 +148,17 @@ sedona_hms <- function(
   amadeusdb::check_views(df_hmspaths)
   # ----------------------------------------------------------------------------
   # Define location identifiers in SQL-friendly format.
-  locs_id_sql <- paste0(
-    '"',
-    gsub('"', '""', locs_id, fixed = TRUE),
-    '"'
-  )
+  locs_id_sql <- amadeusdb::quote_sql(locs_id)
   # ----------------------------------------------------------------------------
   # Define column names based on radius buffer.
-  light_sql <- sprintf("\"light_%05d\"", radius)
-  medium_sql <- sprintf("\"medium_%05d\"", radius)
-  heavy_sql <- sprintf("\"heavy_%05d\"", radius)
+  light_sql <- amadeusdb::quote_sql(sprintf("light_%05d", radius))
+  medium_sql <- amadeusdb::quote_sql(sprintf("medium_%05d", radius))
+  heavy_sql <- amadeusdb::quote_sql(sprintf("heavy_%05d", radius))
   # ----------------------------------------------------------------------------
   # Define SQL code for processing HMS data.
-  sql_processhms <- glue::glue_data(
-    paste(
-      readLines(
-        system.file(
-          "sql",
-          "sedona_hms.sql",
-          package = "amadeusdb",
-          mustWork = TRUE
-        ),
-        warn = FALSE
-      ),
-      collapse = "\n"
-    ),
-    .x = list(
+  sql_processhms <- amadeusdb::glue_sql(
+    file = "sedona_hms.sql",
+    args = list(
       locs_id_sql = locs_id_sql,
       light_sql = light_sql,
       medium_sql = medium_sql,
@@ -203,70 +170,32 @@ sedona_hms <- function(
   chr_hms_views <- character(0)
   on.exit(amadeusdb::cleanup_views(chr_hms_views), add = TRUE)
   # ----------------------------------------------------------------------------
-  # Convert extraction locations to a SedonaDB data frame.
-  db_locs <- sedonadb::as_sedonadb_dataframe(sf_locs)
-  # ----------------------------------------------------------------------------
   # Register the extraction point data object in the SedonaDB session ! once !.
-  sedonadb::sd_to_view(
-    db_locs,
-    "db_locs",
-    overwrite = TRUE
-  )
+  amadeusdb::register_locs(sf_locs)
   chr_hms_views <- unique(c(chr_hms_views, "db_locs"))
   # ----------------------------------------------------------------------------
-  # Split date row indices into batches.
-  list_hms_batch <- split(
-    seq_len(nrow(df_hmspaths)),
-    ceiling(seq_len(nrow(df_hmspaths)) / batch)
-  )
-  # ----------------------------------------------------------------------------
-  # Generate a database view name for each batch.
-  chr_hms_batch <- vapply(
-    list_hms_batch,
-    function(i) {
-      chr_range <- range(as.character(df_hmspaths$time[i]))
-      sprintf(
-        "%s_%s_%s",
-        "hms",
-        gsub("-", "", chr_range[1]),
-        gsub("-", "", chr_range[2])
-      )
-    },
-    FUN.VALUE = character(1),
-    USE.NAMES = FALSE
-  )
+  # Split hourly file row indices into `batch` sized batches.
+  list_hms_batch <- amadeusdb::batch_split(df_hmspaths, batch)
   # ----------------------------------------------------------------------------
   # Generate .parquet paths for each batch view.
-  chr_output <- normalizePath(
-    output,
-    winslash = "/",
-    mustWork = TRUE
-  )
-  chr_hms_parquet <- file.path(
-    chr_output,
-    paste0(chr_hms_batch, ".parquet")
+  chr_hms_parquet <- amadeusdb::batch_prep(
+    df = df_hmspaths,
+    batch = list_hms_batch,
+    output = output,
+    source = "hms",
+    time_id = "time"
   )
   # ----------------------------------------------------------------------------
   # Perform daily spatial joins within each batch.
   for (l in seq_along(list_hms_batch)) {
     # --------------------------------------------------------------------------
     # Skip if batch exists.
-    if (file.exists(chr_hms_parquet[l])) {
-      message(
-        "Skipping existing batch ",
-        l,
-        ": ",
-        chr_hms_parquet[l]
-      )
+    if (amadeusdb::batch_skip(chr_hms_parquet[l])) {
       next
     }
     # --------------------------------------------------------------------------
     # Index data files, dates, and names to active batch.
-    df_hms_batch <- df_hmspaths[
-      list_hms_batch[[l]],
-      ,
-      drop = FALSE
-    ]
+    df_hms_batch <- df_hmspaths[list_hms_batch[[l]], , drop = FALSE]
     # --------------------------------------------------------------------------
     # Generate daily view names for active batch.
     chr_hms_daily <- sprintf("db_day_%03d", seq_len(nrow(df_hms_batch)))
@@ -289,96 +218,33 @@ sedona_hms <- function(
       chr_hms_views <- unique(c(chr_hms_views, "db_hms"))
       # ------------------------------------------------------------------------
       # Compute the spatial join.
-      db_date <- sedonadb::sd_sql(
-        sql_processhms,
-        params = list(as.character(df_hms_batch$time[i]))
-      ) |>
-        sedonadb::sd_compute()
-
-      # ------------------------------------------------------------------------
-      # Register post-spatial join data in the database.
-      sedonadb::sd_to_view(
-        db_date,
-        chr_hms_daily[i],
-        overwrite = TRUE
+      chr_hms_views <- amadeusdb::compute_view(
+        sql = sql_processhms,
+        params = list(as.character(df_hms_batch$time[i])),
+        view = chr_hms_daily[i],
+        all = chr_hms_views
       )
-      chr_hms_views <- unique(c(chr_hms_views, chr_hms_daily[i]))
     }
     # --------------------------------------------------------------------------
-    # Materialize and union the batch before removing its daily views.
-    db_batch <- sedonadb::sd_sql(
-      amadeusdb::hmsunion(
-        locs_id_sql,
-        paste0(
-          "date, ",
-          paste0(
-            sprintf("%s_%05d", c("light", "medium", "heavy"), radius),
-            collapse = ", "
-          )
-        ),
-        chr_hms_daily
-      )
-    )
-    sedonadb::sd_write_parquet(
-      db_batch,
-      chr_hms_parquet[l],
-      single_file_output = TRUE
+    # Write batch .parquet.
+    amadeusdb::batch_write(
+      locs_id = locs_id_sql,
+      time_id = "date",
+      columns = paste0(
+        sprintf("%s_%05d", c("light", "medium", "heavy"), radius),
+        collapse = ", "
+      ),
+      views = chr_hms_daily,
+      parquet = chr_hms_parquet[l],
+      single = TRUE
     )
     # --------------------------------------------------------------------------
     # Remove daily views now represented by the registered batch.
-    for (d in chr_hms_daily) {
-      sedonadb::sd_drop_view(d)
-      chr_hms_views <- chr_hms_views[chr_hms_views != d]
-    }
-    rm(db_date, db_batch)
+    chr_hms_views <- amadeusdb::batch_drop(chr_hms_views, chr_hms_daily)
   }
   # ----------------------------------------------------------------------------
   # Return parquet file out paths.
   invisible(chr_hms_parquet)
-}
-
-################################################################################
-#' Build an HMS indicator union query
-#'
-#' @description
-#' Construct SQL that stacks daily HMS indicator views using `UNION ALL`.
-#'
-#' @param l character(1). SQL identifier for the location column, already quoted
-#'   if necessary.
-#' @param c character(1). Non-empty, comma-separated SQL column list, inserted
-#'   verbatim into each `SELECT`. Quote column identifiers if necessary. Supply
-#'   one string containing all columns, rather than a vector of column names.
-#' @param v character. Non-empty vector of SQL view names to stack, in query
-#'   order. Names are inserted verbatim and must already be valid SQL
-#'   identifiers.
-#'
-#' @details
-#' Every view must contain the location column identified by `l`, together with
-#' the columns listed in `c`. For [sedona_hms()] output, explicitly supply
-#' `date` and the radius-suffixed indicator names, as in the example below.
-#' The query retains duplicate rows. This helper builds SQL text only; it does
-#' not execute the query or validate the views.
-#'
-#' @return A character(1) SQL query.
-#' @seealso [sedona_hms()], [quote_sql()]
-#' @keywords internal
-#' @examples
-#' amadeusdb::hmsunion(
-#'   l = '"site_id"',
-#'   c = "date, light_00000, medium_00000, heavy_00000",
-#'   v = c("db_day_001", "db_day_002")
-#' )
-#' @export
-hmsunion <- function(l, c = c("time, light, medium, heavy"), v) {
-  paste(
-    sprintf(
-      "SELECT %s, %s FROM %s",
-      l,
-      c,
-      v
-    ),
-    collapse = "\nUNION ALL\n"
-  )
 }
 
 ################################################################################

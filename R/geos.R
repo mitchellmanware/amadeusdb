@@ -167,31 +167,12 @@ sedona_geos <- function(
     exclude_nodata = exclude_nodata
   )
   # ----------------------------------------------------------------------------
-  # Identify GEOS file paths from all files in the path.
-  chr_paths <- list.files(
-    input,
+  # Identify time-relevant GEOS file paths in `input`.
+  chr_datapaths <- amadeusdb::discover(
+    date = date,
+    input = input,
     pattern = "GEOS-CF.v01.rpl",
-    full.names = TRUE,
-    recursive = TRUE
-  )
-  # ----------------------------------------------------------------------------
-  # Generate sequence from user supplied dates.
-  chr_datesofinterest <- amadeus::generate_date_sequence(
-    date[1],
-    date[2],
     sub_hyphen = TRUE
-  )
-  # ----------------------------------------------------------------------------
-  # Select only those file paths which align with user supplied date sequence.
-  chr_datapaths <- unique(
-    grep(
-      paste(
-        chr_datesofinterest,
-        collapse = "|"
-      ),
-      chr_paths,
-      value = TRUE
-    )
   )
   # ----------------------------------------------------------------------------
   # Store file path, NetCDF variable path, date, and generated db names.
@@ -221,184 +202,116 @@ sedona_geos <- function(
   amadeusdb::check_views(df_geospaths)
   # ----------------------------------------------------------------------------
   # Define location identifiers in SQL-friendly format.
-  locs_id_sql <- paste0(
-    '"',
-    gsub('"', '""', locs_id, fixed = TRUE),
-    '"'
-  )
+  locs_id_sql <- amadeusdb::quote_sql(locs_id)
   # ----------------------------------------------------------------------------
   # Define variable identifiers in SQL-friendly format.
-  variable_sql <- paste0(
-    '"',
-    gsub('"', '""', sprintf("%s_%d", tolower(variable), radius), fixed = TRUE),
-    '"'
+  variable_sql <- amadeusdb::quote_sql(
+    sprintf("%s_%d", tolower(variable), radius)
   )
   # ----------------------------------------------------------------------------
   # Define SQL code for processing GEOS data for points or polygons.
   sql_extraction <- if (chr_locsgeom == "POINT") {
     "RS_Value(r.raster, db_locs.geometry, 1)"
   } else {
-    "
-      RS_ZonalStats(
-        r.raster,
-        db_locs.geometry,
-        $4,
-        $5,
-        ($6 = 1),
-        ($7 = 1)
-      )
-    "
+    "RS_ZonalStats(r.raster, db_locs.geometry, $4, $5, ($6 = 1), ($7 = 1))"
   }
   # ----------------------------------------------------------------------------
   # Define full SQL code including point/polygon distinction.
-  sql_processgeos <- glue::glue(
-    "
-      WITH r AS (
-        SELECT
-          RS_SetCRS(
-            RS_FromPath($1),
-            'OGC:CRS84'
-          ) AS raster
-      )
-      SELECT
-        db_locs.{locs_id_sql} AS {locs_id_sql},
-        CAST($2 AS TIMESTAMP(6)) AS time,
-        CAST($3 AS TEXT) AS level,
-        {sql_extraction} AS {variable_sql},
-      FROM db_locs
-      CROSS JOIN r
-    "
+  sql_processgeos <- amadeusdb::glue_sql(
+    file = "sedona_geos.sql",
+    args = list(
+      locs_id_sql = locs_id_sql,
+      variable_sql = variable_sql,
+      sql_extraction = sql_extraction
+    )
   )
   # ----------------------------------------------------------------------------
   # Initiate database cleanup upon exit.
   chr_geos_views <- character(0)
   on.exit(amadeusdb::cleanup_views(chr_geos_views), add = TRUE)
   # ----------------------------------------------------------------------------
-  # Convert extraction points to SedonaDB data frame.
-  db_locs <- sedonadb::as_sedonadb_dataframe(sf_locs)
-  # ----------------------------------------------------------------------------
   # Register the extraction point data object in the SedonaDB session ! once !.
-  sedonadb::sd_to_view(
-    db_locs,
-    "db_locs",
-    overwrite = TRUE
-  )
+  amadeusdb::register_locs(sf_locs)
   chr_geos_views <- c(chr_geos_views, "db_locs")
   # ----------------------------------------------------------------------------
   # Split hourly file row indices into `batch` sized batches.
-  list_geos_batch <- split(
-    seq_len(nrow(df_geospaths)),
-    ceiling(seq_len(nrow(df_geospaths)) / batch)
-  )
-  # ----------------------------------------------------------------------------
-  # Name output parquet paths based on variable and time inclusions.
-  chr_geos_batch <- vapply(
-    list_geos_batch,
-    function(i) {
-      chr_range <- range(as.character(df_geospaths$tchar[i]))
-      sprintf(
-        "%s_%s_%s_%s",
-        "geos",
-        variable,
-        chr_range[1],
-        chr_range[2]
-      )
-    },
-    FUN.VALUE = character(1),
-    USE.NAMES = FALSE
-  )
+  list_geos_batch <- amadeusdb::batch_split(df_geospaths, batch)
   # ----------------------------------------------------------------------------
   # Generate .parquet paths for each batch view.
-  chr_output <- normalizePath(
-    output,
-    winslash = "/",
-    mustWork = TRUE
-  )
-  chr_geos_parquet <- file.path(
-    chr_output,
-    paste0(chr_geos_batch, ".parquet")
+  chr_geos_parquet <- amadeusdb::batch_prep(
+    df = df_geospaths,
+    batch = list_geos_batch,
+    output = output,
+    source = "geos",
+    variable = variable,
+    time_id = "tchar"
   )
   # ----------------------------------------------------------------------------
   # Perform spatial extraction within each batch.
   for (l in seq_along(list_geos_batch)) {
     # --------------------------------------------------------------------------
     # Skip if batch exists.
-    if (file.exists(chr_geos_parquet[l])) {
-      message(
-        "Skipping existing batch ",
-        l,
-        ": ",
-        chr_geos_parquet[l]
-      )
+    if (amadeusdb::batch_skip(chr_geos_parquet[l])) {
       next
     }
     # --------------------------------------------------------------------------
     # Index data files, times, and names to active batch.
-    df_geos_batch <- df_geospaths[
-      list_geos_batch[[l]],
-      ,
-      drop = FALSE
-    ]
+    df_geos_batch <- df_geospaths[list_geos_batch[[l]], , drop = FALSE]
     # --------------------------------------------------------------------------
     # Generate daily view names for active batch.
-    chr_geos_hourly <- sprintf(
-      "db_time_%03d",
-      seq_len(nrow(df_geos_batch))
-    )
+    chr_geos_hourly <- sprintf("db_time_%03d", seq_len(nrow(df_geos_batch)))
+    # --------------------------------------------------------------------------
     message(variable, ": batch ", l, "/", length(list_geos_batch))
     for (i in seq_len(nrow(df_geos_batch))) {
       # ------------------------------------------------------------------------
       # Time extraction directly from NetCDF not supported (as of 10/21/26)
       list_params <- list(
-        as.character(df_geos_batch$var[i]), # $1: raster source
-        df_geos_batch$time[i], # $2: timestamp
-        as.character(df_geos_batch$lev[i]), # $3: vertical depth/pressure level
-        as.integer(band) # $4: vertical band
+        # $1: raster source
+        as.character(df_geos_batch$var[i]),
+        # $2: timestamp
+        df_geos_batch$time[i],
+        # $3: vertical depth/pressure level (for `lev` column output)
+        as.character(df_geos_batch$lev[i]),
+        # $4: vertical band to extract from (default = 1L)
+        as.integer(band)
       )
       # ------------------------------------------------------------------------
-      # Include additional arguments for zonal statistics.
+      # Include additional arguments for polygon zonal statistics.
       if (!chr_locsgeom == "POINT") {
         list_params <- c(
           list_params,
           list(
+            # $5: summary statistic
             fun, # $5: statistic
-            as.integer(touches), # $6: 0/1
-            as.integer(exclude_nodata) # $7: 0/1
+            # $6: summarize based on all touched cells (TRUE/FALSE)
+            as.integer(touches),
+            # $7: exclude no data (TRUE/FALSE)
+            as.integer(exclude_nodata)
           )
         )
       }
       # ------------------------------------------------------------------------
-      # Compute and register the hourly extraction.
-      db_time <- sedonadb::sd_sql(
-        sql_processgeos,
-        params = list_params
-      ) |>
-        sedonadb::sd_compute()
-      # ------------------------------------------------------------------------
-      sedonadb::sd_to_view(
-        db_time,
-        chr_geos_hourly[i],
-        overwrite = TRUE
+      # Compute the spatial join.
+      chr_geos_views <- amadeusdb::compute_view(
+        sql = sql_processgeos,
+        params = list_params,
+        view = chr_geos_hourly[i],
+        all = chr_geos_views
       )
-      chr_geos_views <- unique(c(chr_geos_views, chr_geos_hourly[i]))
     }
     # --------------------------------------------------------------------------
-    # Write batch directly to Parquet without materializing another copy.
-    db_batch <- sedonadb::sd_sql(
-      amadeusdb::geosunion(locs_id_sql, variable_sql, chr_geos_hourly)
-    )
-    sedonadb::sd_write_parquet(
-      db_batch,
-      chr_geos_parquet[l],
-      single_file_output = TRUE
+    # Write batch .parquet.
+    amadeusdb::batch_write(
+      locs_id = locs_id_sql,
+      time_id = "time, level",
+      columns = variable_sql,
+      views = chr_geos_hourly,
+      parquet = chr_geos_parquet[l],
+      single = TRUE
     )
     # --------------------------------------------------------------------------
-    # Remove hourly views after the batch has been written successfully.
-    for (h in chr_geos_hourly) {
-      sedonadb::sd_drop_view(h)
-      chr_geos_views <- chr_geos_views[chr_geos_views != h]
-    }
-    rm(db_time, db_batch)
+    # Remove hourly views now represented by the registered batch.
+    chr_geos_views <- amadeusdb::batch_drop(chr_geos_views, chr_geos_hourly)
   }
   # ----------------------------------------------------------------------------
   # Return parquet file out paths.
@@ -406,48 +319,6 @@ sedona_geos <- function(
 }
 
 ################################################################################
-#' Build a GEOS extraction union query
-#'
-#' @description
-#' Construct SQL that stacks GEOS extraction views using `UNION ALL`, retaining
-#' the location identifier, `time`, `level`, and selected variable columns.
-#'
-#' @param l character(1). SQL identifier for the location column, already quoted
-#'   if necessary.
-#' @param var character(1). SQL identifier for the variable column, already
-#'   quoted if necessary.
-#' @param views character. Non-empty vector of SQL view names to stack, in query
-#'   order. Names are inserted verbatim and must already be valid SQL
-#'   identifiers.
-#'
-#' @details
-#' Every view must contain the columns identified by `l` and `var`, together
-#' with columns named `time` and `level`. The query retains duplicate rows.
-#' This helper builds SQL text only; it does not execute the query or validate
-#' the views.
-#'
-#' @return A character(1) SQL query.
-#' @seealso [sedona_geos()], [quote_sql()]
-#' @keywords internal
-#' @examples
-#' amadeusdb::geosunion(
-#'   l = '"site_id"',
-#'   var = '"co_0"',
-#'   views = c("db_time_001", "db_time_002")
-#' )
-#' @export
-geosunion <- function(l, var, views) {
-  paste(
-    sprintf(
-      "SELECT %s, time, level, %s FROM %s",
-      l,
-      var,
-      views
-    ),
-    collapse = "\nUNION ALL\n"
-  )
-}
-
 #' Read GEOS Vertical Coordinate Values
 #'
 #' Read a coordinate variable from a GEOS NetCDF file.

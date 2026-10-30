@@ -1,3 +1,4 @@
+################################################################################
 #' Join variable-specific Parquet tables from one data source
 #'
 #' @description
@@ -103,14 +104,7 @@ join_variables <- function(
   # ----------------------------------------------------------------------------
   # Check `output`.
   # ----------------------------------------------------------------------------
-  # Ensure `output` is a character.
-  checkmate::assert_string(output, min.chars = 1L)
-  # ----------------------------------------------------------------------------
-  # Create output path if does not exist.
-  if (!dir.exists(output)) {
-    dir.create(output, recursive = TRUE, showWarnings = FALSE)
-  }
-  checkmate::assert_directory_exists(output)
+  amadeusdb::check_output(output)
   # ----------------------------------------------------------------------------
   # Ensure `by` is a character.
   checkmate::assert_character(
@@ -122,7 +116,7 @@ join_variables <- function(
   )
   # ----------------------------------------------------------------------------
   # Quote identifiers, including names containing capitals or punctuation.
-  chr_by_sql <- paste0('"', gsub('"', '""', by, fixed = TRUE), '"')
+  chr_by_sql <- amadeusdb::quote_sql(by)
   sql_by <- paste(chr_by_sql, collapse = ", ")
   # ----------------------------------------------------------------------------
   # Generate names specific to this call in the working global context.
@@ -149,19 +143,14 @@ join_variables <- function(
     # --------------------------------------------------------------------------
     # Import one variable (input) data from .parquet files in the database.
     message("Registering variable group ", i, "/", length(input), "...")
-    db_variable <- sedonadb::sd_read_parquet(input[[i]])
-    sedonadb::sd_to_view(db_variable, chr_variable_views[i])
-    # --------------------------------------------------------------------------
-    # Append to views to be cleaned up.
-    chr_merge_views <- c(chr_merge_views, chr_variable_views[i])
-    # --------------------------------------------------------------------------
-    # LIMIT 0 collects column names and types without collecting data rows.
-    chr_columns <- names(
-      sedonadb::sd_sql(
-        paste0("SELECT * FROM ", chr_variable_views[i], " LIMIT 0")
-      ) |>
-        sedonadb::sd_collect()
+    chr_merge_views <- amadeusdb::batch_read(
+      input[[i]],
+      chr_variable_views[i],
+      chr_merge_views
     )
+    # --------------------------------------------------------------------------
+    # Retrieve only schema information using a zero-row result.
+    chr_columns <- amadeusdb::view_schema(chr_variable_views[i])
     # --------------------------------------------------------------------------
     # Ensure merge keys (`by`) are in data.
     checkmate::assert_subset(
@@ -264,39 +253,15 @@ join_variables <- function(
     )
   }
   # ----------------------------------------------------------------------------
-  # Extract file names in output before parquet file writing.
-  chr_output1 <- list.files(
-    output,
-    recursive = TRUE,
-    full.names = TRUE,
-    pattern = "\\.parquet$"
+  # Perform join and write output to .parquet file(s).
+  amadeusdb::join_write(
+    output = output,
+    merge = sql_merge,
+    columns = NULL
   )
-  # ----------------------------------------------------------------------------
-  # Peform SQL-defined join.
-  message("Performing join...")
-  db_extraction <- sedonadb::sd_sql(sql_merge)
-  # ----------------------------------------------------------------------------
-  # Write joined data to a .parquet file/database (.parquet files).
-  message("Saving to .parquet file(s)...")
-  sedonadb::sd_write_parquet(
-    db_extraction,
-    output,
-    single_file_output = FALSE
-  )
-  # ----------------------------------------------------------------------------
-  # Extract file names in output after parquet file writing, and limit to only
-  # the new .parquet files.
-  chr_output2 <- list.files(
-    output,
-    recursive = TRUE,
-    full.names = TRUE,
-    pattern = "\\.parquet$"
-  )
-  # ----------------------------------------------------------------------------
-  # Return only the newly written .parquet file path(s).
-  setdiff(chr_output2, chr_output1)
 }
 
+################################################################################
 #' Join hourly, daily, and static covariates to observations
 #'
 #' @description
@@ -430,14 +395,7 @@ join_covariates <- function(
   # ----------------------------------------------------------------------------
   # Check `output`.
   # ----------------------------------------------------------------------------
-  # Ensure `output` is a character.
-  checkmate::assert_string(output, min.chars = 1L)
-  # ----------------------------------------------------------------------------
-  # Create output path if does not exist.
-  if (!dir.exists(output)) {
-    dir.create(output, recursive = TRUE, showWarnings = FALSE)
-  }
-  checkmate::assert_directory_exists(output)
+  amadeusdb::check_output(output)
   # ----------------------------------------------------------------------------
   # Ensure `locs_id`, `time_id`, and `date_id` are characters.
   checkmate::assert_string(locs_id, min.chars = 1L)
@@ -594,21 +552,14 @@ join_covariates <- function(
     # --------------------------------------------------------------------------
     # Register each file group as one logical table without collecting its rows.
     message("Registering ", chr_source_label, " data...")
-    db_source <- sedonadb::sd_read_parquet(chr_paths)
-    sedonadb::sd_to_view(db_source, chr_source_views[[chr_source]])
-    # --------------------------------------------------------------------------
-    # Add the view to cleanup only after registration succeeds.
-    chr_join_views <- c(chr_join_views, chr_source_views[[chr_source]])
+    chr_join_views <- amadeusdb::batch_read(
+      chr_paths,
+      chr_source_views[[chr_source]],
+      chr_join_views
+    )
     # --------------------------------------------------------------------------
     # Retrieve only schema information using a zero-row result.
-    chr_columns <- names(
-      sedonadb::sd_sql(paste0(
-        "SELECT * FROM ",
-        chr_source_views[[chr_source]],
-        " LIMIT 0"
-      )) |>
-        sedonadb::sd_collect()
-    )
+    chr_columns <- amadeusdb::view_schema(chr_source_views[[chr_source]])
     # --------------------------------------------------------------------------
     # Switch keys based on active data being processed.
     # Hourly tables require location and timestamp; daily tables require
@@ -826,6 +777,130 @@ join_covariates <- function(
     collapse = " AND "
   )
   # ----------------------------------------------------------------------------
+  # Perform join and write output to .parquet file(s).
+  amadeusdb::join_write(
+    output = output,
+    merge = paste0("SELECT * FROM (", sql_merge, ") AS m WHERE ", sql_complete),
+    columns = chr_output_columns
+  )
+}
+
+################################################################################
+#' Retrieve column names from a SedonaDB view
+#'
+#' @description
+#' Query a registered SedonaDB view with `LIMIT 0` and return its column names
+#' without collecting data rows into R.
+#'
+#' @param view character(1). Name of an existing view in the default SedonaDB
+#'   context. Inserted directly into SQL, so it must be a valid SQL identifier,
+#'   already quoted if necessary, for example `quote_sql("my view")`.
+#'
+#' @details
+#' Submits `SELECT * FROM <view> LIMIT 0` through [sedonadb::sd_sql()], collects
+#' the zero-row result with [sedonadb::sd_collect()], and extracts its names.
+#' This also retrieves column names from views containing no rows.
+#'
+#' No explicit argument validation or identifier quoting is performed. Errors
+#' from querying or collecting propagate to the caller. The view remains
+#' registered and unchanged.
+#'
+#' @return
+#' A character vector of column names in the order returned by `SELECT *`.
+#' Column types and other schema metadata are not included.
+#'
+#' @importFrom sedonadb sd_sql sd_collect
+#' @seealso [quote_sql()], [register_locs()], [join_variables()],
+#'   [join_covariates()]
+#' @keywords internal
+#' @examples
+#' \dontrun{
+#' # The locations view must already be registered with register_locs().
+#' view_schema("db_locs")
+#' }
+#' @export
+view_schema <- function(view) {
+  names(
+    sedonadb::sd_sql(paste0("SELECT * FROM ", view, " LIMIT 0")) |>
+      sedonadb::sd_collect()
+  )
+}
+
+################################################################################
+#' Write SQL join results to Parquet
+#'
+#' @description
+#' Execute a SQL query in SedonaDB, optionally select and rename its columns,
+#' and write the result to Parquet. Return newly created dataset file paths.
+#'
+#' @param output character(1). Destination passed to
+#'   [sedonadb::sd_write_parquet()]. Supply a dataset directory when
+#'   `single = FALSE` or a file path when `single = TRUE`.
+#' @param merge character(1). Complete SQL query passed to
+#'   [sedonadb::sd_sql()] in the default SedonaDB context. Any source views
+#'   referenced by the query must already be registered.
+#' @param columns character or NULL. Exact query-result column names to retain,
+#'   in the desired output order. Periods in these names are replaced with
+#'   underscores in the output. Defaults to `NULL`, retaining all columns
+#'   with their original names.
+#' @param single logical(1). Whether to write a single Parquet file. Defaults
+#'   to `FALSE`, writing a dataset. Passed as `single_file_output` to
+#'   [sedonadb::sd_write_parquet()]. See the return-value limitation below
+#'   when writing a single file.
+#'
+#' @details
+#' This helper handles the query and writing steps shared by [join_variables()]
+#' and [join_covariates()]. Join conditions and row filtering are supplied in
+#' `merge`; no additional join or completeness checks are performed here.
+#'
+#' When `columns` is supplied, selection uses [tidyselect::all_of()] through
+#' [sedonadb::sd_select()], so every requested column must exist. Renaming
+#' replaces literal periods only; it does not resolve duplicate names created
+#' by that replacement. Supply raw column names, without SQL quoting.
+#'
+#' Results are written without collecting rows into R. Progress messages are
+#' emitted before submitting the query and before writing. Source views remain
+#' registered, and their cleanup is the caller's responsibility.
+#'
+#' No explicit argument validation or output-directory preparation is
+#' performed. Callers can use [check_output()] to prepare a dataset directory.
+#' Existing files are not removed by this helper, and errors from SedonaDB
+#' propagate to the caller.
+#'
+#' @return
+#' A character vector of newly discovered `.parquet` paths under `output`,
+#' obtained by comparing recursive directory listings before and after writing.
+#' Paths present before writing are excluded even if their contents change.
+#' An empty vector is returned when no new matching paths are found.
+#'
+#' With `single = TRUE` and a file path as `output`, the directory listings do
+#' not enumerate that file, so the return value is `character(0)` even after a
+#' successful write. The data are written to disk as a side effect.
+#'
+#' @importFrom sedonadb sd_sql sd_select sd_write_parquet
+#' @importFrom tidyselect all_of
+#' @importFrom stats setNames
+#' @seealso [join_variables()], [join_covariates()], [batch_write()],
+#'   [check_output()]
+#' @keywords internal
+#' @examples
+#' \dontrun{
+#' output <- tempfile("joined_")
+#' check_output(output)
+#' paths <- join_write(
+#'   output = output,
+#'   merge = 'SELECT 1 AS site_id, 2 AS "co.mean"',
+#'   columns = c("site_id", "co.mean")
+#' )
+#' }
+#' @export
+join_write <- function(
+  output,
+  merge,
+  columns = NULL,
+  single = FALSE
+) {
+  # ----------------------------------------------------------------------------
   # Extract file names in output before parquet file writing.
   chr_output1 <- list.files(
     output,
@@ -836,30 +911,25 @@ join_covariates <- function(
   # ----------------------------------------------------------------------------
   # Peform SQL-defined join.
   message("Performing join...")
-  db_extraction <- sedonadb::sd_sql(
-    paste0(
-      "SELECT * FROM (\n",
-      sql_merge,
-      "\n) AS m WHERE ",
-      sql_complete
-    )
-  )
+  db_extraction <- sedonadb::sd_sql(merge)
   # ----------------------------------------------------------------------------
   # Replace "." with "_" in all column names.
-  db_extraction <- sedonadb::sd_select(
-    db_extraction,
-    tidyselect::all_of(stats::setNames(
-      chr_output_columns,
-      gsub(".", "_", chr_output_columns, fixed = TRUE)
-    ))
-  )
+  if (!is.null(columns)) {
+    db_extraction <- sedonadb::sd_select(
+      db_extraction,
+      tidyselect::all_of(stats::setNames(
+        columns,
+        gsub(".", "_", columns, fixed = TRUE)
+      ))
+    )
+  }
   # ----------------------------------------------------------------------------
   # Write joined data to a .parquet file/database (.parquet files).
   message("Saving to .parquet file(s)...")
   sedonadb::sd_write_parquet(
     db_extraction,
     output,
-    single_file_output = FALSE
+    single_file_output = single
   )
   # ----------------------------------------------------------------------------
   # Extract file names in output after parquet file writing, and limit to only
@@ -890,7 +960,7 @@ join_covariates <- function(
 #' and punctuation in the names.
 #'
 #' @return A character vector of double-quoted SQL identifiers.
-#' @seealso [join_covariates()], [geosunion()], [hmsunion()]
+#' @seealso [join_covariates()], [union_views()]
 #' @keywords internal
 #' @examples
 #' amadeusdb::quote_sql(c("site_id", "CO", "site name", 'a"b'))

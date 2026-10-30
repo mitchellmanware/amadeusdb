@@ -883,23 +883,9 @@ testthat::test_that("sedona_geos == amadeus::*_geos; max; polygons", {
   )) |>
     dplyr::arrange(as.character(NAME), time)
   # ----------------------------------------------------------------------------
-  # Expectations across {amadeus} and {amadeusdb} functions.
+  # Expect identical output across {amadeus} and {amadeusdb} functions.
   # ----------------------------------------------------------------------------
-  # Dimensions.
-  testthat::expect_equal(dim(df_sedona_geos), dim(df_procalc_geos))
-  # ----------------------------------------------------------------------------
-  # Column mames (exception: sedona_hms returns "date" for unique join key).
-  # Column mames.
-  testthat::expect_all_true(names(df_sedona_geos) == names(df_procalc_geos))
-  # ----------------------------------------------------------------------------
-  # Locations.
-  testthat::expect_all_true(df_sedona_geos$NAME == df_procalc_geos$NAME)
-  # ----------------------------------------------------------------------------
-  # Times.
-  testthat::expect_all_true(df_sedona_geos$time == df_procalc_geos$time)
-  # ----------------------------------------------------------------------------
-  # Values (O3).
-  testthat::expect_all_true(df_sedona_geos$o3_0 == df_procalc_geos$o3_0)
+  testthat::expect_identical(df_sedona_geos, df_procalc_geos)
   # ----------------------------------------------------------------------------
   # Clean up temporary directory.
   file.remove(list.files(chr_tempdir, full.names = TRUE, recursive = TRUE))
@@ -954,22 +940,9 @@ testthat::test_that("sedona_geos == amadeus::*_geos; min; polygons", {
   )) |>
     dplyr::arrange(as.character(NAME), time)
   # ----------------------------------------------------------------------------
-  # Expectations across {amadeus} and {amadeusdb} functions.
+  # Expect identical output across {amadeus} and {amadeusdb} functions.
   # ----------------------------------------------------------------------------
-  # Dimensions.
-  testthat::expect_equal(dim(df_sedona_geos), dim(df_procalc_geos))
-  # ----------------------------------------------------------------------------
-  # Column mames.
-  testthat::expect_all_true(names(df_sedona_geos) == names(df_procalc_geos))
-  # ----------------------------------------------------------------------------
-  # Locations.
-  testthat::expect_all_true(df_sedona_geos$NAME == df_procalc_geos$NAME)
-  # ----------------------------------------------------------------------------
-  # Times.
-  testthat::expect_all_true(df_sedona_geos$time == df_procalc_geos$time)
-  # ----------------------------------------------------------------------------
-  # Values (O3).
-  testthat::expect_all_true(df_sedona_geos$o3_0 == df_procalc_geos$o3_0)
+  testthat::expect_identical(df_sedona_geos, df_procalc_geos)
   # ----------------------------------------------------------------------------
   # Clean up temporary directory.
   file.remove(list.files(chr_tempdir, full.names = TRUE, recursive = TRUE))
@@ -1024,22 +997,9 @@ testthat::test_that("sedona_geos == amadeus::*_geos; points", {
   )) |>
     dplyr::arrange(as.character(NAME), time)
   # ----------------------------------------------------------------------------
-  # Expectations across {amadeus} and {amadeusdb} functions.
+  # Expect identical output across {amadeus} and {amadeusdb} functions.
   # ----------------------------------------------------------------------------
-  # Dimensions.
-  testthat::expect_equal(dim(df_sedona_geos), dim(df_procalc_geos))
-  # ----------------------------------------------------------------------------
-  # Column mames.
-  testthat::expect_all_true(names(df_sedona_geos) == names(df_procalc_geos))
-  # ----------------------------------------------------------------------------
-  # Locations.
-  testthat::expect_all_true(df_sedona_geos$NAME == df_procalc_geos$NAME)
-  # ----------------------------------------------------------------------------
-  # Times.
-  testthat::expect_all_true(df_sedona_geos$time == df_procalc_geos$time)
-  # ----------------------------------------------------------------------------
-  # Values (O3).
-  testthat::expect_all_true(df_sedona_geos$o3_0 == df_procalc_geos$o3_0)
+  testthat::expect_identical(df_sedona_geos, df_procalc_geos)
   # ----------------------------------------------------------------------------
   # Clean up temporary directory.
   file.remove(list.files(chr_tempdir, full.names = TRUE, recursive = TRUE))
