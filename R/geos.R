@@ -324,24 +324,19 @@ sedona_geos <- function(
       chr_geos_views <- unique(c(chr_geos_views, chr_geos_hourly[i]))
     }
     # --------------------------------------------------------------------------
-    # Write batch directly to Parquet without materializing another copy.
-    db_batch <- sedonadb::sd_sql(
-      amadeusdb::union_views(
-        locs_id_sql,
-        "time, level",
-        variable_sql,
-        chr_geos_hourly
-      )
-    )
-    sedonadb::sd_write_parquet(
-      db_batch,
-      chr_geos_parquet[l],
-      single_file_output = TRUE
+    # Write batch .parquet.
+    amadeusdb::batch_write(
+      locs_id = locs_id_sql,
+      time_id = "time, level",
+      columns = variable_sql,
+      views = chr_geos_hourly,
+      parquet = chr_geos_parquet[l],
+      single = TRUE
     )
     # --------------------------------------------------------------------------
     # Remove hourly views now represented by the registered batch.
     chr_geos_views <- amadeusdb::batch_drop(chr_geos_views, chr_geos_hourly)
-    rm(db_time, db_batch)
+    rm(db_time)
   }
   # ----------------------------------------------------------------------------
   # Return parquet file out paths.

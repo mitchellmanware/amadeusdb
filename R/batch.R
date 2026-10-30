@@ -217,9 +217,99 @@ batch_drop <- function(
   # Remove subset views now represented by the registered batch.
   for (s in sub) {
     sedonadb::sd_drop_view(s)
-    chr_views <- views[views != s]
+    views <- views[views != s]
   }
   # --------------------------------------------------------------------------
   # Return only unregistered views.
-  chr_views
+  views
+}
+
+################################################################################
+#' Write a batch of registered extraction views to Parquet
+#'
+#' @description
+#' Combine selected columns from registered SedonaDB views using `UNION ALL`
+#' and write the results to a Parquet file or dataset.
+#'
+#' @param locs_id character(1). SQL identifier for the location column, already
+#'   quoted if necessary, for example `quote_sql("site_id")`.
+#' @param time_id character(1). SQL identifier or comma-separated SQL column
+#'   list for temporal and related fields, for example `"date"` or
+#'   `"time, level"`. Individual identifiers must already be quoted if needed.
+#' @param columns character(1). Comma-separated SQL list of covariate columns
+#'   to retain. Individual identifiers must already be quoted if necessary.
+#' @param views character. Non-empty vector of registered SQL view names to
+#'   combine. Names are inserted verbatim into the query and must be valid
+#'   SQL identifiers, already quoted if necessary.
+#' @param parquet character(1). Destination path passed to
+#'   [sedonadb::sd_write_parquet()]. Supply a file path when `single = TRUE`
+#'   or a dataset directory when `single = FALSE`.
+#' @param single logical(1). Whether to write a single Parquet file. Defaults
+#'   to `TRUE`. Passed as `single_file_output` to
+#'   [sedonadb::sd_write_parquet()].
+#'
+#' @details
+#' The query is constructed by [union_views()] and submitted through
+#' [sedonadb::sd_sql()] in the default SedonaDB context. Each view must expose
+#' the selected columns with compatible types. `UNION ALL` retains duplicate
+#' rows, and the query does not specify an output row order.
+#'
+#' SQL identifiers and column lists are passed through without additional
+#' quoting. No explicit argument validation or existing-output check is
+#' performed here; callers can use [batch_skip()] before writing.
+#'
+#' Results are written without collecting them into an R data frame. After
+#' writing, the local batch data-frame binding is removed. Source views remain
+#' registered; callers manage their removal with [batch_drop()] or
+#' [cleanup_views()] after the output has been written successfully.
+#'
+#' @return
+#' `NULL`, invisibly. The batch results are written to `parquet` as a side
+#' effect.
+#'
+#' @importFrom sedonadb sd_sql sd_write_parquet
+#' @seealso [union_views()], [quote_sql()], [batch_prep()], [batch_skip()],
+#'   [batch_drop()], [sedona_geos()], [sedona_hms()]
+#' @keywords internal
+#' @examples
+#' \dontrun{
+#' # The extraction views must already be registered in SedonaDB.
+#' batch_write(
+#'   locs_id = quote_sql("site_id"),
+#'   time_id = "time, level",
+#'   columns = quote_sql("co_0"),
+#'   views = c("db_time_001", "db_time_002"),
+#'   parquet = file.path(tempdir(), "geos_CO_batch.parquet"),
+#'   single = TRUE
+#' )
+#' }
+#' @export
+batch_write <- function(
+  locs_id,
+  time_id,
+  columns,
+  views,
+  parquet,
+  single = TRUE
+) {
+  # --------------------------------------------------------------------------
+  # Query database with UNION-ed views.
+  db_batch <- sedonadb::sd_sql(
+    amadeusdb::union_views(
+      locs_id,
+      time_id,
+      columns,
+      views
+    )
+  )
+  # --------------------------------------------------------------------------
+  # Write batch directly .parquet.
+  sedonadb::sd_write_parquet(
+    db_batch,
+    parquet,
+    single_file_output = single
+  )
+  # --------------------------------------------------------------------------
+  # Remove batch database.
+  rm(db_batch)
 }

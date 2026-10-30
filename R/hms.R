@@ -248,27 +248,22 @@ sedona_hms <- function(
       chr_hms_views <- unique(c(chr_hms_views, chr_hms_daily[i]))
     }
     # --------------------------------------------------------------------------
-    # Materialize and union the batch before removing its daily views.
-    db_batch <- sedonadb::sd_sql(
-      amadeusdb::union_views(
-        locs_id_sql,
-        "date",
-        paste0(
-          sprintf("%s_%05d", c("light", "medium", "heavy"), radius),
-          collapse = ", "
-        ),
-        chr_hms_daily
-      )
-    )
-    sedonadb::sd_write_parquet(
-      db_batch,
-      chr_hms_parquet[l],
-      single_file_output = TRUE
+    # Write batch .parquet.
+    amadeusdb::batch_write(
+      locs_id = locs_id_sql,
+      time_id = "date",
+      columns = paste0(
+        sprintf("%s_%05d", c("light", "medium", "heavy"), radius),
+        collapse = ", "
+      ),
+      views = chr_hms_daily,
+      parquet = chr_hms_parquet[l],
+      single = TRUE
     )
     # --------------------------------------------------------------------------
     # Remove daily views now represented by the registered batch.
     chr_hms_views <- amadeusdb::batch_drop(chr_hms_views, chr_hms_daily)
-    rm(db_date, db_batch)
+    rm(db_date)
   }
   # ----------------------------------------------------------------------------
   # Return parquet file out paths.
