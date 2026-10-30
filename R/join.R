@@ -103,14 +103,7 @@ join_variables <- function(
   # ----------------------------------------------------------------------------
   # Check `output`.
   # ----------------------------------------------------------------------------
-  # Ensure `output` is a character.
-  checkmate::assert_string(output, min.chars = 1L)
-  # ----------------------------------------------------------------------------
-  # Create output path if does not exist.
-  if (!dir.exists(output)) {
-    dir.create(output, recursive = TRUE, showWarnings = FALSE)
-  }
-  checkmate::assert_directory_exists(output)
+  amadeusdb::check_output(output)
   # ----------------------------------------------------------------------------
   # Ensure `by` is a character.
   checkmate::assert_character(
@@ -430,14 +423,7 @@ join_covariates <- function(
   # ----------------------------------------------------------------------------
   # Check `output`.
   # ----------------------------------------------------------------------------
-  # Ensure `output` is a character.
-  checkmate::assert_string(output, min.chars = 1L)
-  # ----------------------------------------------------------------------------
-  # Create output path if does not exist.
-  if (!dir.exists(output)) {
-    dir.create(output, recursive = TRUE, showWarnings = FALSE)
-  }
-  checkmate::assert_directory_exists(output)
+  amadeusdb::check_output(output)
   # ----------------------------------------------------------------------------
   # Ensure `locs_id`, `time_id`, and `date_id` are characters.
   checkmate::assert_string(locs_id, min.chars = 1L)

@@ -102,14 +102,7 @@ check_arguments <- function(
   # ----------------------------------------------------------------------------
   # `output`
   # ----------------------------------------------------------------------------
-  # Ensure `output` is a character.
-  checkmate::assert_string(output, min.chars = 1L)
-  # ----------------------------------------------------------------------------
-  # Create output path if does not exist.
-  if (!dir.exists(output)) {
-    dir.create(output, recursive = TRUE, showWarnings = FALSE)
-  }
-  checkmate::assert_directory_exists(output)
+  amadeusdb::check_output(output)
   # ----------------------------------------------------------------------------
 
   # ----------------------------------------------------------------------------
@@ -198,4 +191,25 @@ check_views <- function(df) {
   # Ensure `df` contains "time", "path", and "view" columns.
   checkmate::assert_names(names(df), must.include = c("time", "path", "view"))
   # ----------------------------------------------------------------------------
+}
+
+#' Check for the `output` directory, and create if it does not exist.
+#'
+#' @param output character(1). Output directory.
+#'
+#' @importFrom checkmate assert_string assert_directory_exists
+#'
+#' @export
+check_output <- function(output) {
+  # ----------------------------------------------------------------------------
+  # Ensure `output` is a character.
+  checkmate::assert_string(output, min.chars = 1L)
+  # ----------------------------------------------------------------------------
+  # Create output path if does not exist.
+  if (!dir.exists(output)) {
+    dir.create(output, recursive = TRUE, showWarnings = FALSE)
+  }
+  # ----------------------------------------------------------------------------
+  # Ensure `output` exists.
+  checkmate::assert_directory_exists(output)
 }
