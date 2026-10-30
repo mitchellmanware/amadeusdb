@@ -221,17 +221,11 @@ sedona_geos <- function(
   amadeusdb::check_views(df_geospaths)
   # ----------------------------------------------------------------------------
   # Define location identifiers in SQL-friendly format.
-  locs_id_sql <- paste0(
-    '"',
-    gsub('"', '""', locs_id, fixed = TRUE),
-    '"'
-  )
+  locs_id_sql <- amadeusdb::quote_sql(locs_id)
   # ----------------------------------------------------------------------------
   # Define variable identifiers in SQL-friendly format.
-  variable_sql <- paste0(
-    '"',
-    gsub('"', '""', sprintf("%s_%d", tolower(variable), radius), fixed = TRUE),
-    '"'
+  variable_sql <- amadeusdb::quote_sql(
+    sprintf("%s_%d", tolower(variable), radius)
   )
   # ----------------------------------------------------------------------------
   # Define SQL code for processing GEOS data for points or polygons.

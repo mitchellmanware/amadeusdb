@@ -122,7 +122,7 @@ join_variables <- function(
   )
   # ----------------------------------------------------------------------------
   # Quote identifiers, including names containing capitals or punctuation.
-  chr_by_sql <- paste0('"', gsub('"', '""', by, fixed = TRUE), '"')
+  chr_by_sql <- amadeusdb::quote_sql(by)
   sql_by <- paste(chr_by_sql, collapse = ", ")
   # ----------------------------------------------------------------------------
   # Generate names specific to this call in the working global context.

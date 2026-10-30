@@ -166,16 +166,12 @@ sedona_hms <- function(
   amadeusdb::check_views(df_hmspaths)
   # ----------------------------------------------------------------------------
   # Define location identifiers in SQL-friendly format.
-  locs_id_sql <- paste0(
-    '"',
-    gsub('"', '""', locs_id, fixed = TRUE),
-    '"'
-  )
+  locs_id_sql <- amadeusdb::quote_sql(locs_id)
   # ----------------------------------------------------------------------------
   # Define column names based on radius buffer.
-  light_sql <- sprintf("\"light_%05d\"", radius)
-  medium_sql <- sprintf("\"medium_%05d\"", radius)
-  heavy_sql <- sprintf("\"heavy_%05d\"", radius)
+  light_sql <- amadeusdb::quote_sql(sprintf("light_%05d", radius))
+  medium_sql <- amadeusdb::quote_sql(sprintf("medium_%05d", radius))
+  heavy_sql <- amadeusdb::quote_sql(sprintf("heavy_%05d", radius))
   # ----------------------------------------------------------------------------
   # Define SQL code for processing HMS data.
   sql_processhms <- glue::glue_data(
