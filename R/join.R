@@ -143,11 +143,11 @@ join_variables <- function(
     # --------------------------------------------------------------------------
     # Import one variable (input) data from .parquet files in the database.
     message("Registering variable group ", i, "/", length(input), "...")
-    db_variable <- sedonadb::sd_read_parquet(input[[i]])
-    sedonadb::sd_to_view(db_variable, chr_variable_views[i])
-    # --------------------------------------------------------------------------
-    # Append to views to be cleaned up.
-    chr_merge_views <- c(chr_merge_views, chr_variable_views[i])
+    chr_merge_views <- amadeusdb::batch_read(
+      input[[i]],
+      chr_variable_views[i],
+      chr_merge_views
+    )
     # --------------------------------------------------------------------------
     # Retrieve only schema information using a zero-row result.
     chr_columns <- amadeusdb::view_schema(chr_variable_views[i])
@@ -552,11 +552,11 @@ join_covariates <- function(
     # --------------------------------------------------------------------------
     # Register each file group as one logical table without collecting its rows.
     message("Registering ", chr_source_label, " data...")
-    db_source <- sedonadb::sd_read_parquet(chr_paths)
-    sedonadb::sd_to_view(db_source, chr_source_views[[chr_source]])
-    # --------------------------------------------------------------------------
-    # Add the view to cleanup only after registration succeeds.
-    chr_join_views <- c(chr_join_views, chr_source_views[[chr_source]])
+    chr_join_views <- amadeusdb::batch_read(
+      chr_paths,
+      chr_source_views[[chr_source]],
+      chr_join_views
+    )
     # --------------------------------------------------------------------------
     # Retrieve only schema information using a zero-row result.
     chr_columns <- amadeusdb::view_schema(chr_source_views[[chr_source]])

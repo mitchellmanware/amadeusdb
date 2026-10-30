@@ -313,3 +313,65 @@ batch_write <- function(
   # Remove batch database.
   rm(db_batch)
 }
+
+################################################################################
+#' Read Parquet batches and register a SedonaDB view
+#'
+#' @description
+#' Read a group of Parquet paths as one logical table, register it as a view
+#' in the default SedonaDB context, and return an updated vector of view names
+#' for cleanup tracking.
+#'
+#' @param path character. Parquet paths passed together to
+#'   [sedonadb::sd_read_parquet()]. Multiple files represent batches of the
+#'   same logical table and must have compatible schemas.
+#' @param view character(1). Name of the view to register with
+#'   [sedonadb::sd_to_view()]. Supply an unused view name; registration uses
+#'   the default `overwrite = FALSE`.
+#' @param all character. View names already tracked by the caller for cleanup.
+#'   Supply `character(0)` when no views have been registered yet.
+#'
+#' @details
+#' Reading is followed directly by view registration, without calling
+#' [sedonadb::sd_compute()] or collecting rows into R. No explicit argument
+#' validation, path normalization, or path deduplication is performed here.
+#' Errors from reading or registration propagate to the caller.
+#'
+#' The view name is appended to `all` only after registration succeeds. The
+#' caller must assign the returned vector to update its cleanup tracking and
+#' arrange view removal with [cleanup_views()] or [batch_drop()]. The view
+#' remains available after this helper returns.
+#'
+#' @return
+#' A character vector equivalent to `c(all, view)`, preserving order and any
+#' duplicate entries. The registered data remain in SedonaDB; the returned
+#' value contains view names.
+#'
+#' @importFrom sedonadb sd_read_parquet sd_to_view
+#' @seealso [view_schema()], [compute_view()], [cleanup_views()],
+#'   [join_variables()], [join_covariates()]
+#' @keywords internal
+#' @examples
+#' \dontrun{
+#' chr_views <- batch_read(
+#'   path = c("data/batch_001.parquet", "data/batch_002.parquet"),
+#'   view = "db_source",
+#'   all = character(0)
+#' )
+#' view_schema("db_source")
+#' cleanup_views(chr_views)
+#' }
+#' @export
+batch_read <- function(
+  path,
+  view,
+  all
+) {
+  # --------------------------------------------------------------------------
+  # Register each file group as one logical table without collecting its rows.
+  db_source <- sedonadb::sd_read_parquet(path)
+  sedonadb::sd_to_view(db_source, view)
+  # --------------------------------------------------------------------------
+  # Add the view to cleanup only after registration succeeds.
+  c(all, view)
+}
