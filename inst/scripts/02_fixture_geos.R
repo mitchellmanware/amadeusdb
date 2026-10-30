@@ -127,8 +127,8 @@ for (g in chr_geos) {
       bbox = c(
         xmin = -79.625,
         xmax = -78.625,
-        ymin = 35.625,
-        ymax = 36.125
+        ymin = 35.50,
+        ymax = 36.25
       ),
       variable = "CO" # manual change.
     )

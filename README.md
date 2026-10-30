@@ -96,7 +96,7 @@ db_geos <- amadeusdb::join_variables(
 )
 
 # ------------------------------------------------------------------------------
-# Covariates with `sedona_hms``.
+# Covariates with `sedona_hms`.
 db_hms <- amadeusdb::sedona_hms(
   date = chr_dates,
   input = file.path("tests", "testdata", "hms"),
@@ -123,7 +123,7 @@ db_join <- join_covariates(
 sedonadb::sd_collect(sedonadb::sd_read_parquet(db_join))
 ```
 ```
-      NAME                time       lon      lat   outcome           O3
+      NAME                time       lon      lat   outcome         o3_0
 1 Alamance 2018-01-01 00:30:00 -79.39793 36.03757 0.3436570 3.055902e-08
 2 Alamance 2018-01-01 01:30:00 -79.39793 36.03757 0.8346653 2.895831e-08
 3  Chatham 2018-01-01 00:30:00 -79.25672 35.69645 0.3777033 3.131572e-08
@@ -132,15 +132,15 @@ sedonadb::sd_collect(sedonadb::sd_read_parquet(db_join))
 6   Durham 2018-01-01 01:30:00 -78.87809 36.02862 0.1558236 2.759043e-08
 7   Orange 2018-01-01 00:30:00 -79.12178 36.05355 0.8884222 2.828892e-08
 8   Orange 2018-01-01 01:30:00 -79.12178 36.05355 0.1655643 2.759043e-08
-            CO light medium heavy
-1 1.642656e-07     0      0     0
-2 1.717625e-07     0      0     0
-3 1.602881e-07     0      0     0
-4 1.668730e-07     0      0     0
-5 1.760818e-07     0      0     0
-6 1.799115e-07     0      0     0
-7 1.689223e-07     0      0     0
-8 1.749639e-07     0      0     0
+          co_0 light_00000 medium_00000 heavy_00000
+1 1.642656e-07           0            0           0
+2 1.717625e-07           0            0           0
+3 1.602881e-07           0            0           0
+4 1.668730e-07           0            0           0
+5 1.760818e-07           0            0           0
+6 1.799115e-07           0            0           0
+7 1.689223e-07           0            0           0
+8 1.749639e-07           0            0           0
 ```
 
 ## Data Sources
