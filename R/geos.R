@@ -379,7 +379,12 @@ sedona_geos <- function(
     # --------------------------------------------------------------------------
     # Write batch directly to Parquet without materializing another copy.
     db_batch <- sedonadb::sd_sql(
-      amadeusdb::geosunion(locs_id_sql, variable_sql, chr_geos_hourly)
+      amadeusdb::union_views(
+        locs_id_sql,
+        "time, level",
+        variable_sql,
+        chr_geos_hourly
+      )
     )
     sedonadb::sd_write_parquet(
       db_batch,
@@ -400,48 +405,6 @@ sedona_geos <- function(
 }
 
 ################################################################################
-#' Build a GEOS extraction union query
-#'
-#' @description
-#' Construct SQL that stacks GEOS extraction views using `UNION ALL`, retaining
-#' the location identifier, `time`, `level`, and selected variable columns.
-#'
-#' @param l character(1). SQL identifier for the location column, already quoted
-#'   if necessary.
-#' @param var character(1). SQL identifier for the variable column, already
-#'   quoted if necessary.
-#' @param views character. Non-empty vector of SQL view names to stack, in query
-#'   order. Names are inserted verbatim and must already be valid SQL
-#'   identifiers.
-#'
-#' @details
-#' Every view must contain the columns identified by `l` and `var`, together
-#' with columns named `time` and `level`. The query retains duplicate rows.
-#' This helper builds SQL text only; it does not execute the query or validate
-#' the views.
-#'
-#' @return A character(1) SQL query.
-#' @seealso [sedona_geos()], [quote_sql()]
-#' @keywords internal
-#' @examples
-#' amadeusdb::geosunion(
-#'   l = '"site_id"',
-#'   var = '"co_0"',
-#'   views = c("db_time_001", "db_time_002")
-#' )
-#' @export
-geosunion <- function(l, var, views) {
-  paste(
-    sprintf(
-      "SELECT %s, time, level, %s FROM %s",
-      l,
-      var,
-      views
-    ),
-    collapse = "\nUNION ALL\n"
-  )
-}
-
 #' Read GEOS Vertical Coordinate Values
 #'
 #' Read a coordinate variable from a GEOS NetCDF file.

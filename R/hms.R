@@ -303,14 +303,12 @@ sedona_hms <- function(
     # --------------------------------------------------------------------------
     # Materialize and union the batch before removing its daily views.
     db_batch <- sedonadb::sd_sql(
-      amadeusdb::hmsunion(
+      amadeusdb::union_views(
         locs_id_sql,
+        "date",
         paste0(
-          "date, ",
-          paste0(
-            sprintf("%s_%05d", c("light", "medium", "heavy"), radius),
-            collapse = ", "
-          )
+          sprintf("%s_%05d", c("light", "medium", "heavy"), radius),
+          collapse = ", "
         ),
         chr_hms_daily
       )
@@ -331,50 +329,6 @@ sedona_hms <- function(
   # ----------------------------------------------------------------------------
   # Return parquet file out paths.
   invisible(chr_hms_parquet)
-}
-
-################################################################################
-#' Build an HMS indicator union query
-#'
-#' @description
-#' Construct SQL that stacks daily HMS indicator views using `UNION ALL`.
-#'
-#' @param l character(1). SQL identifier for the location column, already quoted
-#'   if necessary.
-#' @param c character(1). Non-empty, comma-separated SQL column list, inserted
-#'   verbatim into each `SELECT`. Quote column identifiers if necessary. Supply
-#'   one string containing all columns, rather than a vector of column names.
-#' @param v character. Non-empty vector of SQL view names to stack, in query
-#'   order. Names are inserted verbatim and must already be valid SQL
-#'   identifiers.
-#'
-#' @details
-#' Every view must contain the location column identified by `l`, together with
-#' the columns listed in `c`. For [sedona_hms()] output, explicitly supply
-#' `date` and the radius-suffixed indicator names, as in the example below.
-#' The query retains duplicate rows. This helper builds SQL text only; it does
-#' not execute the query or validate the views.
-#'
-#' @return A character(1) SQL query.
-#' @seealso [sedona_hms()], [quote_sql()]
-#' @keywords internal
-#' @examples
-#' amadeusdb::hmsunion(
-#'   l = '"site_id"',
-#'   c = "date, light_00000, medium_00000, heavy_00000",
-#'   v = c("db_day_001", "db_day_002")
-#' )
-#' @export
-hmsunion <- function(l, c = c("time, light, medium, heavy"), v) {
-  paste(
-    sprintf(
-      "SELECT %s, %s FROM %s",
-      l,
-      c,
-      v
-    ),
-    collapse = "\nUNION ALL\n"
-  )
 }
 
 ################################################################################

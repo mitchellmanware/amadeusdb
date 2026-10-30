@@ -25,6 +25,6 @@ and punctuation in the names.
 amadeusdb::quote_sql(c("site_id", "CO", "site name", 'a"b'))
 }
 \seealso{
-\code{\link[=join_covariates]{join_covariates()}}, \code{\link[=geosunion]{geosunion()}}, \code{\link[=hmsunion]{hmsunion()}}
+\code{\link[=join_covariates]{join_covariates()}}, \code{\link[=union_views]{union_views()}}
 }
 \keyword{internal}

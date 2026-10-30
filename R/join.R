@@ -1,3 +1,4 @@
+################################################################################
 #' Join variable-specific Parquet tables from one data source
 #'
 #' @description
@@ -290,6 +291,7 @@ join_variables <- function(
   setdiff(chr_output2, chr_output1)
 }
 
+################################################################################
 #' Join hourly, daily, and static covariates to observations
 #'
 #' @description
@@ -876,7 +878,7 @@ join_covariates <- function(
 #' and punctuation in the names.
 #'
 #' @return A character vector of double-quoted SQL identifiers.
-#' @seealso [join_covariates()], [geosunion()], [hmsunion()]
+#' @seealso [join_covariates()], [union_views()]
 #' @keywords internal
 #' @examples
 #' amadeusdb::quote_sql(c("site_id", "CO", "site name", 'a"b'))
