@@ -380,6 +380,7 @@ sedona_geos <- function(
         chr_geos_hourly[i],
         overwrite = TRUE
       )
+      chr_geos_views <- unique(c(chr_geos_views, chr_geos_hourly[i]))
     }
     # --------------------------------------------------------------------------
     # Write batch directly to Parquet without materializing another copy.
