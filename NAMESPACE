@@ -25,6 +25,7 @@ export(register_locs)
 export(sedona_geos)
 export(sedona_hms)
 export(union_views)
+export(view_schema)
 import(checkmate)
 importFrom(amadeus,
   generate_date_sequence,

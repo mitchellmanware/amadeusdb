@@ -149,13 +149,8 @@ join_variables <- function(
     # Append to views to be cleaned up.
     chr_merge_views <- c(chr_merge_views, chr_variable_views[i])
     # --------------------------------------------------------------------------
-    # LIMIT 0 collects column names and types without collecting data rows.
-    chr_columns <- names(
-      sedonadb::sd_sql(
-        paste0("SELECT * FROM ", chr_variable_views[i], " LIMIT 0")
-      ) |>
-        sedonadb::sd_collect()
-    )
+    # Retrieve only schema information using a zero-row result.
+    chr_columns <- amadeusdb::view_schema(chr_variable_views[i])
     # --------------------------------------------------------------------------
     # Ensure merge keys (`by`) are in data.
     checkmate::assert_subset(
@@ -564,14 +559,7 @@ join_covariates <- function(
     chr_join_views <- c(chr_join_views, chr_source_views[[chr_source]])
     # --------------------------------------------------------------------------
     # Retrieve only schema information using a zero-row result.
-    chr_columns <- names(
-      sedonadb::sd_sql(paste0(
-        "SELECT * FROM ",
-        chr_source_views[[chr_source]],
-        " LIMIT 0"
-      )) |>
-        sedonadb::sd_collect()
-    )
+    chr_columns <- amadeusdb::view_schema(chr_source_views[[chr_source]])
     # --------------------------------------------------------------------------
     # Switch keys based on active data being processed.
     # Hourly tables require location and timestamp; daily tables require
@@ -794,6 +782,47 @@ join_covariates <- function(
     output = output,
     merge = paste0("SELECT * FROM (", sql_merge, ") AS m WHERE ", sql_complete),
     columns = chr_output_columns
+  )
+}
+
+################################################################################
+#' Retrieve column names from a SedonaDB view
+#'
+#' @description
+#' Query a registered SedonaDB view with `LIMIT 0` and return its column names
+#' without collecting data rows into R.
+#'
+#' @param view character(1). Name of an existing view in the default SedonaDB
+#'   context. Inserted directly into SQL, so it must be a valid SQL identifier,
+#'   already quoted if necessary, for example `quote_sql("my view")`.
+#'
+#' @details
+#' Submits `SELECT * FROM <view> LIMIT 0` through [sedonadb::sd_sql()], collects
+#' the zero-row result with [sedonadb::sd_collect()], and extracts its names.
+#' This also retrieves column names from views containing no rows.
+#'
+#' No explicit argument validation or identifier quoting is performed. Errors
+#' from querying or collecting propagate to the caller. The view remains
+#' registered and unchanged.
+#'
+#' @return
+#' A character vector of column names in the order returned by `SELECT *`.
+#' Column types and other schema metadata are not included.
+#'
+#' @importFrom sedonadb sd_sql sd_collect
+#' @seealso [quote_sql()], [register_locs()], [join_variables()],
+#'   [join_covariates()]
+#' @keywords internal
+#' @examples
+#' \dontrun{
+#' # The locations view must already be registered with register_locs().
+#' view_schema("db_locs")
+#' }
+#' @export
+view_schema <- function(view) {
+  names(
+    sedonadb::sd_sql(paste0("SELECT * FROM ", view, " LIMIT 0")) |>
+      sedonadb::sd_collect()
   )
 }
 
