@@ -185,50 +185,23 @@ sedona_hms <- function(
   amadeusdb::register_locs(sf_locs)
   chr_hms_views <- unique(c(chr_hms_views, "db_locs"))
   # ----------------------------------------------------------------------------
-  # Split date row indices into batches.
-  list_hms_batch <- split(
-    seq_len(nrow(df_hmspaths)),
-    ceiling(seq_len(nrow(df_hmspaths)) / batch)
-  )
-  # ----------------------------------------------------------------------------
-  # Generate a database view name for each batch.
-  chr_hms_batch <- vapply(
-    list_hms_batch,
-    function(i) {
-      chr_range <- range(as.character(df_hmspaths$time[i]))
-      sprintf(
-        "%s_%s_%s",
-        "hms",
-        gsub("-", "", chr_range[1]),
-        gsub("-", "", chr_range[2])
-      )
-    },
-    FUN.VALUE = character(1),
-    USE.NAMES = FALSE
-  )
+  # Split hourly file row indices into `batch` sized batches.
+  list_hms_batch <- amadeusdb::batch_split(df_hmspaths, batch)
   # ----------------------------------------------------------------------------
   # Generate .parquet paths for each batch view.
-  chr_output <- normalizePath(
-    output,
-    winslash = "/",
-    mustWork = TRUE
-  )
-  chr_hms_parquet <- file.path(
-    chr_output,
-    paste0(chr_hms_batch, ".parquet")
+  chr_hms_parquet <- amadeusdb::batch_prep(
+    df = df_hmspaths,
+    batch = list_hms_batch,
+    output = output,
+    source = "hms",
+    time_id = "time"
   )
   # ----------------------------------------------------------------------------
   # Perform daily spatial joins within each batch.
   for (l in seq_along(list_hms_batch)) {
     # --------------------------------------------------------------------------
     # Skip if batch exists.
-    if (file.exists(chr_hms_parquet[l])) {
-      message(
-        "Skipping existing batch ",
-        l,
-        ": ",
-        chr_hms_parquet[l]
-      )
+    if (amadeusdb::batch_skip(chr_hms_parquet[l])) {
       next
     }
     # --------------------------------------------------------------------------
@@ -265,7 +238,6 @@ sedona_hms <- function(
         params = list(as.character(df_hms_batch$time[i]))
       ) |>
         sedonadb::sd_compute()
-
       # ------------------------------------------------------------------------
       # Register post-spatial join data in the database.
       sedonadb::sd_to_view(
@@ -295,10 +267,7 @@ sedona_hms <- function(
     )
     # --------------------------------------------------------------------------
     # Remove daily views now represented by the registered batch.
-    for (d in chr_hms_daily) {
-      sedonadb::sd_drop_view(d)
-      chr_hms_views <- chr_hms_views[chr_hms_views != d]
-    }
+    chr_hms_views <- amadeusdb::batch_drop(chr_hms_views, chr_hms_daily)
     rm(db_date, db_batch)
   }
   # ----------------------------------------------------------------------------

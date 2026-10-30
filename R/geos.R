@@ -254,50 +254,23 @@ sedona_geos <- function(
   chr_geos_views <- c(chr_geos_views, "db_locs")
   # ----------------------------------------------------------------------------
   # Split hourly file row indices into `batch` sized batches.
-  list_geos_batch <- split(
-    seq_len(nrow(df_geospaths)),
-    ceiling(seq_len(nrow(df_geospaths)) / batch)
-  )
-  # ----------------------------------------------------------------------------
-  # Name output parquet paths based on variable and time inclusions.
-  chr_geos_batch <- vapply(
-    list_geos_batch,
-    function(i) {
-      chr_range <- range(as.character(df_geospaths$tchar[i]))
-      sprintf(
-        "%s_%s_%s_%s",
-        "geos",
-        variable,
-        chr_range[1],
-        chr_range[2]
-      )
-    },
-    FUN.VALUE = character(1),
-    USE.NAMES = FALSE
-  )
+  list_geos_batch <- amadeusdb::batch_split(df_geospaths, batch)
   # ----------------------------------------------------------------------------
   # Generate .parquet paths for each batch view.
-  chr_output <- normalizePath(
-    output,
-    winslash = "/",
-    mustWork = TRUE
-  )
-  chr_geos_parquet <- file.path(
-    chr_output,
-    paste0(chr_geos_batch, ".parquet")
+  chr_geos_parquet <- amadeusdb::batch_prep(
+    df = df_geospaths,
+    batch = list_geos_batch,
+    output = output,
+    source = "geos",
+    variable = variable,
+    time_id = "tchar"
   )
   # ----------------------------------------------------------------------------
   # Perform spatial extraction within each batch.
   for (l in seq_along(list_geos_batch)) {
     # --------------------------------------------------------------------------
     # Skip if batch exists.
-    if (file.exists(chr_geos_parquet[l])) {
-      message(
-        "Skipping existing batch ",
-        l,
-        ": ",
-        chr_geos_parquet[l]
-      )
+    if (amadeusdb::batch_skip(chr_geos_parquet[l])) {
       next
     }
     # --------------------------------------------------------------------------
@@ -366,11 +339,8 @@ sedona_geos <- function(
       single_file_output = TRUE
     )
     # --------------------------------------------------------------------------
-    # Remove hourly views after the batch has been written successfully.
-    for (h in chr_geos_hourly) {
-      sedonadb::sd_drop_view(h)
-      chr_geos_views <- chr_geos_views[chr_geos_views != h]
-    }
+    # Remove hourly views now represented by the registered batch.
+    chr_geos_views <- amadeusdb::batch_drop(chr_geos_views, chr_geos_hourly)
     rm(db_time, db_batch)
   }
   # ----------------------------------------------------------------------------
