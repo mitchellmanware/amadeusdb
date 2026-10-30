@@ -53,7 +53,8 @@ is not required in the observation table.}
 
 \item{prefix}{logical(1). Whether to prefix right-hand data column names
 with their resolution and dataset label, for example \code{hourly_geos_co_0}
-for column \code{co_0} in \code{hourly = list(geos = geos_files)}. Defaults to \code{FALSE}.}
+for column \code{co_0} in \code{hourly = list(geos = geos_files)}. Defaults to
+\code{FALSE}.}
 }
 \value{
 A character vector of newly created \code{.parquet} file paths under \code{output}.

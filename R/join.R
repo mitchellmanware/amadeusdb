@@ -333,7 +333,8 @@ join_variables <- function(
 #'   is not required in the observation table.
 #' @param prefix logical(1). Whether to prefix right-hand data column names
 #'   with their resolution and dataset label, for example `hourly_geos_co_0`
-#'   for column `co_0` in `hourly = list(geos = geos_files)`. Defaults to `FALSE`.
+#'   for column `co_0` in `hourly = list(geos = geos_files)`. Defaults to
+#'   `FALSE`.
 #'
 #' @details
 #' The names supplied to `locs_id`, `time_id`, and `date_id` must be distinct
@@ -590,7 +591,6 @@ join_covariates <- function(
       winslash = "/",
       mustWork = TRUE
     ))
-
     # --------------------------------------------------------------------------
     # Register each file group as one logical table without collecting its rows.
     message("Registering ", chr_source_label, " data...")
