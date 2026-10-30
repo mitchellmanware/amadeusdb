@@ -249,15 +249,8 @@ sedona_geos <- function(
   chr_geos_views <- character(0)
   on.exit(amadeusdb::cleanup_views(chr_geos_views), add = TRUE)
   # ----------------------------------------------------------------------------
-  # Convert extraction points to SedonaDB data frame.
-  db_locs <- sedonadb::as_sedonadb_dataframe(sf_locs)
-  # ----------------------------------------------------------------------------
   # Register the extraction point data object in the SedonaDB session ! once !.
-  sedonadb::sd_to_view(
-    db_locs,
-    "db_locs",
-    overwrite = TRUE
-  )
+  amadeusdb::register_locs(sf_locs)
   chr_geos_views <- c(chr_geos_views, "db_locs")
   # ----------------------------------------------------------------------------
   # Split hourly file row indices into `batch` sized batches.

@@ -181,15 +181,8 @@ sedona_hms <- function(
   chr_hms_views <- character(0)
   on.exit(amadeusdb::cleanup_views(chr_hms_views), add = TRUE)
   # ----------------------------------------------------------------------------
-  # Convert extraction locations to a SedonaDB data frame.
-  db_locs <- sedonadb::as_sedonadb_dataframe(sf_locs)
-  # ----------------------------------------------------------------------------
   # Register the extraction point data object in the SedonaDB session ! once !.
-  sedonadb::sd_to_view(
-    db_locs,
-    "db_locs",
-    overwrite = TRUE
-  )
+  amadeusdb::register_locs(sf_locs)
   chr_hms_views <- unique(c(chr_hms_views, "db_locs"))
   # ----------------------------------------------------------------------------
   # Split date row indices into batches.

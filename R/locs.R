@@ -226,3 +226,57 @@ prepare_radius <- function(
     )
   }
 }
+
+################################################################################
+#' Register prepared extraction locations in SedonaDB
+#'
+#' @description
+#' Convert prepared locations to a SedonaDB data frame and register them as
+#' the `db_locs` view in the default SedonaDB context. Replace any existing
+#' view with that name.
+#'
+#' @param locs sf object. Prepared extraction locations, typically returned by
+#'   [prepare_locs()], containing the location identifier and a `geometry`
+#'   column. Locations should already use the CRS and buffer required by the
+#'   extraction operation.
+#'
+#' @details
+#' Conversion is delegated to [sedonadb::as_sedonadb_dataframe()], followed by
+#' [sedonadb::sd_to_view()] with `overwrite = TRUE`. This helper performs no
+#' additional argument checks, coordinate transformation, or buffering.
+#'
+#' The registered view remains available after this function returns. Callers
+#' are responsible for tracking `"db_locs"` and removing it with
+#' [cleanup_views()] when extraction finishes, including on error. Repeated
+#' calls replace the view rather than append locations.
+#'
+#' @return
+#' Invisibly, the `sedonadb_dataframe` returned by [sedonadb::sd_to_view()].
+#' The locations are also available to subsequent SQL queries as `db_locs`.
+#'
+#' @importFrom sedonadb as_sedonadb_dataframe sd_to_view
+#' @seealso [prepare_locs()], [cleanup_views()], [sedona_geos()], [sedona_hms()]
+#' @keywords internal
+#' @examples
+#' \dontrun{
+#' locs <- prepare_locs(
+#'   locs = data.frame(site_id = "001", lon = -78.90, lat = 35.97),
+#'   locs_id = "site_id",
+#'   crs = sf::st_crs("EPSG:4326")
+#' )
+#' register_locs(locs)
+#' cleanup_views("db_locs")
+#' }
+#' @export
+register_locs <- function(locs) {
+  # ----------------------------------------------------------------------------
+  # Convert extraction locations to a SedonaDB data frame.
+  db_locs <- sedonadb::as_sedonadb_dataframe(locs)
+  # ----------------------------------------------------------------------------
+  # Register the extraction point data object in the SedonaDB session ! once !.
+  sedonadb::sd_to_view(
+    db_locs,
+    "db_locs",
+    overwrite = TRUE
+  )
+}
