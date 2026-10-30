@@ -275,11 +275,7 @@ sedona_geos <- function(
     }
     # --------------------------------------------------------------------------
     # Index data files, times, and names to active batch.
-    df_geos_batch <- df_geospaths[
-      list_geos_batch[[l]],
-      ,
-      drop = FALSE
-    ]
+    df_geos_batch <- df_geospaths[list_geos_batch[[l]], , drop = FALSE]
     # --------------------------------------------------------------------------
     # Generate daily view names for active batch.
     chr_geos_hourly <- sprintf(

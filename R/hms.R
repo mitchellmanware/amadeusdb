@@ -156,20 +156,9 @@ sedona_hms <- function(
   heavy_sql <- amadeusdb::quote_sql(sprintf("heavy_%05d", radius))
   # ----------------------------------------------------------------------------
   # Define SQL code for processing HMS data.
-  sql_processhms <- glue::glue_data(
-    paste(
-      readLines(
-        system.file(
-          "sql",
-          "sedona_hms.sql",
-          package = "amadeusdb",
-          mustWork = TRUE
-        ),
-        warn = FALSE
-      ),
-      collapse = "\n"
-    ),
-    .x = list(
+  sql_processhms <- amadeusdb::glue_sql(
+    file = "sedona_hms.sql",
+    args = list(
       locs_id_sql = locs_id_sql,
       light_sql = light_sql,
       medium_sql = medium_sql,
@@ -206,11 +195,7 @@ sedona_hms <- function(
     }
     # --------------------------------------------------------------------------
     # Index data files, dates, and names to active batch.
-    df_hms_batch <- df_hmspaths[
-      list_hms_batch[[l]],
-      ,
-      drop = FALSE
-    ]
+    df_hms_batch <- df_hmspaths[list_hms_batch[[l]], , drop = FALSE]
     # --------------------------------------------------------------------------
     # Generate daily view names for active batch.
     chr_hms_daily <- sprintf("db_day_%03d", seq_len(nrow(df_hms_batch)))

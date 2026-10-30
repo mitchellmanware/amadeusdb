@@ -12,6 +12,7 @@ export(cleanup_views)
 export(compute_view)
 export(discover)
 export(geoslev)
+export(glue_sql)
 export(hmsdates)
 export(join_covariates)
 export(join_variables)
@@ -44,7 +45,10 @@ importFrom(checkmate,
   assert_string,
   assert_subset
 )
-importFrom(glue,glue)
+importFrom(glue,
+  glue,
+  glue_data
+)
 importFrom(methods,is)
 importFrom(ncdf4,
   nc_close,
