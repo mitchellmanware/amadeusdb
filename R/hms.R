@@ -233,19 +233,12 @@ sedona_hms <- function(
       chr_hms_views <- unique(c(chr_hms_views, "db_hms"))
       # ------------------------------------------------------------------------
       # Compute the spatial join.
-      db_date <- sedonadb::sd_sql(
-        sql_processhms,
-        params = list(as.character(df_hms_batch$time[i]))
-      ) |>
-        sedonadb::sd_compute()
-      # ------------------------------------------------------------------------
-      # Register post-spatial join data in the database.
-      sedonadb::sd_to_view(
-        db_date,
-        chr_hms_daily[i],
-        overwrite = TRUE
+      chr_hms_views <- amadeusdb::compute_view(
+        sql = sql_processhms,
+        params = list(as.character(df_hms_batch$time[i])),
+        view = chr_hms_daily[i],
+        all = chr_hms_views
       )
-      chr_hms_views <- unique(c(chr_hms_views, chr_hms_daily[i]))
     }
     # --------------------------------------------------------------------------
     # Write batch .parquet.
@@ -263,7 +256,6 @@ sedona_hms <- function(
     # --------------------------------------------------------------------------
     # Remove daily views now represented by the registered batch.
     chr_hms_views <- amadeusdb::batch_drop(chr_hms_views, chr_hms_daily)
-    rm(db_date)
   }
   # ----------------------------------------------------------------------------
   # Return parquet file out paths.

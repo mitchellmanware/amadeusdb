@@ -309,19 +309,13 @@ sedona_geos <- function(
         )
       }
       # ------------------------------------------------------------------------
-      # Compute and register the hourly extraction.
-      db_time <- sedonadb::sd_sql(
-        sql_processgeos,
-        params = list_params
-      ) |>
-        sedonadb::sd_compute()
-      # ------------------------------------------------------------------------
-      sedonadb::sd_to_view(
-        db_time,
-        chr_geos_hourly[i],
-        overwrite = TRUE
+      # Compute the spatial join.
+      chr_geos_views <- amadeusdb::compute_view(
+        sql = sql_processgeos,
+        params = list_params,
+        view = chr_geos_hourly[i],
+        all = chr_geos_views
       )
-      chr_geos_views <- unique(c(chr_geos_views, chr_geos_hourly[i]))
     }
     # --------------------------------------------------------------------------
     # Write batch .parquet.
@@ -336,7 +330,6 @@ sedona_geos <- function(
     # --------------------------------------------------------------------------
     # Remove hourly views now represented by the registered batch.
     chr_geos_views <- amadeusdb::batch_drop(chr_geos_views, chr_geos_hourly)
-    rm(db_time)
   }
   # ----------------------------------------------------------------------------
   # Return parquet file out paths.
