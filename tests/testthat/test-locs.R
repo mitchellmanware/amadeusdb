@@ -7,6 +7,25 @@ library(testthat)
 ################################################################################
 # Success cases.
 ################################################################################
+testthat::test_that("prepare_sf; terra::vect", {
+  # ----------------------------------------------------------------------------
+  # Initiate data.frame with data to exclude.
+  df_empty <- data.frame(site_id = "A001", lon = -79.33, lat = 36.07)
+  # ----------------------------------------------------------------------------
+  # Returns `sf` when supplied {terra} vector.
+  testthat::expect_no_error(
+    sf_locs <- amadeusdb::prepare_sf(
+      terra::vect(df_empty, crs = "EPSG:4326"),
+      crs = sf::st_crs("EPSG:4326"),
+      radius = 0
+    )
+  )
+  # ----------------------------------------------------------------------------
+  # Expect `sf` object.
+  testthat::expect_s3_class(sf_locs, "sf")
+})
+
+################################################################################
 testthat::test_that("prepare_sf; radius > 0", {
   # ----------------------------------------------------------------------------
   # Import fixture points.
