@@ -27,8 +27,8 @@ repeated to process one day.}
 \item{input}{character(1). Non-empty path to an existing directory containing
 GEOS-CF files with their original \code{GEOS-CF.v01.rpl} filenames. File
 discovery is recursive, but the current input check requires all listed
-immediate entries to be files. Supply files from a compatible collection
-with no repeated filename timestamps.}
+immediate entries to be files. Supply files from one collection with the
+same vertical coordinate and no repeated filename timestamps.}
 
 \item{output}{character(1). Non-empty directory path for the output Parquet
 files. Created recursively if it does not exist.}
@@ -38,10 +38,11 @@ The same variable is read from every selected file. The output value
 column is named with \code{sprintf("\%s_\%d", tolower(variable), radius)}, for
 example \code{co_0} for \code{variable = "CO"} and \code{radius = 0}.}
 
-\item{band}{integer(1). One-based raster band or vertical pressure level
-index for polygon statistics, at least \code{1L}. Defaults to \code{1L}. Inspect the
-NetCDF file to identify the desired band. Point extraction uses band 1
-regardless of this value.}
+\item{band}{integer(1). Non-missing, one-based raster band index for both
+point and polygon extraction, at least \code{1L}. Defaults to \code{1L}. The index
+must not exceed the number of NetCDF \code{lev} coordinates when processing
+missing batches. The output \code{level} is the coordinate at this index;
+for surface collections, band 1 corresponds to model layer 72.}
 
 \item{locs}{sf, SpatVector, or data.frame object. Extraction locations with
 an identifier column named by \code{locs_id}. Spatial objects must have a source
@@ -94,10 +95,13 @@ uses raster cell values; polygon extraction uses zonal statistics.
 }
 \details{
 Files are selected using the requested dates, and timestamps are derived
-from their filenames and parsed as UTC. Point extraction uses band 1 of the
-requested NetCDF variable; polygon statistics use \code{band}. The output
-\code{level} column is derived from each file's NetCDF \code{lev} coordinate using
-\code{\link[=geoslev]{geoslev()}}.
+from their filenames and parsed as UTC. Both point extraction and polygon
+statistics use \code{band} of the requested NetCDF variable. Selected filenames
+must identify one collection. Its vertical coordinate is assumed to be
+identical across files and is read once with \code{\link[=geoslev]{geoslev()}} from the first
+file in the first missing batch. The coordinate at \code{band} supplies the
+output \code{level} for every processed file. No coordinate is read when all
+batch outputs already exist.
 
 Each batch is written as
 \verb{geos_<variable>_<first_timestamp>_<last_timestamp>.parquet}. A batch whose

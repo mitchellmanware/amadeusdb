@@ -757,6 +757,23 @@ testthat::test_that("sedona_geos; expected failures", {
     regexp = "exclude_nodata"
   )
   # ----------------------------------------------------------------------------
+  # More than one collection.
+  testthat::expect_error(
+    amadeusdb::sedona_geos(
+      locs = points,
+      locs_id = "NAME",
+      date = "2018-01-01",
+      input = testthat::test_path("..", "testdata", "geos", "all"),
+      output = tempdir(),
+      batch = 1L,
+      variable = "O3",
+      band = 1L,
+      touches = TRUE,
+      exclude_nodata = TRUE
+    ),
+    regexp = "single collection"
+  )
+  # ----------------------------------------------------------------------------
   # Clean up temporary directory.
   file.remove(list.files(chr_tempdir, full.names = TRUE, recursive = TRUE))
   unlink(chr_tempdir)
