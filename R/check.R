@@ -26,16 +26,16 @@
 #'   only when `raster = TRUE`; supported names are resolved by the caller.
 #' @param variable character(1). Non-empty raster variable name. Checked only
 #'   when `raster = TRUE`; existence in the source files is not checked.
-#' @param band integer. Raster band or vertical level index, with values at
-#'   least `1L`. Checked only when `raster = TRUE`.
+#' @param band integer(1). Non-missing raster band or vertical level index,
+#'   at least `1L`. Checked only when `raster = TRUE`.
 #' @param touches logical(1). Non-missing flag controlling inclusion of raster
 #'   cells touched by polygons. Checked only when `raster = TRUE`.
 #' @param exclude_nodata logical(1). Non-missing flag controlling exclusion of
 #'   raster NoData cells. Checked only when `raster = TRUE`.
 #'
 #' @details
-#' This helper does not coerce inputs. The integer checks do not enforce
-#' scalar `batch` or `band` values or reject missing integers. The arguments
+#' This helper does not coerce inputs. The `batch` check does not enforce a
+#' scalar value or reject missing integers. The arguments
 #' `fun`, `variable`, `band`, `touches`, and `exclude_nodata` may be omitted
 #' when `raster = FALSE`, because they are not evaluated in that branch.
 #'
@@ -80,12 +80,8 @@ check_arguments <- function(
   chr_locsgeom <- as.character(unique(sf::st_geometry_type(locs)))
   checkmate::assert_choice(chr_locsgeom, c("POINT", "POLYGON", "MULTIPOLYGON"))
   # ----------------------------------------------------------------------------
-
-  # ----------------------------------------------------------------------------
   # Ensure the `date` vector contains two dates after coersion (rep(...)).
   checkmate::assert_character(date, len = 2)
-  # ----------------------------------------------------------------------------
-
   # ----------------------------------------------------------------------------
   # `input`
   # ----------------------------------------------------------------------------
@@ -98,18 +94,12 @@ check_arguments <- function(
   # Ensure `input` contains files.
   checkmate::assert_file(list.files(input, full.names = TRUE))
   # ----------------------------------------------------------------------------
-
-  # ----------------------------------------------------------------------------
   # `output`
   # ----------------------------------------------------------------------------
   amadeusdb::check_output(output)
   # ----------------------------------------------------------------------------
-
-  # ----------------------------------------------------------------------------
   # Ensure `batch` is an integer value.
   checkmate::assert_integer(batch, lower = 1)
-  # ----------------------------------------------------------------------------
-
   # ----------------------------------------------------------------------------
   # Arguments `fun`, `variable`, `band`, `touches`, and `exclude_nodata` are
   # used in raster extraction data only.
@@ -118,29 +108,20 @@ check_arguments <- function(
     # Ensure `fun` is a character.
     checkmate::assert_string(fun, min.chars = 1)
     # --------------------------------------------------------------------------
-
-    # --------------------------------------------------------------------------
     # Ensure `variable`` is a character.
     checkmate::assert_string(variable, min.chars = 1L)
     # --------------------------------------------------------------------------
-
+    # Ensure `band` is one non-missing integer index.
     # --------------------------------------------------------------------------
-    # Ensure `band` is an integer.
-    # --------------------------------------------------------------------------
-    checkmate::assert_integer(band, lower = 1)
-    # --------------------------------------------------------------------------
-
+    checkmate::assert_integer(band, lower = 1, len = 1L, any.missing = FALSE)
     # --------------------------------------------------------------------------
     # Ensure `touches` is TRUE/FALSE.
     # --------------------------------------------------------------------------
     checkmate::assert_flag(touches)
     # --------------------------------------------------------------------------
-
-    # --------------------------------------------------------------------------
     # Ensure `exclude_nodata` is TRUE/FALSE.
     # --------------------------------------------------------------------------
     checkmate::assert_flag(exclude_nodata)
-    # --------------------------------------------------------------------------
   }
 }
 
@@ -176,21 +157,14 @@ check_views <- function(df) {
   # Ensure `df` is a data.frame.
   checkmate::assert_data_frame(df, min.rows = 1L)
   # ----------------------------------------------------------------------------
-
-  # ----------------------------------------------------------------------------
   # Ensure views are non-missing characters.
   checkmate::assert_character(df$view, any.missing = FALSE, unique = TRUE)
-  # ----------------------------------------------------------------------------
-
   # ----------------------------------------------------------------------------
   # Ensure data paths exist.
   checkmate::assert_file_exists(df$path)
   # ----------------------------------------------------------------------------
-
-  # ----------------------------------------------------------------------------
   # Ensure `df` contains "time", "path", and "view" columns.
   checkmate::assert_names(names(df), must.include = c("time", "path", "view"))
-  # ----------------------------------------------------------------------------
 }
 
 #' Check for the `output` directory, and create if it does not exist.

@@ -13,18 +13,19 @@
 #' @param input character(1). Non-empty path to an existing directory containing
 #'   GEOS-CF files with their original `GEOS-CF.v01.rpl` filenames. File
 #'   discovery is recursive, but the current input check requires all listed
-#'   immediate entries to be files. Supply files from a compatible collection
-#'   with no repeated filename timestamps.
+#'   immediate entries to be files. Supply files from one collection with the
+#'   same vertical coordinate and no repeated filename timestamps.
 #' @param output character(1). Non-empty directory path for the output Parquet
 #'   files. Created recursively if it does not exist.
 #' @param variable character(1). Non-empty, case-sensitive NetCDF variable name.
 #'   The same variable is read from every selected file. The output value
 #'   column is named with `sprintf("%s_%d", tolower(variable), radius)`, for
 #'   example `co_0` for `variable = "CO"` and `radius = 0`.
-#' @param band integer(1). One-based raster band or vertical pressure level
-#'   index for polygon statistics, at least `1L`. Defaults to `1L`. Inspect the
-#'   NetCDF file to identify the desired band. Point extraction uses band 1
-#'   regardless of this value.
+#' @param band integer(1). Non-missing, one-based raster band index for both
+#'   point and polygon extraction, at least `1L`. Defaults to `1L`. The index
+#'   must not exceed the number of NetCDF `lev` coordinates when processing
+#'   missing batches. The output `level` is the coordinate at this index;
+#'   for surface collections, band 1 corresponds to model layer 72.
 #' @param locs sf, SpatVector, or data.frame object. Extraction locations with
 #'   an identifier column named by `locs_id`. Spatial objects must have a source
 #'   CRS; data frames must contain numeric `lon` and `lat` columns in longitude
@@ -57,10 +58,13 @@
 #'
 #' @details
 #' Files are selected using the requested dates, and timestamps are derived
-#' from their filenames and parsed as UTC. Point extraction uses band 1 of the
-#' requested NetCDF variable; polygon statistics use `band`. The output
-#' `level` column is derived from each file's NetCDF `lev` coordinate using
-#' [geoslev()].
+#' from their filenames and parsed as UTC. Both point extraction and polygon
+#' statistics use `band` of the requested NetCDF variable. Selected filenames
+#' must identify one collection. Its vertical coordinate is assumed to be
+#' identical across files and is read once with [geoslev()] from the first
+#' file in the first missing batch. The coordinate at `band` supplies the
+#' output `level` for every processed file. No coordinate is read when all
+#' batch outputs already exist.
 #'
 #' Each batch is written as
 #' `geos_<variable>_<first_timestamp>_<last_timestamp>.parquet`. A batch whose
@@ -194,12 +198,56 @@ sedona_geos <- function(
     normalizePath(df_geospaths$path, winslash = "/", mustWork = TRUE),
     variable
   )
-  vgeoslev <- Vectorize(amadeusdb::geoslev)
-  df_geospaths$lev <- vgeoslev(df_geospaths$path, "lev")
   df_geospaths$view <- sprintf("db_geos_%012s", df_geospaths$tchar)
+  # ----------------------------------------------------------------------------
+  # Require one collection before reusing its vertical coordinate across files.
+  chr_geos_collection <- unique(amadeus::process_collection(
+    df_geospaths$path,
+    source = "geos",
+    collection = TRUE
+  ))
+  if (length(chr_geos_collection) != 1L) {
+    stop("Selected GEOS-CF files must belong to a single collection.")
+  }
   # ----------------------------------------------------------------------------
   # Check dates, paths, and database view names.
   amadeusdb::check_views(df_geospaths)
+  # ----------------------------------------------------------------------------
+  # Split all source rows before checking outputs to preserve batch membership.
+  list_geos_batch <- amadeusdb::batch_split(df_geospaths, batch)
+  # ----------------------------------------------------------------------------
+  # Generate .parquet paths for every batch, including existing outputs.
+  chr_geos_parquet <- amadeusdb::batch_prep(
+    df = df_geospaths,
+    batch = list_geos_batch,
+    output = output,
+    source = "geos",
+    variable = variable,
+    time_id = "tchar"
+  )
+  # ----------------------------------------------------------------------------
+  # Check outputs before reading NetCDF contents or registering database views.
+  lgl_geos_skip <- vapply(
+    chr_geos_parquet,
+    amadeusdb::batch_skip,
+    FUN.VALUE = logical(1),
+    USE.NAMES = FALSE
+  )
+  if (all(lgl_geos_skip)) {
+    return(invisible(chr_geos_parquet))
+  }
+  # ----------------------------------------------------------------------------
+  # Read the shared coordinate once, using the first file that needs extraction.
+  int_geos_pending <- which(!lgl_geos_skip)
+  int_geos_first <- list_geos_batch[[int_geos_pending[1L]]][1L]
+  num_geos_levels <- amadeusdb::geoslev(
+    df_geospaths$path[int_geos_first],
+    "lev"
+  )
+  # ----------------------------------------------------------------------------
+  # Label every extraction with the coordinate of the requested raster band.
+  checkmate::assert_integer(band, upper = length(num_geos_levels))
+  chr_geos_level <- as.character(num_geos_levels[band])
   # ----------------------------------------------------------------------------
   # Define location identifiers in SQL-friendly format.
   locs_id_sql <- amadeusdb::quote_sql(locs_id)
@@ -211,7 +259,7 @@ sedona_geos <- function(
   # ----------------------------------------------------------------------------
   # Define SQL code for processing GEOS data for points or polygons.
   sql_extraction <- if (chr_locsgeom == "POINT") {
-    "RS_Value(r.raster, db_locs.geometry, 1)"
+    "RS_Value(r.raster, db_locs.geometry, $4)"
   } else {
     "RS_ZonalStats(r.raster, db_locs.geometry, $4, $5, ($6 = 1), ($7 = 1))"
   }
@@ -234,26 +282,8 @@ sedona_geos <- function(
   amadeusdb::register_locs(sf_locs)
   chr_geos_views <- c(chr_geos_views, "db_locs")
   # ----------------------------------------------------------------------------
-  # Split hourly file row indices into `batch` sized batches.
-  list_geos_batch <- amadeusdb::batch_split(df_geospaths, batch)
-  # ----------------------------------------------------------------------------
-  # Generate .parquet paths for each batch view.
-  chr_geos_parquet <- amadeusdb::batch_prep(
-    df = df_geospaths,
-    batch = list_geos_batch,
-    output = output,
-    source = "geos",
-    variable = variable,
-    time_id = "tchar"
-  )
-  # ----------------------------------------------------------------------------
-  # Perform spatial extraction within each batch.
-  for (l in seq_along(list_geos_batch)) {
-    # --------------------------------------------------------------------------
-    # Skip if batch exists.
-    if (amadeusdb::batch_skip(chr_geos_parquet[l])) {
-      next
-    }
+  # Perform spatial extraction within missing batches using original indices.
+  for (l in int_geos_pending) {
     # --------------------------------------------------------------------------
     # Index data files, times, and names to active batch.
     df_geos_batch <- df_geospaths[list_geos_batch[[l]], , drop = FALSE]
@@ -271,7 +301,7 @@ sedona_geos <- function(
         # $2: timestamp
         df_geos_batch$time[i],
         # $3: vertical depth/pressure level (for `lev` column output)
-        as.character(df_geos_batch$lev[i]),
+        chr_geos_level,
         # $4: vertical band to extract from (default = 1L)
         as.integer(band)
       )

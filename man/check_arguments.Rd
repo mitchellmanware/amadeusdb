@@ -47,8 +47,8 @@ only when \code{raster = TRUE}; supported names are resolved by the caller.}
 \item{variable}{character(1). Non-empty raster variable name. Checked only
 when \code{raster = TRUE}; existence in the source files is not checked.}
 
-\item{band}{integer. Raster band or vertical level index, with values at
-least \code{1L}. Checked only when \code{raster = TRUE}.}
+\item{band}{integer(1). Non-missing raster band or vertical level index,
+at least \code{1L}. Checked only when \code{raster = TRUE}.}
 
 \item{touches}{logical(1). Non-missing flag controlling inclusion of raster
 cells touched by polygons. Checked only when \code{raster = TRUE}.}
@@ -67,8 +67,8 @@ supplied by \verb{sedona_*()} functions. Check raster-specific arguments only
 when \code{raster = TRUE}.
 }
 \details{
-This helper does not coerce inputs. The integer checks do not enforce
-scalar \code{batch} or \code{band} values or reject missing integers. The arguments
+This helper does not coerce inputs. The \code{batch} check does not enforce a
+scalar value or reject missing integers. The arguments
 \code{fun}, \code{variable}, \code{band}, \code{touches}, and \code{exclude_nodata} may be omitted
 when \code{raster = FALSE}, because they are not evaluated in that branch.
 

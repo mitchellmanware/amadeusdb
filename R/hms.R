@@ -147,6 +147,29 @@ sedona_hms <- function(
   # Check dates, paths, and database view names.
   amadeusdb::check_views(df_hmspaths)
   # ----------------------------------------------------------------------------
+  # Split all source rows before checking outputs to preserve batch membership.
+  list_hms_batch <- amadeusdb::batch_split(df_hmspaths, batch)
+  # ----------------------------------------------------------------------------
+  # Generate .parquet paths for every batch, including existing outputs.
+  chr_hms_parquet <- amadeusdb::batch_prep(
+    df = df_hmspaths,
+    batch = list_hms_batch,
+    output = output,
+    source = "hms",
+    time_id = "time"
+  )
+  # ----------------------------------------------------------------------------
+  # Check outputs before reading shapefiles or registering database views.
+  lgl_hms_skip <- vapply(
+    chr_hms_parquet,
+    amadeusdb::batch_skip,
+    FUN.VALUE = logical(1),
+    USE.NAMES = FALSE
+  )
+  if (all(lgl_hms_skip)) {
+    return(invisible(chr_hms_parquet))
+  }
+  # ----------------------------------------------------------------------------
   # Define location identifiers in SQL-friendly format.
   locs_id_sql <- amadeusdb::quote_sql(locs_id)
   # ----------------------------------------------------------------------------
@@ -174,25 +197,8 @@ sedona_hms <- function(
   amadeusdb::register_locs(sf_locs)
   chr_hms_views <- unique(c(chr_hms_views, "db_locs"))
   # ----------------------------------------------------------------------------
-  # Split hourly file row indices into `batch` sized batches.
-  list_hms_batch <- amadeusdb::batch_split(df_hmspaths, batch)
-  # ----------------------------------------------------------------------------
-  # Generate .parquet paths for each batch view.
-  chr_hms_parquet <- amadeusdb::batch_prep(
-    df = df_hmspaths,
-    batch = list_hms_batch,
-    output = output,
-    source = "hms",
-    time_id = "time"
-  )
-  # ----------------------------------------------------------------------------
-  # Perform daily spatial joins within each batch.
-  for (l in seq_along(list_hms_batch)) {
-    # --------------------------------------------------------------------------
-    # Skip if batch exists.
-    if (amadeusdb::batch_skip(chr_hms_parquet[l])) {
-      next
-    }
+  # Perform daily spatial joins within missing batches using original indices.
+  for (l in which(!lgl_hms_skip)) {
     # --------------------------------------------------------------------------
     # Index data files, dates, and names to active batch.
     df_hms_batch <- df_hmspaths[list_hms_batch[[l]], , drop = FALSE]
