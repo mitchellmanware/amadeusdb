@@ -9,7 +9,8 @@ discover(date, input, pattern, hyphen = TRUE)
 \arguments{
 \item{date}{character(1) or character(2). A single date or inclusive range
 endpoints in \code{"YYYY-MM-DD"} format. Endpoints may be supplied in either
-order. Dates must be between \code{"1950-01-01"} and \code{\link[base:Sys.Date]{base::Sys.Date()}}, inclusive.}
+order. Dates must be between \code{"1950-01-01"} and \code{\link[base:Sys.Date]{base::Sys.Date()}},
+inclusive.}
 
 \item{input}{character. Directory path or paths to search.
 Passed to \code{\link[base:list.files]{base::list.files()}} without normalization or existence checks.}

@@ -718,7 +718,9 @@ testthat::test_that("sedona_merra2 == amadeus::*_merra2; mean; polygons", {
   testthat::expect_all_true(df_sedona_merra2$time == df_procalc_merra2$time)
   # ----------------------------------------------------------------------------
   # Values (T2M). !!! false before deep dive on sedonadb geometry methods. !!!
+  # nolint start
   # testthat::expect_all_true(df_sedona_merra2$T2M_0 == df_procalc_merra2$T2M_0)
+  # nolint end
   # ----------------------------------------------------------------------------
   # Clean up temporary directory.
   file.remove(list.files(chr_tempdir, full.names = TRUE, recursive = TRUE))

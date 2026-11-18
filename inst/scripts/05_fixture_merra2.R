@@ -13,7 +13,8 @@
 # amadeus reference outputs to tests/testdata/amadeus/merra2/.
 # Rerunning the script replaces these generated fixtures.
 # Core amadeus names the 2D value column T2M_0; sedona_merra2 uses t2m_0.
-# Alignment tests should select T2M and normalize that column name when comparing.
+# Alignment tests should select T2M and normalize that column name when
+# comparing.
 
 # ------------------------------------------------------------------------------
 # Load the NetCDF library independently of the raster extraction libraries.
@@ -38,7 +39,9 @@ fixture_merra2 <- function(input, output, bbox, variable = "T2M") {
   }
   # ----------------------------------------------------------------------------
   dim_names <- vapply(v$dim, function(d) d$name, character(1))
-  if (length(dim_names) != 3L || !setequal(dim_names, c("lon", "lat", "time"))) {
+  if (
+    length(dim_names) != 3L || !setequal(dim_names, c("lon", "lat", "time"))
+  ) {
     stop("Fixture variable must have only lon, lat, and time dimensions.")
   }
   # ----------------------------------------------------------------------------
@@ -115,7 +118,10 @@ fixture_merra2 <- function(input, output, bbox, variable = "T2M") {
       # The integer time coordinate has floating-point limits near 1e15.
       # Use the attribute's value type instead of the coordinate's storage type.
       ncdf4::ncatt_put(
-        dst, id, attribute, value,
+        dst,
+        id,
+        attribute,
+        value,
         prec = if (is.double(value)) "double" else NA
       )
     }
@@ -149,7 +155,11 @@ dir.create(chr_all, recursive = TRUE, showWarnings = FALSE)
 # ------------------------------------------------------------------------------
 for (collection in names(chr_variables)) {
   chr_base <- paste0(
-    "MERRA2_400.", collection, ".", gsub("-", "", chr_dates), ".nc4"
+    "MERRA2_400.",
+    collection,
+    ".",
+    gsub("-", "", chr_dates),
+    ".nc4"
   )
   chr_full <- file.path(chr_merra2path, "full", collection, chr_base)
   chr_sub <- file.path(chr_merra2path, collection, chr_base)

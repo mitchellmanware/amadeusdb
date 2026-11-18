@@ -7,7 +7,8 @@
 #'
 #' @param date character(1) or character(2). A single date or inclusive range
 #'   endpoints in `"YYYY-MM-DD"` format. Endpoints may be supplied in either
-#'   order. Dates must be between `"1950-01-01"` and [base::Sys.Date()], inclusive.
+#'   order. Dates must be between `"1950-01-01"` and [base::Sys.Date()],
+#'   inclusive.
 #' @param input character. Directory path or paths to search.
 #'   Passed to [base::list.files()] without normalization or existence checks.
 #' @param pattern character(1). Regular expression used by [base::list.files()]

@@ -46,6 +46,12 @@ testthat::test_that("merra2_times rejects metadata it cannot decode", {
     calendar = "360_day"
   )
   testthat::expect_error(merra2_times(units), "MERRA-2 time units")
-  testthat::expect_error(merra2_times(origin), "Invalid MERRA-2 reference timestamp")
-  testthat::expect_error(merra2_times(calendar), "Unsupported MERRA-2 time calendar")
+  testthat::expect_error(
+    merra2_times(origin),
+    "Invalid MERRA-2 reference timestamp"
+  )
+  testthat::expect_error(
+    merra2_times(calendar),
+    "Unsupported MERRA-2 time calendar"
+  )
 })

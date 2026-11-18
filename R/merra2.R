@@ -248,10 +248,6 @@ sedona_merra2 <- function(
     units = "secs"
   ))
   # ----------------------------------------------------------------------------
-  # Label every extraction with the coordinate of the requested raster band.
-  # checkmate::assert_integer(band, upper = length(num_merra2_levels))
-  # chr_merra2_level <- as.character(num_merra2_levels[band])
-  # ----------------------------------------------------------------------------
   # Define location identifiers in SQL-friendly format.
   locs_id_sql <- amadeusdb::quote_sql(locs_id)
   # ----------------------------------------------------------------------------
