@@ -12,12 +12,14 @@ export(check_views)
 export(cleanup_views)
 export(compute_view)
 export(discover)
+export(fl_dates)
 export(geoslev)
 export(glue_sql)
 export(hmsdates)
 export(join_covariates)
 export(join_variables)
 export(join_write)
+export(merra2_times)
 export(prepare_locs)
 export(prepare_radius)
 export(prepare_sf)
@@ -25,12 +27,13 @@ export(quote_sql)
 export(register_locs)
 export(sedona_geos)
 export(sedona_hms)
+export(sedona_merra2)
 export(union_views)
 export(view_schema)
 import(checkmate)
 importFrom(amadeus,
-  generate_date_sequence,
-  process_collection
+  process_collection,
+  sequence_dates
 )
 importFrom(checkmate,
   assert_character,
@@ -45,6 +48,7 @@ importFrom(checkmate,
   assert_integer,
   assert_names,
   assert_number,
+  assert_numeric,
   assert_string,
   assert_subset
 )
@@ -56,6 +60,7 @@ importFrom(methods,is)
 importFrom(ncdf4,
   nc_close,
   nc_open,
+  ncatt_get,
   ncvar_get
 )
 importFrom(sedonadb,

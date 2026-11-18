@@ -6,9 +6,11 @@
 #' Hazard Mapping System (HMS) smoke polygons, and write daily light, medium,
 #' and heavy smoke indicators to Parquet files in batches.
 #'
-#' @param date character(1) or character(2). Inclusive start and end dates in
-#'   chronological order, formatted as `"YYYY-MM-DD"`. A single date is
-#'   repeated to process one day.
+#' @param date character(1) or character(2). A single date or inclusive range
+#'   endpoints in `"YYYY-MM-DD"` format. Endpoints may be supplied in either
+#'   order; a single date processes one day. Dates are validated and ordered
+#'   by [amadeus::sequence_dates()] and must be between `"1950-01-01"` and
+#'   [base::Sys.Date()], inclusive.
 #' @param input character(1). Non-empty path to an existing directory containing
 #'   HMS smoke shapefiles named with the `hms_smoke` prefix and a final
 #'   `YYYYMMDD.shp` date suffix. The accompanying shapefile components must be
@@ -70,7 +72,7 @@
 #' Uses the default SedonaDB context and view names `db_locs`, `db_hms`, and
 #' `db_day_<index>`. Existing views with those names may be replaced.
 #'
-#' @importFrom amadeus generate_date_sequence
+#' @importFrom amadeus sequence_dates
 #' @importFrom glue glue
 #' @importFrom sedonadb as_sedonadb_dataframe sd_compute sd_drop_view sd_read_sf
 #'   sd_sql sd_to_view sd_write_parquet
@@ -114,7 +116,7 @@ sedona_hms <- function(
   )
   # ----------------------------------------------------------------------------
   # Coerce `date` to vector of 2 if not already.
-  date <- if (length(date) == 2) date else rep(date, 2)
+  date <- amadeusdb::fl_dates(amadeus::sequence_dates(date, hyphen = TRUE))
   # ----------------------------------------------------------------------------
   # Check arguments.
   amadeusdb::check_arguments(
@@ -131,7 +133,7 @@ sedona_hms <- function(
     date = date,
     input = input,
     pattern = "hms_smoke*.*.shp$",
-    sub_hyphen = TRUE
+    hyphen = FALSE
   )
   # ----------------------------------------------------------------------------
   # Store file path, date from file, and generated database view names.

@@ -7,14 +7,16 @@
 #' transformed and optionally buffered with [prepare_locs()]. Point extraction
 #' uses raster cell values; polygon extraction uses zonal statistics.
 #'
-#' @param date character(1) or character(2). Inclusive start and end dates in
-#'   chronological order, formatted as `"YYYY-MM-DD"`. A single date is
-#'   repeated to process one day.
+#' @param date character(1) or character(2). A single date or inclusive range
+#'   endpoints in `"YYYY-MM-DD"` format. Endpoints may be supplied in either
+#'   order; a single date processes one day. Dates are validated and ordered
+#'   by [amadeus::sequence_dates()] and must be between `"1950-01-01"` and
+#'   [base::Sys.Date()], inclusive.
 #' @param input character(1). Non-empty path to an existing directory containing
-#'   GEOS-CF files with their original `GEOS-CF.v01.rpl` filenames. File
-#'   discovery is recursive, but the current input check requires all listed
-#'   immediate entries to be files. Supply files from one collection with the
-#'   same vertical coordinate and no repeated filename timestamps.
+#'   GEOS-CF files with their original `GEOS-CF.v01.rpl` filenames. All listed
+#'   immediate entries must be files; subdirectories are not searched.
+#'   Supply files from one collection with the same vertical coordinate and
+#'   no repeated filename timestamps.
 #' @param output character(1). Non-empty directory path for the output Parquet
 #'   files. Created recursively if it does not exist.
 #' @param variable character(1). Non-empty, case-sensitive NetCDF variable name.
@@ -83,7 +85,7 @@
 #' Uses the default SedonaDB context and view names `db_locs` and
 #' `db_time_<index>`. Existing views with those names may be replaced.
 #'
-#' @importFrom amadeus generate_date_sequence process_collection
+#' @importFrom amadeus sequence_dates process_collection
 #' @importFrom glue glue
 #' @importFrom sedonadb as_sedonadb_dataframe sd_compute sd_drop_view sd_sql
 #'   sd_to_view sd_write_parquet
@@ -138,7 +140,7 @@ sedona_geos <- function(
   chr_locsgeom <- as.character(unique(sf::st_geometry_type(sf_locs)))
   # ----------------------------------------------------------------------------
   # Coerce `date` to vector of 2 if not already.
-  date <- if (length(date) == 2) date else rep(date, 2)
+  date <- amadeusdb::fl_dates(amadeus::sequence_dates(date, hyphen = TRUE))
   # ----------------------------------------------------------------------------
   # Check zonal statistic function against SedonaDB supported (as of 10/21/26)
   fun <- match.arg(
@@ -176,7 +178,7 @@ sedona_geos <- function(
     date = date,
     input = input,
     pattern = "GEOS-CF.v01.rpl",
-    sub_hyphen = TRUE
+    hyphen = FALSE
   )
   # ----------------------------------------------------------------------------
   # Store file path, NetCDF variable path, date, and generated db names.

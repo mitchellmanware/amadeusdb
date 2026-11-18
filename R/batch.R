@@ -57,9 +57,8 @@ batch_split <- function(
 #'   The directory must exist; this helper does not create it.
 #' @param source character(1). Source label used at the start of each filename,
 #'   for example `"geos"` or `"hms"`.
-#' @param variable character(1). Variable label included after the source name.
-#'   Supply `""` when no variable label is needed. This argument has no default
-#'   and must be supplied.
+#' @param variable character(1). Variable label included after the source
+#'   name. Defaults to `""`, omitting the variable label.
 #' @param time_id character(1). Name of the column in `df` containing the date
 #'   or time labels used for batch naming. Defaults to `"time"`.
 #'
@@ -147,7 +146,7 @@ batch_prep <- function(
 #'   one batch. Passed to [base::file.exists()] without additional validation.
 #'
 #' @details
-#' An existing path produces the message `"Skipping existing batch: "` followed
+#' An existing path produces the message `"Skipping existing batch "` followed
 #' by the path. File contents are not inspected and no files are modified.
 #'
 #' The caller controls loop execution. Use `if (batch_skip(path)) next` inside
@@ -180,29 +179,23 @@ batch_skip <- function(parquet) {
 #' Drop registered views after writing a batch
 #'
 #' @description
-#' Remove the supplied batch views from the default SedonaDB context and
-#' return a filtered view-tracking vector. See the note about the current
-#' filtering behavior.
+#' Drop the supplied views from the default SedonaDB context and return the
+#' remaining view names.
 #'
 #' @param views character. Vector of registered view names tracked by the
 #'   caller for cleanup when extraction finishes.
-#' @param sub character. Non-empty vector of batch view names to remove.
-#'   Each name is passed to [sedonadb::sd_drop_view()] in the supplied order.
+#' @param sub character. Vector of SQL view names to drop. Each name is
+#'   passed to [sedonadb::sd_drop_view()] in the supplied order.
+#'   An empty vector leaves `views` unchanged.
 #'
 #' @details
 #' Call this helper after the batch output has been written successfully.
 #' Errors from [sedonadb::sd_drop_view()] propagate to the caller and stop
 #' subsequent removals. No explicit argument validation is performed.
 #'
-#' @note
-#' Each iteration currently filters the original `views` vector. Consequently,
-#' although every name in `sub` is dropped when all removals succeed, the
-#' returned vector excludes only the final name in `sub`. Earlier dropped
-#' names remain in that vector. An empty `sub` leaves `chr_views` undefined.
-#'
 #' @return
-#' A character vector containing `views` with entries equal to the final
-#' element of `sub` removed, preserving the order of the retained entries.
+#' A character vector containing `views` with all names appearing in
+#' `sub` removed, preserving the order of the remaining entries.
 #' The caller must assign the result to update its cleanup tracking vector.
 #'
 #' @importFrom sedonadb sd_drop_view

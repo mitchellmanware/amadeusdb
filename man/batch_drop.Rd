@@ -10,29 +10,23 @@ batch_drop(views, sub)
 \item{views}{character. Vector of registered view names tracked by the
 caller for cleanup when extraction finishes.}
 
-\item{sub}{character. Non-empty vector of batch view names to remove.
-Each name is passed to \code{\link[sedonadb:sd_drop_view]{sedonadb::sd_drop_view()}} in the supplied order.}
+\item{sub}{character. Vector of SQL view names to drop. Each name is
+passed to \code{\link[sedonadb:sd_drop_view]{sedonadb::sd_drop_view()}} in the supplied order.
+An empty vector leaves \code{views} unchanged.}
 }
 \value{
-A character vector containing \code{views} with entries equal to the final
-element of \code{sub} removed, preserving the order of the retained entries.
+A character vector containing \code{views} with all names appearing in
+\code{sub} removed, preserving the order of the remaining entries.
 The caller must assign the result to update its cleanup tracking vector.
 }
 \description{
-Remove the supplied batch views from the default SedonaDB context and
-return a filtered view-tracking vector. See the note about the current
-filtering behavior.
+Drop the supplied views from the default SedonaDB context and return the
+remaining view names.
 }
 \details{
 Call this helper after the batch output has been written successfully.
 Errors from \code{\link[sedonadb:sd_drop_view]{sedonadb::sd_drop_view()}} propagate to the caller and stop
 subsequent removals. No explicit argument validation is performed.
-}
-\note{
-Each iteration currently filters the original \code{views} vector. Consequently,
-although every name in \code{sub} is dropped when all removals succeed, the
-returned vector excludes only the final name in \code{sub}. Earlier dropped
-names remain in that vector. An empty \code{sub} leaves \code{chr_views} undefined.
 }
 \seealso{
 \code{\link[=cleanup_views]{cleanup_views()}}, \code{\link[=sedona_geos]{sedona_geos()}}, \code{\link[=sedona_hms]{sedona_hms()}}

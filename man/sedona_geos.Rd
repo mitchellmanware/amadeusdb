@@ -20,15 +20,17 @@ sedona_geos(
 )
 }
 \arguments{
-\item{date}{character(1) or character(2). Inclusive start and end dates in
-chronological order, formatted as \code{"YYYY-MM-DD"}. A single date is
-repeated to process one day.}
+\item{date}{character(1) or character(2). A single date or inclusive range
+endpoints in \code{"YYYY-MM-DD"} format. Endpoints may be supplied in either
+order; a single date processes one day. Dates are validated and ordered
+by \code{\link[amadeus:sequence_dates]{amadeus::sequence_dates()}} and must be between \code{"1950-01-01"} and
+\code{\link[base:Sys.Date]{base::Sys.Date()}}, inclusive.}
 
 \item{input}{character(1). Non-empty path to an existing directory containing
-GEOS-CF files with their original \code{GEOS-CF.v01.rpl} filenames. File
-discovery is recursive, but the current input check requires all listed
-immediate entries to be files. Supply files from one collection with the
-same vertical coordinate and no repeated filename timestamps.}
+GEOS-CF files with their original \code{GEOS-CF.v01.rpl} filenames. All listed
+immediate entries must be files; subdirectories are not searched.
+Supply files from one collection with the same vertical coordinate and
+no repeated filename timestamps.}
 
 \item{output}{character(1). Non-empty directory path for the output Parquet
 files. Created recursively if it does not exist.}

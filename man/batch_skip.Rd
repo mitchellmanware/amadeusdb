@@ -18,7 +18,7 @@ Return whether a batch output path already exists and emit a message
 identifying an existing batch so the caller can skip processing it.
 }
 \details{
-An existing path produces the message \code{"Skipping existing batch: "} followed
+An existing path produces the message \code{"Skipping existing batch "} followed
 by the path. File contents are not inspected and no files are modified.
 
 The caller controls loop execution. Use \code{if (batch_skip(path)) next} inside
