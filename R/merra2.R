@@ -257,7 +257,7 @@ sedona_merra2 <- function(
   # ----------------------------------------------------------------------------
   # Define variable identifiers in SQL-friendly format.
   variable_sql <- amadeusdb::quote_sql(
-    sprintf("%s_%d", tolower(variable), radius)
+    sprintf("%s_%d", toupper(variable), radius)
   )
   # ----------------------------------------------------------------------------
   # Define SQL code for processing MERRA2 data for points or polygons.

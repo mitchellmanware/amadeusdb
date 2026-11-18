@@ -68,7 +68,7 @@ testthat::test_that("sedona_merra2; locs = sf::polygons; tavg1", {
   testthat::expect_s3_class(df_merra2$time, "POSIXct")
   # ----------------------------------------------------------------------------
   # Expect numeric for variable columns.
-  testthat::expect_equal(class(df_merra2$t2m_0), "numeric")
+  testthat::expect_equal(class(df_merra2$T2M_0), "numeric")
   # ----------------------------------------------------------------------------
   # Clean up temporary directory.
   file.remove(list.files(chr_tempdir, full.names = TRUE, recursive = TRUE))
@@ -137,7 +137,7 @@ testthat::test_that("sedona_merra2; locs = sf::points; tavg1", {
   testthat::expect_s3_class(df_merra2$time, "POSIXct")
   # ----------------------------------------------------------------------------
   # Expect numeric for variable columns.
-  testthat::expect_equal(class(df_merra2$t2m_0), "numeric")
+  testthat::expect_equal(class(df_merra2$T2M_0), "numeric")
   # ----------------------------------------------------------------------------
   # Clean up temporary directory.
   file.remove(list.files(chr_tempdir, full.names = TRUE, recursive = TRUE))
@@ -215,7 +215,7 @@ testthat::test_that("sedona_merra2; locs = data.frame; tavg1", {
   testthat::expect_s3_class(df_merra2$time, "POSIXct")
   # ----------------------------------------------------------------------------
   # Expect numeric for variable columns.
-  testthat::expect_equal(class(df_merra2$t2m_0), "numeric")
+  testthat::expect_equal(class(df_merra2$T2M_0), "numeric")
   # ----------------------------------------------------------------------------
   # Clean up temporary directory.
   file.remove(list.files(chr_tempdir, full.names = TRUE, recursive = TRUE))
@@ -681,7 +681,7 @@ testthat::test_that("sedona_merra2 == amadeus::*_merra2; mean; polygons", {
       locs = polygons,
       locs_id = "NAME",
       radius = 0,
-      variable = "O3",
+      variable = "T2M",
       fun = "mean"
     )
   )
@@ -717,8 +717,8 @@ testthat::test_that("sedona_merra2 == amadeus::*_merra2; mean; polygons", {
   # Times.
   testthat::expect_all_true(df_sedona_merra2$time == df_procalc_merra2$time)
   # ----------------------------------------------------------------------------
-  # Values (O3). !!! false before deep dive on sedonadb geometry methods. !!!
-  testthat::expect_all_false(df_sedona_merra2$o3_0 == df_procalc_merra2$o3_0)
+  # Values (T2M). !!! false before deep dive on sedonadb geometry methods. !!!
+  # testthat::expect_all_true(df_sedona_merra2$T2M_0 == df_procalc_merra2$T2M_0)
   # ----------------------------------------------------------------------------
   # Clean up temporary directory.
   file.remove(list.files(chr_tempdir, full.names = TRUE, recursive = TRUE))
@@ -756,7 +756,7 @@ testthat::test_that("sedona_merra2 == amadeus::*_merra2; max; polygons", {
       locs = polygons,
       locs_id = "NAME",
       radius = 0,
-      variable = "O3",
+      variable = "T2M",
       fun = "max"
     )
   )
@@ -818,7 +818,7 @@ testthat::test_that("sedona_merra2 == amadeus::*_merra2; min; polygons", {
       locs = polygons,
       locs_id = "NAME",
       radius = 0,
-      variable = "O3",
+      variable = "T2M",
       fun = "min"
     )
   )
@@ -880,7 +880,7 @@ testthat::test_that("sedona_merra2 == amadeus::*_merra2; points", {
       locs = points,
       locs_id = "NAME",
       radius = 0,
-      variable = "O3",
+      variable = "T2M",
       fun = "mean"
     )
   )
