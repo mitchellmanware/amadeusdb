@@ -7,9 +7,11 @@
 sedona_hms(date, input, output, locs, locs_id, radius = 0, batch = 50L)
 }
 \arguments{
-\item{date}{character(1) or character(2). Inclusive start and end dates in
-chronological order, formatted as \code{"YYYY-MM-DD"}. A single date is
-repeated to process one day.}
+\item{date}{character(1) or character(2). A single date or inclusive range
+endpoints in \code{"YYYY-MM-DD"} format. Endpoints may be supplied in either
+order; a single date processes one day. Dates are validated and ordered
+by \code{\link[amadeus:sequence_dates]{amadeus::sequence_dates()}} and must be between \code{"1950-01-01"} and
+\code{\link[base:Sys.Date]{base::Sys.Date()}}, inclusive.}
 
 \item{input}{character(1). Non-empty path to an existing directory containing
 HMS smoke shapefiles named with the \code{hms_smoke} prefix and a final

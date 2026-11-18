@@ -12,6 +12,7 @@ export(check_views)
 export(cleanup_views)
 export(compute_view)
 export(discover)
+export(fl_dates)
 export(geoslev)
 export(glue_sql)
 export(hmsdates)
@@ -29,8 +30,8 @@ export(union_views)
 export(view_schema)
 import(checkmate)
 importFrom(amadeus,
-  generate_date_sequence,
-  process_collection
+  process_collection,
+  sequence_dates
 )
 importFrom(checkmate,
   assert_character,
