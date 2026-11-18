@@ -37,7 +37,7 @@ testthat::test_that("sedona_merra2; locs = sf::polygons; tavg1", {
       locs = polygons,
       locs_id = "NAME",
       radius = 0,
-      variable = "O3"
+      variable = "T2M"
     )
   )
   # ----------------------------------------------------------------------------
@@ -68,7 +68,7 @@ testthat::test_that("sedona_merra2; locs = sf::polygons; tavg1", {
   testthat::expect_s3_class(df_merra2$time, "POSIXct")
   # ----------------------------------------------------------------------------
   # Expect numeric for variable columns.
-  testthat::expect_equal(class(df_merra2$o3_0), "numeric")
+  testthat::expect_equal(class(df_merra2$t2m_0), "numeric")
   # ----------------------------------------------------------------------------
   # Clean up temporary directory.
   file.remove(list.files(chr_tempdir, full.names = TRUE, recursive = TRUE))
@@ -106,7 +106,7 @@ testthat::test_that("sedona_merra2; locs = sf::points; tavg1", {
       locs = points,
       locs_id = "NAME",
       radius = 0,
-      variable = "O3"
+      variable = "T2M"
     )
   )
   # ----------------------------------------------------------------------------
@@ -137,7 +137,7 @@ testthat::test_that("sedona_merra2; locs = sf::points; tavg1", {
   testthat::expect_s3_class(df_merra2$time, "POSIXct")
   # ----------------------------------------------------------------------------
   # Expect numeric for variable columns.
-  testthat::expect_equal(class(df_merra2$o3_0), "numeric")
+  testthat::expect_equal(class(df_merra2$t2m_0), "numeric")
   # ----------------------------------------------------------------------------
   # Clean up temporary directory.
   file.remove(list.files(chr_tempdir, full.names = TRUE, recursive = TRUE))
@@ -184,7 +184,7 @@ testthat::test_that("sedona_merra2; locs = data.frame; tavg1", {
       locs = df,
       locs_id = "NAME",
       radius = 0,
-      variable = "O3"
+      variable = "T2M"
     )
   )
   # ----------------------------------------------------------------------------
@@ -215,7 +215,7 @@ testthat::test_that("sedona_merra2; locs = data.frame; tavg1", {
   testthat::expect_s3_class(df_merra2$time, "POSIXct")
   # ----------------------------------------------------------------------------
   # Expect numeric for variable columns.
-  testthat::expect_equal(class(df_merra2$o3_0), "numeric")
+  testthat::expect_equal(class(df_merra2$t2m_0), "numeric")
   # ----------------------------------------------------------------------------
   # Clean up temporary directory.
   file.remove(list.files(chr_tempdir, full.names = TRUE, recursive = TRUE))
@@ -253,7 +253,7 @@ testthat::test_that("sedona_merra2; skip existing .parquet", {
       output = chr_tempdir,
       locs = points,
       locs_id = "NAME",
-      variable = "O3"
+      variable = "T2M"
     )
   )
   # ----------------------------------------------------------------------------
@@ -270,7 +270,7 @@ testthat::test_that("sedona_merra2; skip existing .parquet", {
       output = chr_tempdir,
       locs = points,
       locs_id = "NAME",
-      variable = "O3"
+      variable = "T2M"
     ),
     regexp = "Skipping existing batch "
   )

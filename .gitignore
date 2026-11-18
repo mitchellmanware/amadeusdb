@@ -6,4 +6,4 @@ inst/extdata/crs/
 
 # Large test files until manual cropping.
 tests/testdata/geos/full/
-tests/testdata/merra2/
+tests/testdata/merra2/full/

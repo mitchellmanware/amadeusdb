@@ -116,7 +116,7 @@ sedona_hms <- function(
   )
   # ----------------------------------------------------------------------------
   # Coerce `date` to vector of 2 if not already.
-  date <- fl_dates(amadeus::sequence_dates(date, hyphen = TRUE))
+  date <- amadeusdb::fl_dates(amadeus::sequence_dates(date, hyphen = TRUE))
   # ----------------------------------------------------------------------------
   # Check arguments.
   amadeusdb::check_arguments(

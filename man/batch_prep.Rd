@@ -21,9 +21,8 @@ The directory must exist; this helper does not create it.}
 \item{source}{character(1). Source label used at the start of each filename,
 for example \code{"geos"} or \code{"hms"}.}
 
-\item{variable}{character(1). Variable label included after the source name.
-Supply \code{""} when no variable label is needed. This argument has no default
-and must be supplied.}
+\item{variable}{character(1). Variable label included after the source
+name. Defaults to \code{""}, omitting the variable label.}
 
 \item{time_id}{character(1). Name of the column in \code{df} containing the date
 or time labels used for batch naming. Defaults to \code{"time"}.}

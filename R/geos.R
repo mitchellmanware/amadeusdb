@@ -140,7 +140,7 @@ sedona_geos <- function(
   chr_locsgeom <- as.character(unique(sf::st_geometry_type(sf_locs)))
   # ----------------------------------------------------------------------------
   # Coerce `date` to vector of 2 if not already.
-  date <- fl_dates(amadeus::sequence_dates(date, hyphen = TRUE))
+  date <- amadeusdb::fl_dates(amadeus::sequence_dates(date, hyphen = TRUE))
   # ----------------------------------------------------------------------------
   # Check zonal statistic function against SedonaDB supported (as of 10/21/26)
   fun <- match.arg(
