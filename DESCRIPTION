@@ -12,7 +12,7 @@ Maintainer: Mitchell Manware <mitchell.manware@nih.gov>
 Description: Extension of amadeus R package with sedonadb backend for process and calculation tiers.
 Depends: R (>= 4.2.0)
 Imports:
-    amadeus,
+    amadeus (>= 2.1.0),
     checkmate,
     glue,
     methods,
@@ -25,6 +25,8 @@ Suggests:
     dplyr,
     terra,
     testthat (>= 3.0.0)
+Remotes:
+    NIEHS/amadeus
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 Config/Needs/website: tidyverse/tidytemplate
