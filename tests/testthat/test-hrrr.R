@@ -24,9 +24,10 @@ testthat::test_that("download_hrrr (single date)", {
   )
 
   # Check that directory was created
-  testthat::expect_true(
-    dir.exists(directory_to_save)
-  )
+  testthat::expect_true(dir.exists(directory_to_save))
+  files <- list.files(directory_to_save, recursive = TRUE, full.names = TRUE)
+  testthat::expect_gt(length(files), 0)
+  testthat::expect_gt(sum(file.info(files)$size > 0), 0)
 
   unlink(directory_to_save, recursive = TRUE)
 })
@@ -53,10 +54,10 @@ testthat::test_that("download_hrrr (date range)", {
   )
 
   # Check that directory was created
-  testthat::expect_true(
-    dir.exists(directory_to_save)
-  )
-
+  testthat::expect_true(dir.exists(directory_to_save))
+  files <- list.files(directory_to_save, recursive = TRUE, full.names = TRUE)
+  testthat::expect_gt(length(files), 0)
+  testthat::expect_gt(sum(file.info(files)$size > 0), 0)
   unlink(directory_to_save, recursive = TRUE)
 })
 
