@@ -13,7 +13,8 @@ join_covariates(
   locs_id = "site_id",
   time_id = "time",
   date_id = "date",
-  prefix = FALSE
+  prefix = FALSE,
+  na_omit = TRUE
 )
 }
 \arguments{

@@ -383,7 +383,8 @@ join_covariates <- function(
   locs_id = "site_id",
   time_id = "time",
   date_id = "date",
-  prefix = FALSE
+  prefix = FALSE,
+  na_omit = TRUE
 ) {
   # ----------------------------------------------------------------------------
   # Check `input` and contents.
@@ -409,8 +410,9 @@ join_covariates <- function(
     unique = TRUE
   )
   # ----------------------------------------------------------------------------
-  # Ensure `prefix` is TRUE/FALSE.
+  # Ensure `prefix` and `na_omit` are TRUE/FALSE.
   checkmate::assert_flag(prefix)
+  checkmate::assert_flag(na_omit)
   # ----------------------------------------------------------------------------
   # Quote SQL identifiers, preserving capitals and punctuation in data columns.
   locs_id_sql <- amadeusdb::quote_sql(locs_id)
@@ -760,7 +762,7 @@ join_covariates <- function(
   # ----------------------------------------------------------------------------
   # Build one query. Daily/static values repeat over existing matching AQS rows.
   # No extra hours are generated, and missing covariates remain NULL.
-  sql_merge <- paste0(
+  sql_merge1 <- paste0(
     "WITH\n",
     paste(unlist(list_source_sql, use.names = FALSE), collapse = ",\n"),
     "\nSELECT\n",
@@ -768,19 +770,26 @@ join_covariates <- function(
     "\nFROM aqs_data AS a\n",
     paste(chr_join, collapse = "\n")
   )
+  sql_merge2 <- paste0("SELECT * FROM (", sql_merge1, ") AS m")
   # ----------------------------------------------------------------------------
-  # Require every output column to be non-NULL.
-  sql_complete <- paste0(
-    "m.",
-    amadeusdb::quote_sql(chr_output_columns),
-    " IS NOT NULL",
-    collapse = " AND "
-  )
+  # Omit or retain NA/NULL values.
+  if (na_omit) {
+    # --------------------------------------------------------------------------
+    # Require every output column to be non-NULL.
+    sql_complete <- paste0(
+      "m.",
+      amadeusdb::quote_sql(chr_output_columns),
+      " IS NOT NULL",
+      collapse = " AND "
+    )
+    sql_merge2 <- paste0(sql_merge2, " WHERE ", sql_complete)
+  }
+
   # ----------------------------------------------------------------------------
   # Perform join and write output to .parquet file(s).
   amadeusdb::join_write(
     output = output,
-    merge = paste0("SELECT * FROM (", sql_merge, ") AS m WHERE ", sql_complete),
+    merge = sql_merge2,
     columns = chr_output_columns
   )
 }
