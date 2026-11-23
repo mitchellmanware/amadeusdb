@@ -590,6 +590,119 @@ testthat::test_that("join_covariates; prefix = TRUE", {
 })
 
 ################################################################################
+testthat::test_that("join_covariates; na_omit = FALSE/TRUE", {
+  # ----------------------------------------------------------------------------
+  # Isolate fixture copies and outputs, and clean up even on failure.
+  chr_tempdir <- tempfile("join_covariates_na_omit_")
+  dir.create(chr_tempdir)
+  on.exit(unlink(chr_tempdir, recursive = TRUE), add = TRUE)
+  # ----------------------------------------------------------------------------
+  # Copy the small join fixtures, keeping all join keys valid.
+  df_aqs <- sedonadb::sd_collect(sedonadb::sd_read_parquet(
+    testthat::test_path("..", "testdata", "join", "aqs.parquet")
+  ))
+  df_geos <- sedonadb::sd_collect(sedonadb::sd_read_parquet(
+    testthat::test_path("..", "testdata", "join", "geos.parquet")
+  ))
+  df_hms <- sedonadb::sd_collect(sedonadb::sd_read_parquet(
+    testthat::test_path("..", "testdata", "join", "hms.parquet")
+  ))
+  # ----------------------------------------------------------------------------
+  # Four observations: missing outcome, complete, missing hourly, missing daily.
+  df_aqs <- df_aqs[c(1, 2, 3, 3), , drop = FALSE]
+  df_aqs$time[4] <- df_aqs$time[4] + 24 * 3600
+  df_aqs$value <- c(NA_real_, 11, 12, 13)
+  df_aqs$observation_id <- 1:4
+  df_geos <- df_geos[c(1, 2, 2), , drop = FALSE]
+  df_geos$time[3] <- df_geos$time[3] + 24 * 3600
+  df_geos$value <- c(20, NA_real_, 22)
+  df_hms <- df_hms[c(1, 1), , drop = FALSE]
+  df_hms$date[2] <- df_hms$date[2] + 1
+  df_hms$value <- c(30, NA_real_)
+  # ----------------------------------------------------------------------------
+  # Write only temporary fixture copies; leave shared fixture files unchanged.
+  chr_aqs <- file.path(chr_tempdir, "aqs.parquet")
+  chr_geos <- file.path(chr_tempdir, "geos.parquet")
+  chr_hms <- file.path(chr_tempdir, "hms.parquet")
+  sedonadb::sd_write_parquet(
+    sedonadb::as_sedonadb_dataframe(df_aqs),
+    chr_aqs,
+    single_file_output = TRUE
+  )
+  sedonadb::sd_write_parquet(
+    sedonadb::as_sedonadb_dataframe(df_geos),
+    chr_geos,
+    single_file_output = TRUE
+  )
+  sedonadb::sd_write_parquet(
+    sedonadb::as_sedonadb_dataframe(df_hms),
+    chr_hms,
+    single_file_output = TRUE
+  )
+  # ----------------------------------------------------------------------------
+  # Join with omission disabled and read the output.
+  db_retain <- amadeusdb::join_covariates(
+    input = chr_aqs,
+    output = file.path(chr_tempdir, "retain"),
+    hourly = list(geos = chr_geos),
+    daily = list(hms = chr_hms),
+    locs_id = "site_id",
+    prefix = TRUE,
+    na_omit = FALSE
+  )
+  testthat::expect_gt(length(db_retain), 0L)
+  testthat::expect_true(all(file.exists(db_retain)))
+  testthat::expect_true(all(grepl("\\.parquet$", db_retain)))
+  db_retain1 <- sedonadb::sd_read_parquet(db_retain)
+  testthat::expect_s3_class(db_retain1, "sedonadb_dataframe")
+  df_retain <- sedonadb::sd_collect(db_retain1)
+  df_retain <- df_retain[order(df_retain$observation_id), , drop = FALSE]
+  rownames(df_retain) <- NULL
+  # ----------------------------------------------------------------------------
+  # FALSE retains every observation and its missing non-key data values.
+  testthat::expect_equal(nrow(df_retain), 4L)
+  testthat::expect_equal(df_retain$observation_id, 1:4)
+  testthat::expect_identical(df_retain$site_id, rep("001", 4))
+  testthat::expect_s3_class(df_retain$time, "POSIXct")
+  testthat::expect_equal(
+    as.numeric(df_retain$time), as.numeric(df_aqs$time)
+  )
+  testthat::expect_equal(df_retain$value, c(NA_real_, 11, 12, 13))
+  testthat::expect_equal(df_retain$hourly_geos_value, c(20, 20, NA_real_, 22))
+  testthat::expect_equal(df_retain$daily_hms_value, c(30, 30, 30, NA_real_))
+  testthat::expect_equal(
+    stats::complete.cases(df_retain), c(FALSE, TRUE, FALSE, FALSE)
+  )
+  # ----------------------------------------------------------------------------
+  # Join the same inputs with omission enabled and read the output.
+  db_omit <- amadeusdb::join_covariates(
+    input = chr_aqs,
+    output = file.path(chr_tempdir, "omit"),
+    hourly = list(geos = chr_geos),
+    daily = list(hms = chr_hms),
+    locs_id = "site_id",
+    prefix = TRUE,
+    na_omit = TRUE
+  )
+  testthat::expect_gt(length(db_omit), 0L)
+  testthat::expect_true(all(file.exists(db_omit)))
+  testthat::expect_true(all(grepl("\\.parquet$", db_omit)))
+  db_omit1 <- sedonadb::sd_read_parquet(db_omit)
+  testthat::expect_s3_class(db_omit1, "sedonadb_dataframe")
+  df_omit <- sedonadb::sd_collect(db_omit1)
+  df_omit <- df_omit[order(df_omit$observation_id), , drop = FALSE]
+  rownames(df_omit) <- NULL
+  # ----------------------------------------------------------------------------
+  # TRUE drops precisely the incomplete rows without changing retained data.
+  testthat::expect_equal(nrow(df_omit), 1L)
+  testthat::expect_equal(df_omit$observation_id, 2L)
+  testthat::expect_false(anyNA(df_omit))
+  df_expected <- df_retain[2L, , drop = FALSE]
+  rownames(df_expected) <- NULL
+  testthat::expect_equal(df_omit, df_expected)
+})
+
+################################################################################
 # Failure cases.
 ################################################################################
 testthat::test_that("join_covariates; expected failures", code = {
@@ -824,6 +937,59 @@ testthat::test_that("join_covariates; expected failures", code = {
       prefix = 1L
     ),
     regexp = "prefix"
+  )
+  # ----------------------------------------------------------------------------
+  # Improper `na_omit` argument.
+  testthat::expect_error(
+    amadeusdb::join_covariates(
+      input = testthat::test_path(
+        "..",
+        "testdata",
+        "locs",
+        "db_hourly.parquet"
+      ),
+      output = chr_tempdir,
+      locs_id = "NAME",
+      time_id = "time",
+      date_id = "date",
+      prefix = TRUE,
+      na_omit = NULL
+    ),
+    regexp = "na_omit"
+  )
+  testthat::expect_error(
+    amadeusdb::join_covariates(
+      input = testthat::test_path(
+        "..",
+        "testdata",
+        "locs",
+        "db_hourly.parquet"
+      ),
+      output = chr_tempdir,
+      locs_id = "NAME",
+      time_id = "time",
+      date_id = "date",
+      prefix = TRUE,
+      na_omit = "TRUE"
+    ),
+    regexp = "na_omit"
+  )
+  testthat::expect_error(
+    amadeusdb::join_covariates(
+      input = testthat::test_path(
+        "..",
+        "testdata",
+        "locs",
+        "db_hourly.parquet"
+      ),
+      output = chr_tempdir,
+      locs_id = "NAME",
+      time_id = "time",
+      date_id = "date",
+      prefix = TRUE,
+      na_omit = 1L
+    ),
+    regexp = "na_omit"
   )
   # ----------------------------------------------------------------------------
   # Path with no parquet files.
